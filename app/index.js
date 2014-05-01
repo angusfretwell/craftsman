@@ -5,7 +5,6 @@ var spawn = require('child_process').spawn;
 var yeoman = require('yeoman-generator');
 var chalk = require('chalk');
 
-
 var FrancisCraftGenerator = yeoman.generators.Base.extend({
   init: function () {
     this.pkg = require('../package.json');
@@ -44,14 +43,38 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
     this.mkdir('craft/storage');
 
     this.mkdir('puppet');
-    this.mkdir('databases');
-    this.mkdir('public');
+    this.mkdir('puppet/manifests');
+    this.mkdir('puppet/modules');
+    this.mkdir('puppet/modules/app');
+    this.mkdir('puppet/modules/app/manifests');
 
-    this.copy('_package.json', 'package.json');
+    this.mkdir('app');
+    this.mkdir('app/styles');
+    this.mkdir('app/scripts');
+    this.mkdir('app/images');
+    this.mkdir('app/webfonts');
+
+    this.mkdir('public');
   },
 
   projectfiles: function () {
+    this.copy('_package.json', 'package.json');
+    this.copy('_composer.json', 'composer.json');
+
+    this.copy('bowerrc', '.bowerrc');
+    this.copy('_bower.json', 'bower.json');
+
     this.copy('editorconfig', '.editorconfig');
+    this.copy('jshint', '.jshint');
+
+    this.copy('gitignore', '.gitignore');
+    this.copy('gitattributes', '.gitattributes');
+
+    this.copy('favicon.ico', 'app/favicon.ico');
+    this.copy('robots.txt', 'app/robots.txt');
+    this.copy('humans.txt', 'app/humans.txt');
+
+    this.copy('htaccess', 'app/.htaccess');
   }
 });
 
