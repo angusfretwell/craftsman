@@ -1,0 +1,15 @@
+{
+    "require": {
+        "php": ">=5.4.0"
+    },
+    "extra": {
+        "heroku": {
+            "framework": "slim",
+            "document-root": "public",
+            "index-document": "index.php",
+            "compile": [
+                "chmod 777 craft/storage craft/app craft/config"
+            ]
+        }
+    }
+}

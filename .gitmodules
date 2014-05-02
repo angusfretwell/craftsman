@@ -1,0 +1,21 @@
+[submodule "app/templates/bootstrap"]
+	path = app/templates/bootstrap
+	url = https://github.com/experience/vagrant-bootstrap.git
+[submodule "app/templates/php"]
+	path = app/templates/php
+	url = https://github.com/experience/vagrant-puppet-php
+[submodule "app/templates/mysql"]
+	path = app/templates/mysql
+	url = https://github.com/experience/vagrant-puppet-mysql
+[submodule "app/templates/git"]
+	path = app/templates/git
+	url = https://github.com/experience/vagrant-puppet-git
+[submodule "app/templates/curl"]
+	path = app/templates/curl
+	url = https://github.com/experience/vagrant-puppet-curl
+[submodule "app/templates/composer"]
+	path = app/templates/composer
+	url = https://github.com/experience/vagrant-puppet-composer
+[submodule "app/templates/apache"]
+	path = app/templates/apache
+	url = https://github.com/experience/vagrant-puppet-apache

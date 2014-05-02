@@ -31,5 +31,8 @@
   },
   "peerDependencies": {
     "yo": ">=1.0.0"
+  },
+  "scripts": {
+    "preinstall": "git submodule update -i -r"
   }
 }

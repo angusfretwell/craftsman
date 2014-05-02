@@ -1,0 +1,19 @@
+.DS_Store
+
+# Files that might appear on external disk
+.Spotlight-V100
+.Trashes
+
+# Yeoman
+node_modules/
+app/bower_components/
+*.tmp
+*.sass-cache
+
+# Vagrant
+.vagrant/
+
+# Craft
+craft/storage/backups
+craft/storage/runtime
+craft/storage/userphotos

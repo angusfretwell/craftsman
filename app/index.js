@@ -38,23 +38,15 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
   },
 
   app: function () {
-    this.mkdir('craft');
-    this.mkdir('craft/config');
-    this.mkdir('craft/storage');
-
-    this.mkdir('puppet');
-    this.mkdir('puppet/manifests');
-    this.mkdir('puppet/modules');
-    this.mkdir('puppet/modules/app');
-    this.mkdir('puppet/modules/app/manifests');
-
     this.mkdir('app');
     this.mkdir('app/styles');
     this.mkdir('app/scripts');
     this.mkdir('app/images');
     this.mkdir('app/webfonts');
+    this.mkdir('app/templates');
 
     this.mkdir('public');
+    this.mkdir('public/assets');
   },
 
   projectfiles: function () {
@@ -75,6 +67,39 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
     this.copy('humans.txt', 'app/humans.txt');
 
     this.copy('htaccess', 'app/.htaccess');
+  },
+
+  vagrant: function () {
+    this.copy('Vagrantfile', 'Vagrantfile');
+  },
+
+  puppet: function () {
+    this.mkdir('puppet');
+    this.mkdir('puppet/manifests');
+    this.mkdir('puppet/modules');
+    this.mkdir('puppet/modules/app');
+    this.mkdir('puppet/modules/app/manifests');
+
+    this.write('puppet/manifests/init.pp', 'include \'app\'');
+    this.copy('init.pp', 'puppet/modules/app/manifests/init.pp');
+
+    this.directory('bootstrap', 'puppet/boostrap');
+
+    this.directory('apache', 'puppet/modules/apache');
+    this.directory('mysql', 'puppet/modules/mysql');
+    this.directory('php', 'puppet/modules/php');
+    this.directory('git', 'puppet/modules/git');
+    this.directory('curl', 'puppet/modules/curl');
+    this.directory('composer', 'puppet/modules/composer');
+  },
+
+  craft: function() {
+    this.mkdir('craft');
+    this.mkdir('craft/config');
+    this.mkdir('craft/storage');
+
+    this.copy('general.php', 'craft/config/general.php');
+    this.copy('db.php', 'craft/config/db.php');
   }
 });
 

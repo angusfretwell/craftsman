@@ -1,0 +1,7 @@
+{
+  "name": "<%= _.slugify(slug) %>",
+  "private": true,
+  "dependencies": {},
+  "devDependencies": {}
+}
+
