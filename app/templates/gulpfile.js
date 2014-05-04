@@ -1,13 +1,51 @@
 'use strict';
-// Generated on 2014-05-01 using generator-francis 0.0.1
+// Generated on <%= (new Date).toISOString().split('T')[0] %> using <%= pkg.name %> <%= pkg.version %>
 
 var gulp = require('gulp');
 
 // Load plugins
 var $ = require('gulp-load-plugins')();
 
+var paths = {
+    styles: 'app/styles/**/*.scss',
+    scripts: 'app/scripts/**/*.js',
+    html: 'app/*.html',
+    images: 'app/images/**/*',
+    fonts: 'app/webfonts/**/*.{eot,svg,ttf,woff}',
+    extras: ['app/*.*', '!app/*.html']
+}
+
+gulp.task('deploy-init', shell.task([
+    'ssh dokku@staging.francisbond.com mariadb:create <%= _.slugify(slug) %>',
+    'git remote add dokku dokku@staging.francisbond.com:<%= _.slugify(slug) %>'
+]));
+
+gulp.task('deploy', shell.task([
+    'git push dokku master'
+]));
+
+gulp.task('db-dump-local', shell.task([
+    'vagrant ssh "mysqldump -uroot -proot <%= _.slugify(slug) %>" > .tmp/local.sql'
+]));
+
+//gulp.task('db-dump-remote', function() {
+//
+//});
+//
+//gulp.task('db-push', function () {
+//
+//});
+//
+//gulp.task('db-pull', function () {
+//
+//});
+//
+//gulp.task('db-dump', function () {
+//
+//});
+
 gulp.task('styles', function () {
-    return gulp.src('app/styles/main.scss')
+    return gulp.src(paths.styles)
         .pipe($.rubySass({
             style: 'expanded'
         }))
@@ -17,7 +55,7 @@ gulp.task('styles', function () {
 });
 
 gulp.task('scripts', function () {
-    return gulp.src('app/scripts/**/*.js')
+    return gulp.src(paths.scripts)
         .pipe($.jshint())
         .pipe($.jshint.reporter(require('jshint-stylish')))
         .pipe($.size());
@@ -27,7 +65,7 @@ gulp.task('html', ['styles', 'scripts'], function () {
     var jsFilter = $.filter('**/*.js');
     var cssFilter = $.filter('**/*.css');
 
-    return gulp.src('app/*.html')
+    return gulp.src(paths.html)
         .pipe($.useref.assets({searchPath: '{.tmp,app}'}))
         .pipe(jsFilter)
         .pipe($.uglify())
@@ -42,7 +80,7 @@ gulp.task('html', ['styles', 'scripts'], function () {
 });
 
 gulp.task('images', function () {
-    return gulp.src('app/images/**/*')
+    return gulp.src(paths.images)
         .pipe($.cache($.imagemin({
             optimizationLevel: 3,
             progressive: true,
@@ -53,15 +91,13 @@ gulp.task('images', function () {
 });
 
 gulp.task('fonts', function () {
-    return $.bowerFiles()
-        .pipe($.filter('**/*.{eot,svg,ttf,woff}'))
-        .pipe($.flatten())
-        .pipe(gulp.dest('public/webfonts'))
+    return gulp.src(paths.fonts)
+        .pipe(gulp.dest('dist/webfonts'))
         .pipe($.size());
 });
 
 gulp.task('extras', function () {
-    return gulp.src(['app/*.*', '!app/*.html'], { dot: true })
+    return gulp.src(paths.extras, { dot: true })
         .pipe(gulp.dest('public'));
 });
 
@@ -76,7 +112,7 @@ gulp.task('build', ['html', 'images', 'fonts', 'extras']);
 gulp.task('wiredep', function () {
     var wiredep = require('wiredep').stream;
 
-    gulp.src('app/*.html')
+    gulp.src(paths.html)
         .pipe(wiredep({
             directory: 'app/bower_components'
         }))
