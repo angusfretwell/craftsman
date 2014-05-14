@@ -15,9 +15,18 @@ var paths = {
     extras: ['app/*.*', '!app/*.html']
 }
 
+/**
+ * `gulp deploy-init`
+ * 1. Create mariadb container.
+ * 2. Add dokku remote to git repository.
+ * 3. Push to dokku to intialize app container.
+ * 4. Link app container with mariadb container.
+ */
 gulp.task('deploy-init', shell.task([
-    'ssh dokku@staging.francisbond.com mariadb:create <%= _.slugify(slug) %>',
-    'git remote add dokku dokku@staging.francisbond.com:<%= _.slugify(slug) %>'
+    'ssh dokku@staging.francisbond.com mariadb:create <%= _.slugify(slug) %>', /*[1]*/
+    'git remote add dokku dokku@staging.francisbond.com:<%= _.slugify(slug) %>', /*[2]*/
+    'git push dokku master', /*[3]*/
+    'ssh dokku@staging.francisbond.com mariadb:link <%= _.slugify(slug) %> <%= _.slugify(slug) %>' /*[4]*/
 ]));
 
 gulp.task('deploy', shell.task([
@@ -28,9 +37,9 @@ gulp.task('db-dump-local', shell.task([
     'vagrant ssh "mysqldump -uroot -proot <%= _.slugify(slug) %>" > .tmp/local.sql'
 ]));
 
-//gulp.task('db-dump-remote', function() {
-//
-//});
+gulp.task('db-dump-remote', shell.task([
+    'ssh dokku@staging.francisbond.com mariadb:dumpraw <%= _.slugify(slug) %> > .tmp/local.sql'
+]));
 //
 //gulp.task('db-push', function () {
 //

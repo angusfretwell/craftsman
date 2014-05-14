@@ -5,7 +5,7 @@ class app {
   $root_password = 'root'
   $db_name       = '<%= _.slugify(slug) %>'
   $db_username   = 'root'
-  $db_password   = 'docker'
+  $db_password   = 'root'
   # -----------------------------------------------------------------
 
   $bin_path = '/usr/bin:/usr/sbin'

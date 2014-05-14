@@ -20,10 +20,7 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
   askFor: function () {
     var done = this.async();
 
-    // have Yeoman greet the user
     this.log(this.yeoman);
-
-    // replace it with a short and sweet description of your generator
     this.log(chalk.magenta('You\'re using Francis Bond\'s fantastic Craft generator.'));
 
     var prompts = [{
