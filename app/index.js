@@ -8,11 +8,11 @@ var chalk = require('chalk');
 var wiredep = require('wiredep');
 
 var FrancisCraftGenerator = yeoman.generators.Base.extend({
-    init: function () {
+    init: function() {
         this.pkg = require('../package.json');
     },
 
-    askFor: function () {
+    askFor: function() {
         var done = this.async();
 
         this.log(this.yeoman);
@@ -36,12 +36,12 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
             }]
         }];
 
-        this.prompt(prompts, function (props) {
+        this.prompt(prompts, function(props) {
             this.slug = props.slug;
 
-            var features = answers.features;
+            var features = props.features;
 
-            var hasFeature = function (feat) {
+            var hasFeature = function(feat) {
                 return features.indexOf(feat) !== -1;
             }
 
@@ -52,7 +52,7 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
         }.bind(this));
     },
 
-    app: function () {
+    app: function() {
         this.mkdir('app');
         this.mkdir('app/styles');
         this.mkdir('app/scripts');
@@ -64,7 +64,7 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
         this.mkdir('public/assets');
     },
 
-    projectfiles: function () {
+    projectfiles: function() {
         this.copy('_package.json', 'package.json');
         this.copy('_composer.json', 'composer.json');
 
@@ -72,7 +72,7 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
         this.copy('_bower.json', 'bower.json');
 
         this.copy('editorconfig', '.editorconfig');
-        this.copy('jshint', '.jshint');
+        this.copy('jshintrc', '.jshintrc');
 
         this.copy('gitignore', '.gitignore');
         this.copy('gitattributes', '.gitattributes');
@@ -84,11 +84,11 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
         this.copy('htaccess', 'app/.htaccess');
     },
 
-    vagrant: function () {
+    vagrant: function() {
         this.copy('Vagrantfile', 'Vagrantfile');
     },
 
-    puppet: function () {
+    puppet: function() {
         this.mkdir('puppet');
         this.mkdir('puppet/manifests');
         this.mkdir('puppet/modules');
