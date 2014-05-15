@@ -123,7 +123,7 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
         var done = this.async();
 
         this.installDependencies({
-            callback: function () {
+            callback: function() {
                 var bowerJson = JSON.parse(fs.readFileSync('./bower.json'));
 
                 wiredep({
@@ -133,7 +133,7 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
                 });
 
                 done();
-            }.bind(this);
+            }.bind(this)
         });
     }
 });
