@@ -1,7 +1,11 @@
 {
-  "name": "<%= _.slugify(slug) %>",
+  "name": "<%= _.slugify(appname) %>",
   "private": true,
-  "dependencies": {},
+  "dependencies": {<% if (includeInuit) { %>
+    "inuitcss": "~5.0.1",<% } if (includejQuery) { %>
+    "jquery": "~1.11.0",<% } %>
+    "modernizr": "~2.7.2"
+  },
   "devDependencies": {}
 }
 

@@ -1,0 +1,25 @@
+@charset "UTF-8";
+<% if (includeInuit) { %>
+/*------------------------------------*\
+    MAIN.CSS
+\*------------------------------------*/
+/**
+ * Here we pull in some variables, include the inuit.css framework, then add our
+ * project-specific components afterwards.
+ */
+
+
+
+/**
+ * Setup
+ */
+@import "vars";
+@import "../bower_components/inuitcss/inuit";
+
+
+
+/**
+ * She’s all yours, cap’n... Begin importing your stuff here.
+ */
+//@import "ui/example";
+<% } %>
