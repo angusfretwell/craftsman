@@ -109,8 +109,6 @@ gulp.task('build', ['clean', 'images', 'extras'], function() {
 });
 
 gulp.task('watch', function () {
-    // start livereload
-
     gulp.watch(['app/*.*', '!app/*.html', 'app/webfonts/**/*.{eot,svg,ttf,woff}'], ['extras']);
     gulp.watch(['app/*.html', ['html']);
     gulp.watch('app/scripts/**/*.js', ['scripts']);
