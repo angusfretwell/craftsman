@@ -8,7 +8,7 @@
  */
 
 // Ensure our URLs have the right scheme.
-define('URI_SCHEME', (isset($_SERVER['HTTPS']) ? "https://" : "http://");
+define('URI_SCHEME', (isset($_SERVER['HTTPS'])) ? 'https://' : 'http://');
 
 // The site URL.
 define('SITE_URL', URI_SCHEME . $_SERVER['SERVER_NAME'] . '/');

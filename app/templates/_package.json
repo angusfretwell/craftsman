@@ -3,8 +3,21 @@
   "version": "0.0.0",
   "dependencies": {},
   "devDependencies": {
-    "gulp": "^3.6.0",
-    "gulp-shell": "^0.2.4",
+    "gulp": "*",
+    "gulp-autoprefixer": "*",
+    "gulp-cache": "*",
+    "gulp-clean": "*",
+    "gulp-csso": "*",
+    "gulp-filter": "*",
+    "gulp-imagemin": "*",
+    "gulp-jshint": "*",
+    "gulp-ruby-sass": "*",
+    "gulp-shell": "*",
+    "gulp-size": "*",
+    "gulp-uglify": "*",
+    "gulp-useref": "*",
+    "jshint-stylish": "*",
+    "wiredep": "*"
 
   },
   "engines": {

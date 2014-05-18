@@ -1,11 +1,13 @@
 'use strict';
-var fs = require('fs');
-var util = require('util');
-var path = require('path');
-var spawn = require('child_process').spawn;
-var yeoman = require('yeoman-generator');
-var chalk = require('chalk');
-var wiredep = require('wiredep');
+
+var fs = require('fs'),
+    util = require('util'),
+    path = require('path'),
+    spawn = require('child_process').spawn,
+    yeoman = require('yeoman-generator'),
+    yosay = require('yosay'),
+    chalk = require('chalk'),
+    wiredep = require('wiredep');
 
 var FrancisCraftGenerator = yeoman.generators.Base.extend({
     init: function() {
@@ -15,8 +17,7 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
     askFor: function() {
         var done = this.async();
 
-        this.log(this.yeoman);
-        this.log(chalk.magenta('You\'re using Francis Bond\'s fantastic Craft generator.'));
+        this.log(yosay('You\'re using Francis Bond\'s fantastic Craft generator.'));
 
         var prompts = [{
             name: 'slug',
@@ -39,11 +40,10 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
         this.prompt(prompts, function(props) {
             this.slug = props.slug;
 
-            var features = props.features;
-
-            var hasFeature = function(feat) {
-                return features.indexOf(feat) !== -1;
-            }
+            var features = props.features,
+                hasFeature = function(feat) {
+                    return features.indexOf(feat) !== -1;
+                }
 
             this.includeInuit = hasFeature('includeInuit');
             this.includejQuery = hasFeature('includejQuery');
@@ -54,19 +54,31 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
 
     app: function() {
         this.mkdir('app');
-        this.mkdir('app/styles');
-        this.mkdir('app/scripts');
         this.mkdir('app/images');
         this.mkdir('app/webfonts');
-        this.mkdir('app/templates');
+    },
 
-        this.mkdir('public');
-        this.mkdir('public/assets');
+    styles: function() {
+        this.mkdir('app/styles');
+
+        this.copy('main.scss', 'app/styles/main.scss');
+
+        if (this.includeInuit) {
+            this.copy('vars.scss', 'app/styles/_vars.scss');
+        }
+    },
+
+    scripts: function() {
+        this.mkdir('app/scripts');
+        this.write('app/scripts/main.js', 'console.log(\'\\\'Allo \\\'Allo!\');');
     },
 
     projectfiles: function() {
+        this.copy('gulpfile.js', 'gulpfile.js');
+
         this.copy('_package.json', 'package.json');
         this.copy('_composer.json', 'composer.json');
+        this.write('composer.lock', '');
 
         this.copy('bowerrc', '.bowerrc');
         this.copy('_bower.json', 'bower.json');
@@ -80,8 +92,6 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
         this.copy('favicon.ico', 'app/favicon.ico');
         this.copy('robots.txt', 'app/robots.txt');
         this.copy('humans.txt', 'app/humans.txt');
-
-        this.copy('htaccess', 'app/.htaccess');
     },
 
     vagrant: function() {
@@ -98,7 +108,7 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
         this.write('puppet/manifests/init.pp', 'include \'app\'');
         this.copy('init.pp', 'puppet/modules/app/manifests/init.pp');
 
-        this.directory('bootstrap', 'puppet/boostrap');
+        this.directory('bootstrap', 'puppet/bootstrap');
 
         this.directory('apache', 'puppet/modules/apache');
         this.directory('mysql', 'puppet/modules/mysql');
@@ -110,13 +120,32 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
 
     craft: function() {
         this.mkdir('craft');
-        this.mkdir('craft/config');
         this.mkdir('craft/storage');
 
+        this.mkdir('public');
+        this.mkdir('public/assets');
+
         this.copy('index.php', 'public/index.php')
+        this.copy('htaccess', 'public/.htaccess');
+
+        this.copy('app', 'craft/app');
+        this.copy('config', 'craft/config');
+        this.copy('plugins', 'craft/plgins');
 
         this.copy('general.php', 'craft/config/general.php');
         this.copy('db.php', 'craft/config/db.php');
+    },
+
+    templates: function() {
+        this.mkdir('app/templates');
+        this.mkdir('app/templates/news');
+
+        this.copy('layout.html', 'app/templates/_layout.html')
+        this.copy('index.html', 'app/templates/index.html')
+        this.copy('404.html', 'app/templates/404.html')
+
+        this.copy('news__index.html', 'app/templates/news/index.html')
+        this.copy('news__entry.html', 'app/templates/news/_entry.html')
     },
 
     install: function() {
@@ -129,7 +158,8 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
                 wiredep({
                     bowerJson: bowerJson,
                     directory: 'app/bower_components',
-                    src: 'app/index.html'
+                    src: 'app/templates/_layout.html'<% if (includeInuit) { %>,
+                    exclude: ['inuitcss']<% } %>
                 });
 
                 done();
