@@ -121,16 +121,19 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
     craft: function() {
         this.mkdir('craft');
         this.mkdir('craft/storage');
+        this.write('craft/storage/.gitkeep', '');
 
         this.mkdir('public');
         this.mkdir('public/assets');
+        this.write('public/assets/.gitkeep', '');
 
         this.copy('index.php', 'public/index.php')
         this.copy('htaccess', 'public/.htaccess');
 
         this.directory('app', 'craft/app');
         this.directory('config', 'craft/config');
-        this.directory('plugins', 'craft/plgins');
+        this.mkdir('craft/plgins');
+        this.write('craft/plugins/.gitkeep', '');
 
         this.copy('general.php', 'craft/config/general.php');
         this.copy('db.php', 'craft/config/db.php');
