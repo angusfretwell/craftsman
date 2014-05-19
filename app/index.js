@@ -128,9 +128,9 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
         this.copy('index.php', 'public/index.php')
         this.copy('htaccess', 'public/.htaccess');
 
-        this.copy('app', 'craft/app');
-        this.copy('config', 'craft/config');
-        this.copy('plugins', 'craft/plgins');
+        this.directory('app', 'craft/app');
+        this.directory('config', 'craft/config');
+        this.directory('plugins', 'craft/plgins');
 
         this.copy('general.php', 'craft/config/general.php');
         this.copy('db.php', 'craft/config/db.php');
