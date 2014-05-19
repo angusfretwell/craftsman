@@ -158,8 +158,8 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
                 wiredep({
                     bowerJson: bowerJson,
                     directory: 'app/bower_components',
-                    src: 'app/templates/_layout.html'<% if (includeInuit) { %>,
-                    exclude: ['inuitcss']<% } %>
+                    src: 'app/templates/_layout.html',
+                    exclude: ['inuitcss']
                 });
 
                 done();
