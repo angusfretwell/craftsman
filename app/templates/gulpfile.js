@@ -20,7 +20,7 @@ var paths = {
     scripts: 'app/scripts/**/*.js',
     images: 'app/images/**/*.{gif,jpg,png,svg,webp}',
     extras: ['app/*.*', 'app/webfonts/**/*.{eot,svg,ttf,woff}'],
-    html: 'app/**/*.html',
+    html: ['app/**/*.html'],
     index: 'app/templates/_layout.html',
     clean: ['.tmp', 'public/**/*', '!public/assets', '!public/index.php', '!public/.htaccess']
 };
@@ -34,8 +34,8 @@ var paths = {
  */
 gulp.task('deploy-init', shell.task([
     'git remote add dokku dokku@staging.francisbond.com:<%= _.slugify(slug) %>', /*[1]*/
-    'ssh dokku@staging.francisbond.com config:set <%= _.slugify(slug) %> BUILDPACK_URL=https://github.com/CHH/heroku-buildpack-php',
     'git push dokku master', /*[2]*/
+    'ssh dokku@staging.francisbond.com config:set <%= _.slugify(slug) %> BUILDPACK_URL=https://github.com/CHH/heroku-buildpack-php',
     'ssh dokku@staging.francisbond.com mariadb:create <%= _.slugify(slug) %>', /*[3]*/
     'ssh dokku@staging.francisbond.com mariadb:link <%= _.slugify(slug) %> <%= _.slugify(slug) %>' /*[4]*/
 ]));
@@ -166,8 +166,8 @@ gulp.task('wiredep', function() {
 
     gulp.src(paths.index)
         .pipe(wiredep({
-            directory: 'app/bower_components'<% if (includeInuit) { %>,
-            exclude: ['inuitcss']<% } %>
+            directory: 'bower_components'<% if (includeInuit) { %>,
+            exclude: ['inuitcss', 'modernizr']<% } %>
         }))
         .pipe(gulp.dest('app/templates'));
 });

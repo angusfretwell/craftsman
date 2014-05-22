@@ -132,7 +132,7 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
 
         this.directory('app', 'craft/app');
         this.directory('config', 'craft/config');
-        this.mkdir('craft/plgins');
+        this.mkdir('craft/plugins');
         this.write('craft/plugins/.gitkeep', '');
 
         this.copy('general.php', 'craft/config/general.php');
@@ -160,9 +160,9 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
 
                 wiredep({
                     bowerJson: bowerJson,
-                    directory: 'app/bower_components',
+                    directory: 'bower_components',
                     src: 'app/templates/_layout.html',
-                    exclude: ['inuitcss']
+                    exclude: ['inuitcss', 'modernizr']
                 });
 
                 done();
