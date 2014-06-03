@@ -23,9 +23,11 @@
         <!-- endbuild -->
 
         <!-- build:js /scripts/vendor/modernizr.js -->
-        <script src="../../bower_components/modernizr/modernizr.js"></script>
+        <script src="../bower_components/modernizr/modernizr.js"></script>
         <!-- endbuild -->
     </head>
+
+    <body>
         <header>
             <h1><a href="{{ siteUrl }}">{{ siteName }}</a></h1>
 
@@ -44,7 +46,7 @@
         <footer>
             Copyright {{ now.year }} {{ craft.request.serverName | ucfirst }}. All rights reserved &bull; Built with <a href="http://buildwithcraft.com">Craft</a>
         </footer>
-    <body>
+
         <!--[if lt IE 10]>
             <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
         <![endif]-->

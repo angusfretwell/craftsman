@@ -8,7 +8,7 @@
             "document-root": "public",
             "index-document": "index.php",
             "compile": [
-                "chmod 777 craft/storage craft/app craft/config"
+                "chmod -R 777 craft/storage craft/app craft/config"
             ]
         }
     }

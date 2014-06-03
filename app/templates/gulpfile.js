@@ -19,25 +19,29 @@ var paths = {
     styles: 'app/styles/**/*.scss',
     scripts: 'app/scripts/**/*.js',
     images: 'app/images/**/*.{gif,jpg,png,svg,webp}',
-    extras: ['app/*.*', 'app/webfonts/**/*.{eot,svg,ttf,woff}'],
+    extras: 'app/*.*',
+    fonts: 'app/fonts/**/*.{eot,svg,ttf,woff}',
     html: ['app/**/*.html'],
     index: 'app/templates/_layout.html',
-    clean: ['.tmp', 'public/**/*', '!public/assets', '!public/index.php', '!public/.htaccess']
+    clean: ['.tmp/*', 'public/**/*',
+            '!public/assets/', '!public/assets/**/*',
+            '!public/index.php', '!public/.htaccess']
 };
 
 /**
  * `gulp deploy-init`
  * 1. Add dokku remote to git repository.
  * 2. Push to dokku to intialize app container.
- * 3. Create mariadb container.
- * 4. Link app container with mariadb container.
+ * 3. Set a custom PHP buildpack
+ * 4. Create mariadb container.
+ * 5. Link app container with mariadb container.
  */
 gulp.task('deploy-init', shell.task([
-    'git remote add dokku dokku@staging.francisbond.com:<%= _.slugify(slug) %>', /*[1]*/
+    'git remote add dokku dokku@staging.francisbond.com:cloakr', /*[1]*/
     'git push dokku master', /*[2]*/
-    'ssh dokku@staging.francisbond.com config:set <%= _.slugify(slug) %> BUILDPACK_URL=https://github.com/CHH/heroku-buildpack-php',
-    'ssh dokku@staging.francisbond.com mariadb:create <%= _.slugify(slug) %>', /*[3]*/
-    'ssh dokku@staging.francisbond.com mariadb:link <%= _.slugify(slug) %> <%= _.slugify(slug) %>' /*[4]*/
+    'ssh dokku@staging.francisbond.com config:set <%= _.slugify(slug) %> BUILDPACK_URL=https://github.com/CHH/heroku-buildpack-php', /*[3]*/
+    'ssh dokku@staging.francisbond.com mariadb:create cloakr', /*[4]*/
+    'ssh dokku@staging.francisbond.com mariadb:link cloakr cloakr' /*[5]*/
 ]));
 
 gulp.task('deploy', shell.task([
@@ -95,11 +99,6 @@ gulp.task('scripts', function() {
         .pipe(size());
 });
 
-gulp.task('html', function() {
-    return gulp.src(paths.html)
-        .pipe(gulp.dest('public'))
-});
-
 gulp.task('images', function() {
     return gulp.src(paths.images)
         .pipe(cache(imagemin({
@@ -111,7 +110,12 @@ gulp.task('images', function() {
         .pipe(size());
 });
 
-gulp.task('extras', function() {
+gulp.task('fonts', function() {
+    return gulp.src(paths.fonts, { dot: true })
+        .pipe(gulp.dest('public/fonts'));
+});
+
+gulp.task('extras', ['fonts'], function() {
     return gulp.src(paths.extras, { dot: true })
         .pipe(gulp.dest('public'));
 });
@@ -147,29 +151,28 @@ gulp.task('build-useref', ['images', 'styles', 'extras'], function() {
 gulp.task('watch', function() {
     // Run everything once before we start watching for changes.
     gulp.start('extras')
-        .start('html')
         .start('scripts')
-        .start('styles')
+        // .start('wiredep')
         .start('images')
-        .start('wiredep');
+        .start('build-useref');
 
     gulp.watch(paths.extras, ['extras']);
-    gulp.watch(paths.html, ['html']);
-    gulp.watch(paths.scripts, ['scripts']);
-    gulp.watch(paths.styles, ['styles']);
+    gulp.watch(paths.html, ['build-useref']);
+    gulp.watch(paths.scripts, ['scripts', 'build-useref']);
+    gulp.watch(paths.styles, ['build-useref']);
     gulp.watch(paths.images, ['images']);
-    gulp.watch('bower.json', ['wiredep']);
+    // gulp.watch('bower.json', ['wiredep']);
 });
 
-gulp.task('wiredep', function() {
-    var wiredep = require('wiredep').stream;
-
-    gulp.src(paths.index)
-        .pipe(wiredep({
-            directory: 'bower_components'<% if (includeInuit) { %>,
-            exclude: ['inuitcss', 'modernizr']<% } %>
-        }))
-        .pipe(gulp.dest('app/templates'));
-});
+// gulp.task('wiredep', function() {
+//     var wiredep = require('wiredep').stream;
+//
+//     gulp.src(paths.index)
+//         .pipe(wiredep({
+//             directory: 'bower_components'<% if (includeInuit) { %>,
+//             exclude: ['inuitcss', 'modernizr']<% } %>
+//         }))
+//         .pipe(gulp.dest('app/templates'));
+// });
 
 gulp.task('default', ['build']);
