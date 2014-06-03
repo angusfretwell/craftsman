@@ -37,11 +37,11 @@ var paths = {
  * 5. Link app container with mariadb container.
  */
 gulp.task('deploy-init', shell.task([
-    'git remote add dokku dokku@staging.francisbond.com:cloakr', /*[1]*/
+    'git remote add dokku dokku@staging.francisbond.com:<%= _.slugify(slug) %>', /*[1]*/
     'git push dokku master', /*[2]*/
     'ssh dokku@staging.francisbond.com config:set <%= _.slugify(slug) %> BUILDPACK_URL=https://github.com/CHH/heroku-buildpack-php', /*[3]*/
-    'ssh dokku@staging.francisbond.com mariadb:create cloakr', /*[4]*/
-    'ssh dokku@staging.francisbond.com mariadb:link cloakr cloakr' /*[5]*/
+    'ssh dokku@staging.francisbond.com mariadb:create <%= _.slugify(slug) %>', /*[4]*/
+    'ssh dokku@staging.francisbond.com mariadb:link <%= _.slugify(slug) %> <%= _.slugify(slug) %>' /*[5]*/
 ]));
 
 gulp.task('deploy', shell.task([
