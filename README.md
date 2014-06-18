@@ -89,3 +89,5 @@ generator-francis-craft
 
 * The project is instantiated with an incorrect path for jQuery in the `vendor.js` useref block. Removing one level (`../`) resolves this issue.
 * Upon initial deployment to the Dokku server, the website will sometimes return a 502 or 504 error. This is usually fixed by making a commit and running `gulp deploy`.
+* Rerunning `gulp deploy-init` will fail, since a Dokku remote has already been created. Running `git remote remove dokku` will resolve this.
+* `gulp deploy` will sometimes fail if a newer commit has been deployed but not pushed to the repository. You can override this by running `git push origin dokku --force`.
