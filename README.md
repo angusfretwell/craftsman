@@ -3,6 +3,8 @@ generator-francis-craft
 
 [Francis Bond's](http://francisbond.com) [Yeoman](http://yeoman.io) generator for scaffolding a [Craft](http://buildwithcraft.com) website with [Gulp](http://gulpjs.com/), Bower, Sass, inuit.css, Modernizr, and jQuery.
 
+![](screenshot.png)
+
 ## Features
 
 * Set up a fresh copy of Craft
@@ -17,7 +19,7 @@ generator-francis-craft
 ### Todo
 
 * Add support for generating a Modernizr build
-* Generate CSS folder architecture 
+* Generate CSS folder architecture
 * Add support for wiring Bower components automatically
 * Add support for LiveReload
 
