@@ -26,8 +26,11 @@ generator-francis-craft
 ## Installation
 
 * Install: `npm install -g angusfretwell/generator-francis-craft`
-* Run: `yo francis`
-* Run `gulp` for building and `gulp watch` for preview
+* Run: `yo francis-craft`
+* Run `gulp build` for building and `gulp watch` for preview
+* Use `gulp deploy-init` to initalise a deployment environment
+* Run `gulp deploy` after committing changes to deploy them
+* Use `gulp db-push` and `gulp db-pull` to push and pull databases between environments
 
 ### Requirements
 * For using the provided development environment, VirtualBox, Vagrant, and the [Vagrant Host Manager](https://github.com/smdahlen/vagrant-hostmanager) plugin must be installed.
