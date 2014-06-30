@@ -6,7 +6,7 @@
     "gulp": "*",
     "gulp-autoprefixer": "*",
     "gulp-cache": "*",
-    "gulp-clean": "*",
+    "del": "*",
     "gulp-csso": "*",
     "gulp-filter": "*",
     "gulp-imagemin": "*",

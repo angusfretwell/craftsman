@@ -5,7 +5,7 @@ var gulp = require('gulp'),
     prefix = require('gulp-autoprefixer'),
     cache = require('gulp-cache'),
     csso = require('gulp-csso'),
-    clean = require('gulp-clean'),
+    clean = require('del'),
     filter = require('gulp-filter'),
     imagemin = require('gulp-imagemin'),
     jshint = require('gulp-jshint'),
@@ -24,7 +24,7 @@ var paths = {
     html: ['app/**/*.html'],
     index: 'app/templates/_layout.html',
     clean: ['.tmp/*', 'public/**/*',
-            '!public/assets/', '!public/assets/**/*',
+            '!public/assets', '!public/assets/**/*',
             '!public/index.php', '!public/.htaccess']
 };
 
@@ -120,9 +120,8 @@ gulp.task('extras', ['fonts'], function() {
         .pipe(gulp.dest('public'));
 });
 
-gulp.task('clean', function() {
-    return gulp.src(paths.clean, { read: false })
-        .pipe(clean());
+gulp.task('clean', function(cb) {
+    clean(paths.clean, cb);
 });
 
 gulp.task('build', ['clean'], function() {
