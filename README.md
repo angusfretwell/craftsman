@@ -26,12 +26,15 @@ generator-francis-craft
 ## Installation
 
 * Install: `npm install -g angusfretwell/generator-francis-craft`
-* Run: `yo francis`
-* Run `gulp` for building and `gulp watch` for preview
+* Run: `yo francis-craft`
+* Run `gulp build` for building and `gulp watch` for preview
+* Use `gulp deploy-init` to initalise a deployment environment
+* Run `gulp deploy` after committing changes to deploy them
+* Use `gulp db-push` and `gulp db-pull` to push and pull databases between environments
 
 ### Requirements
 * For using the provided development environment, VirtualBox, Vagrant, and the [Vagrant Host Manager](https://github.com/smdahlen/vagrant-hostmanager) plugin must be installed.
-* The generator requires Ruby and Sass to be installed, and inuit.css requires at least Sass 3.3. Using the newest version available is reccomended: `gem install sass`.
+* The generator requires Ruby and Sass to be installed, and inuit.css requires at least Sass 3.3. Using the newest version available is recommended: `gem install sass`.
 * Yeoman, Bower, and gulp.js should be installed globally via npm.
 
 ## Available Commands
@@ -40,11 +43,11 @@ generator-francis-craft
 
 * `gulp deploy-init`
 
-  Initialise a Dokku container for use in the project's deployment.
+  Initialize a Dokku container for use in the project's deployment.
 
   1. Adds a git remote corresponding with the Dokku staging server.
   2. Pushes the repository to the Dokku remote.
-  3. Defines a Buildpack for Dokku to use in the projects's deployment.
+  3. Defines a Buildpack for Dokku to use in the project's deployment.
   4. Sets up and links a new MariaDB container.
 
   You should follow this command with gulp db-push.
@@ -69,23 +72,25 @@ generator-francis-craft
 
 * `gulp watch`
 
-  Watches the project for changes in images, styles, javascript, HTML, etc. and performs appropriate actions. Skips some non-critical resource-intensive processes (e.g. image optimisation).
+  Watches the project for changes in images, styles, javascript, HTML, etc. and performs appropriate actions. Skips some non-critical resource-intensive processes (e.g. image optimization).
 
 * `gulp build`
 
-  Build the project for deployment. Performs all tasks including minification and image optimisation.
+  Build the project for deployment. Performs all tasks including minification and image optimization.
 
-### Miscelleanous
+### Miscellaneous
 
 * `bower install`
 
-  Install project-specific Bower packages defined in bower.json. You should run this command when cloning an already initalised repository.
+  Install project-specific Bower packages defined in bower.json. You should run this command when cloning an already initialized repository.
 
 * `npm install`
 
-  Install project-specific npm packages defined in the package.json. You should run this command when cloning an already initalised repository.
+  Install project-specific npm packages defined in the package.json. You should run this command when cloning an already initialized repository.
 
 ## Known Issues
 
-* The project is instansatied with an incorrect path for jQuery in the `vendor.js` useref block. Removing one level (`../`) resolves this issue.
+* The project is instantiated with an incorrect path for jQuery in the `vendor.js` useref block. Removing one level (`../`) resolves this issue.
 * Upon initial deployment to the Dokku server, the website will sometimes return a 502 or 504 error. This is usually fixed by making a commit and running `gulp deploy`.
+* Rerunning `gulp deploy-init` will fail, since a Dokku remote has already been created. Running `git remote remove dokku` will resolve this.
+* `gulp deploy` will sometimes fail if a newer commit has been deployed but not pushed to the repository. You can override this by running `git push origin dokku --force`.
