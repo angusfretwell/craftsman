@@ -82,7 +82,7 @@ gulp.task('db-dump', ['clean', 'db-dump-local', 'db-dump-remote'], function() {
 });
 
 gulp.task('styles', function() {
-    return gulp.src(paths.styles)
+    return gulp.src([paths.styles, 'bower_components/**/*.scss'])
         .pipe(rubySass({
             style: 'expanded'
         }))
