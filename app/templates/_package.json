@@ -3,22 +3,21 @@
   "version": "0.0.0",
   "dependencies": {},
   "devDependencies": {
-    "gulp": "*",
-    "gulp-autoprefixer": "*",
-    "gulp-cache": "*",
-    "del": "*",
-    "gulp-csso": "*",
-    "gulp-filter": "*",
-    "gulp-imagemin": "*",
-    "gulp-jshint": "*",
-    "gulp-ruby-sass": "*",
-    "gulp-shell": "*",
-    "gulp-size": "*",
-    "gulp-uglify": "*",
-    "gulp-useref": "*",
-    "jshint-stylish": "*",
-    "wiredep": "*"
-
+    "gulp": "3.8.6",
+    "gulp-autoprefixer": "0.0.8",
+    "gulp-cache": "0.2.0",
+    "del": "0.1.1",
+    "gulp-csso": "0.2.9",
+    "gulp-filter": "0.5.0",
+    "gulp-imagemin": "0.6.1",
+    "gulp-jshint": "1.7.1",
+    "gulp-ruby-sass": "0.6.0",
+    "gulp-shell": "0.2.8",
+    "gulp-size": "0.4.0",
+    "gulp-uglify": "0.3.1",
+    "gulp-useref": "0.5.0",
+    "jshint-stylish": "0.4.0",
+    "wiredep": "1.8.2"
   },
   "engines": {
     "node": ">=0.10.0"
