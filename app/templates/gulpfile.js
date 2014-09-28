@@ -61,11 +61,6 @@ gulp.task('db-pull', ['db-dump-remote'], $.shell.task([
   'vagrant ssh --command "mysql -uroot -proot <%= _.slugify(slug) %> < /vagrant/.tmp/remote.sql"'
 ]));
 
-gulp.task('db-dump', ['clean', 'db-dump-local', 'db-dump-remote'], function() {
-  return gulp.src(['.tmp/local.sql', '.tmp/remote.sql'])
-    .pipe(gulp.dest('databases'));
-});
-
 gulp.task('styles', function() {
   return gulp.src([paths.styles, 'bower_components/**/*.scss'])
     .pipe($.plumber())
@@ -74,6 +69,7 @@ gulp.task('styles', function() {
       precision: 10
     }))
     .pipe($.autoprefixer('last 1 version'))
+    .pipe($.csso())
     .pipe(gulp.dest('public/styles'))
 });
 
@@ -82,6 +78,7 @@ gulp.task('scripts', function() {
     .pipe($.jshint())
     .pipe($.jshint.reporter('jshint-stylish'))
     .pipe($.jshint.reporter('fail'))
+    .pipe($.uglify())
     .pipe(gulp.dest('public/scripts'));
 });
 
@@ -100,46 +97,39 @@ gulp.task('extras', function() {
 });
 
 gulp.task('clean', function(cb) {
-  require('del').bind(null, paths.clean)
+  del(paths.clean, cb);
 });
 
 gulp.task('build', ['clean'], function() {
   gulp.start('build-useref');
 });
 
-gulp.task('build-useref', ['images', 'styles', 'extras'], function() {
-  var jsFilter = filter('**/*.js');
-  var cssFilter = filter('**/*.css');
-
+gulp.task('html', function() {
   return gulp.src(paths.html)
-    .pipe($.useref.assets({searchPath: '{public,app}'}))
-    .pipe($.jsFilter)
-    .pipe($.uglify())
-    .pipe($.jsFilter.restore())
-    .pipe($.cssFilter)
-    .pipe($.csso())
-    .pipe($.cssFilter.restore())
-    .pipe($.useref.restore())
+    .pipe(gulp.dest('public/templates'));
+})
+
+gulp.task('build-useref', ['html', 'images', 'scripts', 'styles', 'extras'], function() {
+  var assets = $.useref.assets({searchPath: '{public, app}'});
+
+  return gulp.src(paths.index)
+    .pipe(assets)
+    .pipe(assets.restore())
     .pipe($.useref())
-    .pipe(gulp.dest('public'));
+    .pipe(gulp.dest('public/templates'));
 });
 
 gulp.task('watch', function() {
-  gulp.src(paths.index($.inject('http://localhost:35729/livereload.js')));
-
-  gulp.start('extras')
-    .start('scripts')
-    .start('images')
-    .start('build-useref');
+  gulp.start('build-useref');
 
   livereload.listen();
-  gulp.watch('public/**/*')
-    .on('change', $.livereload.changed);
+  gulp.watch('public/**/*', $.livereload.changed);
 
   gulp.watch(paths.extras, ['extras']);
-  gulp.watch(paths.html, ['build-useref']);
-  gulp.watch(paths.scripts, ['scripts', 'build-useref']);
-  gulp.watch(paths.styles, ['build-useref']);
+  gulp.watch(paths.html, ['html']);
+  gulp.watch(paths.index, ['build-useref']);
+  gulp.watch(paths.scripts, ['scripts']);
+  gulp.watch(paths.styles, ['styles']);
   gulp.watch(paths.images, ['images']);
 });
 

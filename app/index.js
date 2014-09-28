@@ -13,7 +13,7 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
 
     this.log(yosay('You\'re using Francis Bond\'s fantastic Craft generator.'));
 
-    this.prompt({
+    this.prompt([{
       name: 'slug',
       message: 'Enter a unique slug for this project',
     }, {
@@ -33,7 +33,7 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
         value: 'includejQuery',
         checked: true
       }]
-    }, function(props) {
+    }], function(props) {
       this.slug = props.slug;
       this.remote = props.remote;
 

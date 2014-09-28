@@ -16,16 +16,9 @@ generator-francis-craft
 * Image optimization (png, jpg, gif)
 * Optionally include inuit.css and jQuery
 
-### Todo
-
-* Add support for generating a Modernizr build
-* Generate CSS folder architecture
-* Add support for wiring Bower components automatically
-* Add support for LiveReload
-
 ## Installation
 
-* Install: `npm install -g angusfretwell/generator-francis-craft`
+* Install: `npm install -g francisbond/generator-francis-craft`
 * Run: `yo francis-craft`
 * Run `gulp build` for building and `gulp watch` for preview
 * Use `gulp deploy-init` to initalise a deployment environment
