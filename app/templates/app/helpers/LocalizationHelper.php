@@ -2,29 +2,37 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Class LocalizationHelper
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- *
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.helpers
+ * @since     1.0
  */
 class LocalizationHelper
 {
-	private static $_translations;
+	// Properties
+	// =========================================================================
 
 	/**
-	 * Will take a decimal value, will remove the locale specific grouping separator and change the locale specific
-	 * decimal so a dot.
+	 * @var
+	 */
+	private static $_translations;
+
+	// Public Methods
+	// =========================================================================
+
+	/**
+	 * Normalizes a user-submitted number for use in code and/or to be saved into the database.
 	 *
-	 * @static
-	 * @param $number
-	 * @return mixed
+	 * Group symbols are removed (e.g. 1,000,000 => 1000000), and decimals are converted to a periods, if the current
+	 * locale uses something else.
+	 *
+	 * @param mixed $number The number that should be normalized.
+	 *
+	 * @return mixed The normalized number.
 	 */
 	public static function normalizeNumber($number)
 	{
@@ -35,7 +43,10 @@ class LocalizationHelper
 			$decimalSymbol = $languageData->getNumberSymbol('decimal');
 			$groupSymbol = $languageData->getNumberSymbol('group');
 
+			// Remove any group symbols
 			$number = str_replace($groupSymbol, '', $number);
+
+			// Use a period for the decimal symbol
 			$number = str_replace($decimalSymbol, '.', $number);
 		}
 
@@ -43,9 +54,11 @@ class LocalizationHelper
 	}
 
 	/**
-	 * Will attempt to check Yii's translation files for more to least specific translation of framework strings.
+	 * Looks for a missing translation string in Yii's core translations.
 	 *
 	 * @param \CMissingTranslationEvent $event
+	 *
+	 * @return null
 	 */
 	public static function findMissingTranslation(\CMissingTranslationEvent $event)
 	{

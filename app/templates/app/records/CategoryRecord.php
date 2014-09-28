@@ -2,21 +2,23 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Category record.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Category record
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.records
+ * @since     1.0
  */
 class CategoryRecord extends BaseRecord
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
+	 * @inheritDoc BaseRecord::getTableName()
+	 *
 	 * @return string
 	 */
 	public function getTableName()
@@ -25,6 +27,8 @@ class CategoryRecord extends BaseRecord
 	}
 
 	/**
+	 * @inheritDoc BaseRecord::defineRelations()
+	 *
 	 * @return array
 	 */
 	public function defineRelations()

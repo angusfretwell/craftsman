@@ -2,45 +2,55 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Class TagsFieldType
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Tags fieldtype
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.fieldtypes
+ * @since     1.2
  */
 class TagsFieldType extends BaseElementFieldType
 {
-	private $_tagGroupId;
+	// Properties
+	// =========================================================================
 
 	/**
-	 * @access protected
-	 * @var string $elementType The element type this field deals with.
+	 * The element type this field deals with.
+	 *
+	 * @var string $elementType
 	 */
 	protected $elementType = 'Tag';
 
 	/**
-	 * @access protected
-	 * @var bool $allowMultipleSources Whether the field settings should allow multiple sources to be selected.
+	 * Whether the field settings should allow multiple sources to be selected.
+	 *
+	 * @var bool $allowMultipleSources
 	 */
 	protected $allowMultipleSources = false;
 
 	/**
-	 * @access protected
-	 * @var bool $allowLimit Whether to allow the Limit setting.
+	 * Whether to allow the Limit setting.
+	 *
+	 * @var bool $allowLimit
 	 */
 	protected $allowLimit = false;
 
 	/**
-	 * Returns the field's input HTML.
+	 * @var
+	 */
+	private $_tagGroupId;
+
+	// Public Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc IFieldType::getInputHtml()
 	 *
 	 * @param string $name
 	 * @param mixed  $criteria
+	 *
 	 * @return string
 	 */
 	public function getInputHtml($name, $criteria)
@@ -72,10 +82,12 @@ class TagsFieldType extends BaseElementFieldType
 		}
 	}
 
+	// Private Methods
+	// =========================================================================
+
 	/**
 	 * Returns the tag group associated with this field.
 	 *
-	 * @access private
 	 * @return TagGroupModel|null
 	 */
 	private function _getTagGroup()
@@ -91,7 +103,6 @@ class TagsFieldType extends BaseElementFieldType
 	/**
 	 * Returns the tag group ID this field is associated with.
 	 *
-	 * @access private
 	 * @return int|false
 	 */
 	private function _getTagGroupId()

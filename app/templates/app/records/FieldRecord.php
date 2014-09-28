@@ -2,55 +2,54 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Field record class.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Field record class
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.records
+ * @since     1.0
  */
 class FieldRecord extends BaseRecord
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var array
+	 */
 	protected $reservedHandleWords = array(
 		'archived',
-		'author',
-		'authorId',
 		'children',
 		'dateCreated',
 		'dateUpdated',
 		'enabled',
-		'expiryDate',
-		'firstName',
-		'handle',
 		'id',
-		'lastName',
 		'link',
-		'img',
 		'locale',
-		'name',
 		'parents',
-		'postDate',
-		'section',
 		'siblings',
-		'type',
 		'uid',
 		'uri',
 		'url',
 		'ref',
-		'size',
 		'status',
 		'title',
 	);
 
+	/**
+	 * @var
+	 */
 	private $_oldHandle;
 
+	// Public Methods
+	// =========================================================================
+
 	/**
-	 * Init
+	 * Initializes the application component.
+	 *
+	 * @return null
 	 */
 	public function init()
 	{
@@ -62,6 +61,8 @@ class FieldRecord extends BaseRecord
 
 	/**
 	 * Store the old handle.
+	 *
+	 * @return null
 	 */
 	public function storeOldHandle()
 	{
@@ -79,6 +80,8 @@ class FieldRecord extends BaseRecord
 	}
 
 	/**
+	 * @inheritDoc BaseRecord::getTableName()
+	 *
 	 * @return string
 	 */
 	public function getTableName()
@@ -87,23 +90,8 @@ class FieldRecord extends BaseRecord
 	}
 
 	/**
-	 * @access protected
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'name'         => array(AttributeType::Name, 'required' => true),
-			'handle'       => array(AttributeType::Handle, 'required' => true, 'reservedWords' => $this->reservedHandleWords),
-			'context'      => array(AttributeType::String, 'default' => 'global', 'required' => true),
-			'instructions' => array(AttributeType::String, 'column' => ColumnType::Text),
-			'translatable' => AttributeType::Bool,
-			'type'         => array(AttributeType::ClassName, 'required' => true),
-			'settings'     => AttributeType::Mixed,
-		);
-	}
-
-	/**
+	 * @inheritDoc BaseRecord::defineRelations()
+	 *
 	 * @return array
 	 */
 	public function defineRelations()
@@ -114,6 +102,8 @@ class FieldRecord extends BaseRecord
 	}
 
 	/**
+	 * @inheritDoc BaseRecord::defineIndexes()
+	 *
 	 * @return array
 	 */
 	public function defineIndexes()
@@ -125,6 +115,8 @@ class FieldRecord extends BaseRecord
 	}
 
 	/**
+	 * @inheritDoc BaseRecord::scopes()
+	 *
 	 * @return array
 	 */
 	public function scopes()
@@ -143,9 +135,31 @@ class FieldRecord extends BaseRecord
 	{
 		$attributeConfigs = parent::getAttributeConfigs();
 
-		// Field handles must be <= 58 chars so that with "field_" prepended, they're <= 64 chars (MySQL's column name limit).
+		// Field handles must be <= 58 chars so that with "field_" prepended, they're <= 64 chars (MySQL's column
+		// name limit).
 		$attributeConfigs['handle']['maxLength'] = 64 - strlen(craft()->content->fieldColumnPrefix);
 
 		return $attributeConfigs;
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc BaseRecord::defineAttributes()
+	 *
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'name'         => array(AttributeType::Name, 'required' => true),
+			'handle'       => array(AttributeType::Handle, 'required' => true, 'reservedWords' => $this->reservedHandleWords),
+			'context'      => array(AttributeType::String, 'default' => 'global', 'required' => true),
+			'instructions' => array(AttributeType::String, 'column' => ColumnType::Text),
+			'translatable' => AttributeType::Bool,
+			'type'         => array(AttributeType::ClassName, 'required' => true),
+			'settings'     => AttributeType::Mixed,
+		);
 	}
 }

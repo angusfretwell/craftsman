@@ -2,30 +2,61 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * The EntriesController class is a controller that handles various entry related tasks such as retrieving, saving,
+ * swapping between entry types, previewing, deleting and sharing entries.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * Note that all actions in the controller except {@link actionViewSharedEntry} require an authenticated Craft session
+ * via {@link BaseController::allowAnonymous}.
+ *
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.controllers
+ * @since     1.0
  */
-
-/**
- * Handles entry tasks
- */
-class EntriesController extends BaseController
+class EntriesController extends BaseEntriesController
 {
+	// Properties
+	// =========================================================================
+
 	/**
-	 * Edit an entry.
+	 * If set to false, you are required to be logged in to execute any of the given controller's actions.
+	 *
+	 * If set to true, anonymous access is allowed for all of the given controller's actions.
+	 *
+	 * If the value is an array of action names, then you must be logged in for any action method except for the ones in
+	 * the array list.
+	 *
+	 * If you have a controller that where the majority of action methods will be anonymous, but you only want require
+	 * login on a few, it's best to use {@link UserSessionService::requireLogin() craft()->userSession->requireLogin()}
+	 * in the individual methods.
+	 *
+	 * @var bool
+	 */
+	protected $allowAnonymous = array('actionViewSharedEntry');
+
+	// Public Methods
+	// =========================================================================
+
+	/**
+	 * Called when a user beings up an entry for editing before being displayed.
 	 *
 	 * @param array $variables
+	 *
 	 * @throws HttpException
+	 * @return null
 	 */
 	public function actionEditEntry(array $variables = array())
 	{
 		$this->_prepEditEntryVariables($variables);
+
+		// Make sure they have permission to edit this entry
+		$this->enforceEditEntryPermissions($variables['entry']);
+
 		$currentUser = craft()->userSession->getUser();
+
+		$variables['permissionSuffix'] = ':'.$variables['entry']->sectionId;
 
 		if (craft()->getEdition() >= Craft::Client && $variables['section']->type != SectionType::Single)
 		{
@@ -44,7 +75,8 @@ class EntriesController extends BaseController
 			}
 
 			$authorOptionCriteria = craft()->elements->getCriteria(ElementType::User);
-			$authorOptionCriteria->can = 'createEntries:'.$variables['section']->id;
+			$authorOptionCriteria->can = 'editEntries'.$variables['permissionSuffix'];
+			$authorOptionCriteria->limit = null;
 
 			if ($variables['entry']->authorId)
 			{
@@ -185,13 +217,13 @@ class EntriesController extends BaseController
 			{
 				case 'EntryDraft':
 				{
-					$variables['revisionLabel'] = Craft::t('Draft {id}', array('id' => $variables['draftId']));
+					$variables['revisionLabel'] = $variables['entry']->name;
 					break;
 				}
 
 				case 'EntryVersion':
 				{
-					$variables['revisionLabel'] = Craft::t('Version {id}', array('id' => $variables['versionId']));
+					$variables['revisionLabel'] = Craft::t('Version {num}', array('num' => $variables['entry']->num));
 					break;
 				}
 
@@ -208,7 +240,8 @@ class EntriesController extends BaseController
 		}
 		else
 		{
-			$variables['title'] = Craft::t($variables['entry']->title);
+			$variables['docTitle'] = Craft::t($variables['entry']->title);
+			$variables['title'] = HtmlHelper::encode(Craft::t($variables['entry']->title));
 
 			if (craft()->getEdition() >= Craft::Client && $variables['entry']->getClassHandle() != 'Entry')
 			{
@@ -259,36 +292,57 @@ class EntriesController extends BaseController
 		}
 
 		// Enable preview mode?
-		$variables['showPreviewBtn'] = false;
-
-		if (!craft()->request->isMobileBrowser(true) && $variables['section']->hasUrls)
+		if (!craft()->request->isMobileBrowser(true) && craft()->sections->isSectionTemplateValid($variables['section']))
 		{
-			// Make sure the section's template actually exists
-			$templatesPath = craft()->path->getTemplatesPath();
-			craft()->path->setTemplatesPath(craft()->path->getSiteTemplatesPath());
+			craft()->templates->includeJsResource('js/LivePreview.js');
+			craft()->templates->includeJs('Craft.livePreview = new Craft.LivePreview('.JsonHelper::encode($variables['entry']->getUrl()).', "'.$variables['entry']->locale.'");');
+			$variables['showPreviewBtn'] = true;
 
-			try
+			// Should we show the Share button too?
+			if ($variables['entry']->id)
 			{
-				$templateExists = (bool) craft()->templates->findTemplate($variables['section']->template);
-			}
-			catch (TemplateLoaderException $e)
-			{
-				$templateExists = false;
-			}
+				$classHandle = $variables['entry']->getClassHandle();
 
-			craft()->path->setTemplatesPath($templatesPath);
+				// If we're looking at the live version of an entry, just use
+				// the entry's main URL as its share URL
+				if ($classHandle == 'Entry' && $variables['entry']->getStatus() == EntryModel::LIVE)
+				{
+					$variables['shareUrl'] = $variables['entry']->getUrl();
+				}
+				else
+				{
+					switch ($classHandle)
+					{
+						case 'EntryDraft':
+						{
+							$shareParams = array('draftId' => $variables['entry']->draftId);
+							break;
+						}
+						case 'EntryVersion':
+						{
+							$shareParams = array('versionId' => $variables['entry']->versionId);
+							break;
+						}
+						default:
+						{
+							$shareParams = array('entryId' => $variables['entry']->id, 'locale' => $variables['entry']->locale);
+							break;
+						}
+					}
 
-			if ($templateExists)
-			{
-				craft()->templates->includeJsResource('js/LivePreview.js');
-				craft()->templates->includeJs('Craft.livePreview = new Craft.LivePreview('.JsonHelper::encode($variables['entry']->getUrl()).', "'.$variables['entry']->locale.'");');
-				$variables['showPreviewBtn'] = true;
+					$variables['shareUrl'] = UrlHelper::getActionUrl('entries/shareEntry', $shareParams);
+				}
 			}
+		}
+		else
+		{
+			$variables['showPreviewBtn'] = false;
 		}
 
 		// Set the base CP edit URL
-		// - Can't just use the entry's getCpEditUrl() because that might include the locale ID when we don't want it
-		$variables['baseCpEditUrl'] = 'entries/'.$variables['section']->handle.'/{id}';
+
+		// Can't just use the entry's getCpEditUrl() because that might include the locale ID when we don't want it
+		$variables['baseCpEditUrl'] = 'entries/'.$variables['section']->handle.'/{id}-{slug}';
 
 		// Set the "Continue Editing" URL
 		$variables['continueEditingUrl'] = $variables['baseCpEditUrl'] .
@@ -297,8 +351,8 @@ class EntriesController extends BaseController
 
 		// Can the user delete the entry?
 		$variables['canDeleteEntry'] = $variables['entry']->id && (
-			($variables['entry']->authorId == $currentUser->id && $currentUser->can('deleteEntries:'.$variables['entry']->sectionId)) ||
-			($variables['entry']->authorId != $currentUser->id && $currentUser->can('deletePeerEntries:'.$variables['entry']->sectionId))
+			($variables['entry']->authorId == $currentUser->id && $currentUser->can('deleteEntries'.$variables['permissionSuffix'])) ||
+			($variables['entry']->authorId != $currentUser->id && $currentUser->can('deletePeerEntries'.$variables['permissionSuffix']))
 		);
 
 		// Include translations
@@ -310,15 +364,21 @@ class EntriesController extends BaseController
 	}
 
 	/**
+	 * Switches between two entry types.
 	 *
+	 * @return null
 	 */
 	public function actionSwitchEntryType()
 	{
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$variables['sectionId'] = craft()->request->getRequiredPost('sectionId');
-		$variables['entry'] = $this->_populateEntryModel();
+		$entry = $this->_getEntryModel();
+		$this->enforceEditEntryPermissions($entry);
+		$this->_populateEntryModel($entry);
+
+		$variables['sectionId'] = $entry->sectionId;
+		$variables['entry'] = $entry;
 		$variables['showEntryTypes'] = true;
 
 		$this->_prepEditEntryVariables($variables);
@@ -335,86 +395,87 @@ class EntriesController extends BaseController
 
 	/**
 	 * Previews an entry.
+	 *
+	 * @throws HttpException
+	 * @return null
 	 */
 	public function actionPreviewEntry()
 	{
 		$this->requirePostRequest();
 
-		craft()->setLanguage(craft()->request->getPost('locale'));
+		// Are we previewing a version?
+		$versionId = craft()->request->getPost('versionId');
 
-		$entry = $this->_populateEntryModel();
-		$section = $entry->getSection();
-		$type = $entry->getType();
-
-		if ($section && $type)
+		if ($versionId)
 		{
-			if (!$entry->postDate)
+			$entry = craft()->entryRevisions->getVersionById($versionId);
+
+			if (!$entry)
 			{
-				$entry->postDate = new DateTime();
+				throw new HttpException(404);
 			}
 
-			craft()->templates->getTwig()->disableStrictVariables();
-
-			$this->renderTemplate($section->template, array(
-				'entry' => $entry
-			));
+			$this->enforceEditEntryPermissions($entry);
+		}
+		else
+		{
+			$entry = $this->_getEntryModel();
+			$this->enforceEditEntryPermissions($entry);
+			$this->_populateEntryModel($entry);
 		}
 
-		craft()->end();
+		$this->_showEntry($entry);
 	}
 
 	/**
 	 * Saves an entry.
+	 *
+	 * @return null
 	 */
 	public function actionSaveEntry()
 	{
 		$this->requirePostRequest();
 
-		$entry = $this->_populateEntryModel();
+		$entry = $this->_getEntryModel();
 
-		// Make sure the user is allowed to edit entries in this section
-		craft()->userSession->requirePermission('editEntries:'.$entry->sectionId);
+		// Permission enforcement
+		$this->enforceEditEntryPermissions($entry);
+		$userSessionService = craft()->userSession;
+		$currentUser = $userSessionService->getUser();
 
-		if (!$entry->id)
+		if ($entry->id)
 		{
-			// Make sure the user is allowed to create entries in this section
-			craft()->userSession->requirePermission('createEntries:'.$entry->sectionId);
-
-			if ($entry->enabled)
-			{
-				// Make sure the user is allowed to make live changes in this section
-				if (!craft()->userSession->checkPermission('publishEntries:'.$entry->sectionId))
-				{
-					// Let them save it, but as a disabled entry.
-					$entry->enabled = false;
-				}
-			}
-		}
-		else
-		{
-			if ($entry->enabled)
-			{
-				// Make sure the user is allowed to make live changes in this section
-				craft()->userSession->requirePermission('publishEntries:'.$entry->sectionId);
-			}
-
 			// Is this another user's entry (and it's not a Single)?
 			if (
-				$entry->authorId != craft()->userSession->getUser()->id &&
+				$entry->authorId != $currentUser->id &&
 				$entry->getSection()->type != SectionType::Single
 			)
 			{
-				// Make sure they have permission to edit those
-				craft()->userSession->requirePermission('editPeerEntries:'.$entry->sectionId);
-
 				if ($entry->enabled)
 				{
 					// Make sure they have permission to make live changes to those
-					craft()->userSession->requirePermission('publishPeerEntries:'.$entry->sectionId);
+					$userSessionService->requirePermission('publishPeerEntries:'.$entry->sectionId);
 				}
 			}
 		}
 
+		// Populate the entry with post data
+		$this->_populateEntryModel($entry);
+
+		// Even more permission enforcement
+		if ($entry->enabled)
+		{
+			if ($entry->id)
+			{
+				$userSessionService->requirePermission('publishEntries:'.$entry->sectionId);
+			}
+			else if (!$currentUser->can('publishEntries:'.$entry->sectionId))
+			{
+				$entry->enabled = false;
+			}
+		}
+
+		// Save the entry (finally!)
 		if (craft()->entries->saveEntry($entry))
 		{
 			if (craft()->request->isAjaxRequest())
@@ -429,7 +490,7 @@ class EntriesController extends BaseController
 			}
 			else
 			{
-				craft()->userSession->setNotice(Craft::t('Entry saved.'));
+				$userSessionService->setNotice(Craft::t('Entry saved.'));
 
 				if (isset($_POST['redirect']) && mb_strpos($_POST['redirect'], '{entryId}') !== false)
 				{
@@ -450,7 +511,7 @@ class EntriesController extends BaseController
 			}
 			else
 			{
-				craft()->userSession->setError(Craft::t('Couldn’t save entry.'));
+				$userSessionService->setError(Craft::t('Couldn’t save entry.'));
 
 				// Send the entry back to the template
 				craft()->urlManager->setRouteVariables(array(
@@ -462,6 +523,8 @@ class EntriesController extends BaseController
 
 	/**
 	 * Deletes an entry.
+	 *
+	 * @return null
 	 */
 	public function actionDeleteEntry()
 	{
@@ -512,12 +575,117 @@ class EntriesController extends BaseController
 	}
 
 	/**
+	 * Redirects the client to a URL for viewing an entry/draft/version on the front end.
+	 *
+	 * @param mixed $entryId
+	 * @param mixed $locale
+	 * @param mixed $draftId
+	 * @param mixed $versionId
+	 *
+	 * @throws HttpException
+	 * @return null
+	 */
+	public function actionShareEntry($entryId = null, $locale = null, $draftId = null, $versionId = null)
+	{
+		if ($entryId)
+		{
+			$entry = craft()->entries->getEntryById($entryId, $locale);
+
+			if (!$entry)
+			{
+				throw new HttpException(404);
+			}
+
+			$params = array('entryId' => $entryId, 'locale' => $entry->locale);
+		}
+		else if ($draftId)
+		{
+			$entry = craft()->entryRevisions->getDraftById($draftId);
+
+			if (!$entry)
+			{
+				throw new HttpException(404);
+			}
+
+			$params = array('draftId' => $draftId);
+		}
+		else if ($versionId)
+		{
+			$entry = craft()->entryRevisions->getVersionById($versionId);
+
+			if (!$entry)
+			{
+				throw new HttpException(404);
+			}
+
+			$params = array('versionId' => $versionId);
+		}
+		else
+		{
+			throw new HttpException(404);
+		}
+
+		// Make sure they have permission to be viewing this entry
+		$this->enforceEditEntryPermissions($entry);
+
+		// Make sure the entry actually can be viewed
+		if (!craft()->sections->isSectionTemplateValid($entry->getSection()))
+		{
+			throw new HttpException(404);
+		}
+
+		// Create the token and redirect to the entry URL with the token in place
+		$token = craft()->tokens->createToken(array('action' => 'entries/viewSharedEntry', 'params' => $params));
+		$url = UrlHelper::getUrlWithToken($entry->getUrl(), $token);
+		craft()->request->redirect($url);
+	}
+
+	/**
+	 * Shows an entry/draft/version based on a token.
+	 *
+	 * @param mixed $entryId
+	 * @param mixed $locale
+	 * @param mixed $draftId
+	 * @param mixed $versionId
+	 *
+	 * @throws HttpException
+	 * @return null
+	 */
+	public function actionViewSharedEntry($entryId = null, $locale = null, $draftId = null, $versionId = null)
+	{
+		$this->requireToken();
+
+		if ($entryId)
+		{
+			$entry = craft()->entries->getEntryById($entryId, $locale);
+		}
+		else if ($draftId)
+		{
+			$entry = craft()->entryRevisions->getDraftById($draftId);
+		}
+		else if ($versionId)
+		{
+			$entry = craft()->entryRevisions->getVersionById($versionId);
+		}
+
+		if (!$entry)
+		{
+			throw new HttpException(404);
+		}
+
+		$this->_showEntry($entry);
+	}
+
+	// Private Methods
+	// =========================================================================
+
+	/**
 	 * Preps entry edit variables.
 	 *
-	 * @access private
 	 * @param array &$variables
-	 * @throws HttpException
-	 * @throws Exception
+	 *
+	 * @throws HttpException|Exception
+	 * @return null
 	 */
 	private function _prepEditEntryVariables(&$variables)
 	{
@@ -535,11 +703,6 @@ class EntriesController extends BaseController
 			throw new HttpException(404);
 		}
 
-		$variables['permissionSuffix'] = ':'.$variables['section']->id;
-
-		// Make sure the user is allowed to edit entries in this section
-		craft()->userSession->requirePermission('editEntries'.$variables['permissionSuffix']);
-
 		if (craft()->isLocalized())
 		{
 			// Only use the locales that the user has access to
@@ -554,7 +717,7 @@ class EntriesController extends BaseController
 
 		if (!$variables['localeIds'])
 		{
-			throw new HttpException(404);
+			throw new HttpException(403, Craft::t('Your account doesn’t have permission to edit any of this section’s locales.'));
 		}
 
 		if (empty($variables['localeId']))
@@ -609,33 +772,6 @@ class EntriesController extends BaseController
 				{
 					$variables['entry']->locale = $variables['localeId'];
 				}
-			}
-		}
-
-		// Is it a new entry?
-		if (!$variables['entry']->id)
-		{
-			// Make sure they have permission to create new entries in this section
-			craft()->userSession->requirePermission('createEntries'.$variables['permissionSuffix']);
-		}
-		else
-		{
-			// If it's another user's entry (and it's not a Single), make sure they have permission to edit those
-			if (
-				$variables['entry']->authorId != craft()->userSession->getUser()->id &&
-				$variables['entry']->getSection()->type != SectionType::Single
-			)
-			{
-				craft()->userSession->requirePermission('editPeerEntries'.$variables['permissionSuffix']);
-			}
-
-			// If it's another user's draft, make sure they have permission to edit those
-			if (
-				$variables['entry']->getClassHandle() == 'EntryDraft' &&
-				$variables['entry']->creatorId != craft()->userSession->getUser()->id
-			)
-			{
-				craft()->userSession->requirePermission('editPeerEntryDrafts'.$variables['permissionSuffix']);
 			}
 		}
 
@@ -696,14 +832,12 @@ class EntriesController extends BaseController
 	}
 
 	/**
-	 * Populates an EntryModel with post data.
+	 * Fetches or creates an EntryModel.
 	 *
-	 * @access private
-	 * @throws HttpException
 	 * @throws Exception
 	 * @return EntryModel
 	 */
-	private function _populateEntryModel()
+	private function _getEntryModel()
 	{
 		$entryId = craft()->request->getPost('entryId');
 		$localeId = craft()->request->getPost('locale');
@@ -720,6 +854,7 @@ class EntriesController extends BaseController
 		else
 		{
 			$entry = new EntryModel();
+			$entry->sectionId = craft()->request->getRequiredPost('sectionId');
 
 			if ($localeId)
 			{
@@ -727,8 +862,19 @@ class EntriesController extends BaseController
 			}
 		}
 
+		return $entry;
+	}
+
+	/**
+	 * Populates an EntryModel with post data.
+	 *
+	 * @param EntryModel $entry
+	 *
+	 * @return null
+	 */
+	private function _populateEntryModel(EntryModel $entry)
+	{
 		// Set the entry attributes, defaulting to the existing values for whatever is missing from the post data
-		$entry->sectionId     = craft()->request->getPost('sectionId', $entry->sectionId);
 		$entry->typeId        = craft()->request->getPost('typeId',    $entry->typeId);
 		$entry->authorId      = craft()->request->getPost('author',    ($entry->authorId ? $entry->authorId : craft()->userSession->getUser()->id));
 		$entry->slug          = craft()->request->getPost('slug',      $entry->slug);
@@ -742,8 +888,42 @@ class EntriesController extends BaseController
 		$fieldsLocation = craft()->request->getParam('fieldsLocation', 'fields');
 		$entry->setContentFromPost($fieldsLocation);
 
-		$entry->parentId = craft()->request->getPost('parentId');
+		$entry->parentId      = craft()->request->getPost('parentId');
+		$entry->revisionNotes = craft()->request->getPost('revisionNotes');
+	}
 
-		return $entry;
+	/**
+	 * Displays an entry.
+	 *
+	 * @param EntryModel $entry
+	 *
+	 * @throws HttpException
+	 * @return null
+	 */
+	private function _showEntry(EntryModel $entry)
+	{
+		$section = $entry->getSection();
+		$type = $entry->getType();
+
+		if ($section && $type)
+		{
+			craft()->setLanguage($entry->locale);
+
+			if (!$entry->postDate)
+			{
+				$entry->postDate = new DateTime();
+			}
+
+			craft()->templates->getTwig()->disableStrictVariables();
+
+			$this->renderTemplate($section->template, array(
+				'entry' => $entry
+			));
+		}
+		else
+		{
+			Craft::log('Attempting to preview an entry that doesn’t have a section/type', LogLevel::Error);
+			throw new HttpException(404);
+		}
 	}
 }

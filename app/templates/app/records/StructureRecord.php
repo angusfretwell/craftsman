@@ -2,21 +2,23 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Class StructureRecord
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- *
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.records
+ * @since     2.0
  */
 class StructureRecord extends BaseRecord
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
+	 * @inheritDoc BaseRecord::getTableName()
+	 *
 	 * @return string
 	 */
 	public function getTableName()
@@ -25,7 +27,23 @@ class StructureRecord extends BaseRecord
 	}
 
 	/**
-	 * @access protected
+	 * @inheritDoc BaseRecord::defineRelations()
+	 *
+	 * @return array
+	 */
+	public function defineRelations()
+	{
+		return array(
+			'elements' => array(static::HAS_MANY, 'StructureElementRecord', 'structureId'),
+		);
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc BaseRecord::defineAttributes()
+	 *
 	 * @return array
 	 */
 	protected function defineAttributes()
@@ -33,16 +51,6 @@ class StructureRecord extends BaseRecord
 		return array(
 			'maxLevels'      => array(AttributeType::Number, 'min' => 1, 'column' => ColumnType::SmallInt),
 			'movePermission' => AttributeType::String,
-		);
-	}
-
-	/**
-	 * @return array
-	 */
-	public function defineRelations()
-	{
-		return array(
-			'elements' => array(static::HAS_MANY, 'StructureElementRecord', 'structureId'),
 		);
 	}
 }

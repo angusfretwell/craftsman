@@ -1,21 +1,43 @@
 <?php
 namespace Craft;
- 
+
 /**
+ * Class StringTemplate
  *
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.etc.templating
+ * @since     1.0
  */
 class StringTemplate
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var null|string
+	 */
 	public $cacheKey;
+
+	/**
+	 * @var null|string
+	 */
 	public $template;
- 
+
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Constructor
 	 *
 	 * @param string $cacheKey
 	 * @param string $template
+	 *
+	 * @return StringTemplate
 	 */
-	function __construct($cacheKey = null, $template = null)
+	public function __construct($cacheKey = null, $template = null)
 	{
 		$this->cacheKey = $cacheKey;
 		$this->template = $template;
@@ -26,7 +48,7 @@ class StringTemplate
 	 *
 	 * @return string
 	 */
-	function __toString()
+	public function __toString()
 	{
 		return $this->cacheKey;
 	}

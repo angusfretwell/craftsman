@@ -2,27 +2,36 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * A temporary asset source type class.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Temp source type class
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.assetsourcetypes
+ * @since     2.0
  */
 class TempAssetSourceType extends LocalAssetSourceType
 {
-	protected $_isSourceLocal = true;
+	// Constants
+	// =========================================================================
 
 	const sourceName = "Temporary source";
 	const sourceType = "Temp";
 
+	// Properties
+	// =========================================================================
+
 	/**
-	 * Returns the name of the source type.
+	 * @var bool
+	 */
+	protected $isSourceLocal = true;
+
+	// Public Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc IComponentType::getName()
 	 *
 	 * @return string
 	 */
@@ -32,7 +41,7 @@ class TempAssetSourceType extends LocalAssetSourceType
 	}
 
 	/**
-	 * Returns the component's settings HTML.
+	 * @inheritDoc ISavableComponentType::getSettingsHtml()
 	 *
 	 * @return string|null
 	 */
@@ -42,9 +51,10 @@ class TempAssetSourceType extends LocalAssetSourceType
 	}
 
 	/**
-	 * Preps the settings before they're saved to the database.
+	 * @inheritDoc ISavableComponentType::prepSettings()
 	 *
 	 * @param array $settings
+	 *
 	 * @return array
 	 */
 	public function prepSettings($settings)
@@ -53,11 +63,12 @@ class TempAssetSourceType extends LocalAssetSourceType
 	}
 
 	/**
-	 * Starts an indexing session.
+	 * @inheritDoc BaseAssetSourceType::startIndex()
 	 *
 	 * @param $sessionId
-	 * @return array
+	 *
 	 * @throws Exception
+	 * @return array
 	 */
 	public function startIndex($sessionId)
 	{
@@ -65,12 +76,13 @@ class TempAssetSourceType extends LocalAssetSourceType
 	}
 
 	/**
-	 * Process an indexing session.
+	 * @inheritDoc BaseAssetSourceType::processIndex()
 	 *
 	 * @param $sessionId
 	 * @param $offset
-	 * @return mixed
+	 *
 	 * @throws Exception
+	 * @return mixed
 	 */
 	public function processIndex($sessionId, $offset)
 	{
@@ -78,7 +90,7 @@ class TempAssetSourceType extends LocalAssetSourceType
 	}
 
 	/**
-	 * Cannot be selected. Ever.
+	 * @inheritDoc IComponentType::isSelectable()
 	 *
 	 * @return bool
 	 */

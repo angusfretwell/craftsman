@@ -2,22 +2,22 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Class DateFieldType
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- *
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.fieldtypes
+ * @since     1.0
  */
 class DateFieldType extends BaseFieldType
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
-	 * Returns the type of field this is.
+	 * @inheritDoc IComponentType::getName()
 	 *
 	 * @return string
 	 */
@@ -27,7 +27,7 @@ class DateFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Returns the content attribute config.
+	 * @inheritDoc IFieldType::defineContentAttribute()
 	 *
 	 * @return mixed
 	 */
@@ -37,21 +37,7 @@ class DateFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Defines the settings.
-	 *
-	 * @access protected
-	 * @return array
-	 */
-	protected function defineSettings()
-	{
-		return array(
-			'showDate' => array(AttributeType::Bool, 'default' => true),
-			'showTime' => AttributeType::Bool,
-		);
-	}
-
-	/**
-	 * Returns the field's settings HTML.
+	 * @inheritDoc ISavableComponentType::getSettingsHtml()
 	 *
 	 * @return string|null
 	 */
@@ -60,20 +46,21 @@ class DateFieldType extends BaseFieldType
 		// If they are both selected or nothing is selected, the select showBoth.
 		if (($this->getSettings()->showDate && $this->getSettings()->showTime))
 		{
-			$value = 'showBoth';
+			$dateTimeValue = 'showBoth';
 		}
 		else if ($this->getSettings()->showDate)
 		{
-			$value = 'showDate';
+			$dateTimeValue = 'showDate';
 		}
 		else if ($this->getSettings()->showTime)
 		{
-			$value = 'showTime';
+			$dateTimeValue = 'showTime';
 		}
 
-		return craft()->templates->renderMacro('_includes/forms.html', 'radioGroupField', array(array(
-			'id' => 'dateTime',
-			'name' => 'dateTime',
+		$options = array(15, 30, 60);
+		$options = array_combine($options, $options);
+
+		return craft()->templates->render('_components/fieldtypes/Date/settings', array(
 			'options' => array(
 				array(
 					'label' => Craft::t('Show date'),
@@ -88,23 +75,27 @@ class DateFieldType extends BaseFieldType
 					'value' => 'showBoth',
 				)
 			),
-			'value' => $value,
-		)));
+			'value' => $dateTimeValue,
+			'incrementOptions' => $options,
+			'settings' => $this->getSettings(),
+		));
 	}
 
 	/**
-	 * Returns the field's input HTML.
+	 * @inheritDoc IFieldType::getInputHtml()
 	 *
 	 * @param string $name
 	 * @param mixed  $value
+	 *
 	 * @return string
 	 */
 	public function getInputHtml($name, $value)
 	{
 		$variables = array(
-			'id'       => craft()->templates->formatInputId($name),
-			'name'     => $name,
-			'value'    => $value
+			'id'              => craft()->templates->formatInputId($name),
+			'name'            => $name,
+			'value'           => $value,
+			'minuteIncrement' => $this->getSettings()->minuteIncrement
 		);
 
 		$input = '';
@@ -129,9 +120,10 @@ class DateFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Preps the field value for use.
+	 * @inheritDoc IFieldType::prepValue()
 	 *
 	 * @param mixed $value
+	 *
 	 * @return DateTime
 	 */
 	public function prepValue($value)
@@ -147,10 +139,11 @@ class DateFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Modifies an element query that's filtering by this field.
+	 * @inheritDoc IFieldType::modifyElementsQuery()
 	 *
 	 * @param DbCommand $query
 	 * @param mixed     $value
+	 *
 	 * @return null|false
 	 */
 	public function modifyElementsQuery(DbCommand $query, $value)
@@ -163,7 +156,10 @@ class DateFieldType extends BaseFieldType
 	}
 
 	/**
+	 * @inheritDoc ISavableComponentType::prepSettings()
+	 *
 	 * @param array $settings
+	 *
 	 * @return array
 	 */
 	public function prepSettings($settings)
@@ -200,5 +196,22 @@ class DateFieldType extends BaseFieldType
 		}
 
 		return $settings;
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc BaseSavableComponentType::defineSettings()
+	 *
+	 * @return array
+	 */
+	protected function defineSettings()
+	{
+		return array(
+			'showDate'        => array(AttributeType::Bool, 'default' => true),
+			'showTime'        => AttributeType::Bool,
+			'minuteIncrement' => array(AttributeType::Number, 'default' => 30, 'min' => 1, 'max' => 60),
+		);
 	}
 }

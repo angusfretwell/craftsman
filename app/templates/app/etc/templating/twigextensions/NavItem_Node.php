@@ -2,20 +2,30 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Internal node used by the nav node.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Internal node used by the nav node.
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.etc.templating.twigextensions
+ * @since     1.2
  */
 class NavItem_Node extends \Twig_Node
 {
+	// Public Methods
+	// =========================================================================
+
+	/**
+	 * @param \Twig_Node_Expression_AssignName $valueTarget
+	 * @param \Twig_NodeInterface              $indent
+	 * @param \Twig_NodeInterface              $outdent
+	 * @param \Twig_NodeInterface              $lowerBody
+	 * @param                                  $lineno
+	 * @param null                             $tag
+	 *
+	 * @return \Craft\NavItem_Node
+	 */
 	public function __construct(\Twig_Node_Expression_AssignName $valueTarget, \Twig_NodeInterface $indent = null, \Twig_NodeInterface $outdent = null, \Twig_NodeInterface $lowerBody = null, $lineno, $tag = null)
 	{
 		parent::__construct(array('value_target' => $valueTarget, 'indent' => $indent, 'outdent' => $outdent, 'lower_body' => $lowerBody), array(), $lineno, $tag);
@@ -25,6 +35,8 @@ class NavItem_Node extends \Twig_Node
 	 * Compiles the node to PHP.
 	 *
 	 * @param \Twig_Compiler $compiler
+	 *
+	 * @return null
 	 */
 	public function compile(\Twig_Compiler $compiler)
 	{
@@ -34,7 +46,7 @@ class NavItem_Node extends \Twig_Node
 			->subcompile($this->getNode('value_target'))
 			->raw(", 'level', array(), Twig_TemplateInterface::ANY_CALL, false, true);\n")
 			// Was there a previous item?
-			->write("if (isset(\$context['nav'])) {\n")
+			->write("if (isset(\$_contextsByLevel)) {\n")
 			->indent()
 				// Temporarily set the context to the previous one
 				->write("\$_tmpContext = \$context;\n")
@@ -83,7 +95,7 @@ class NavItem_Node extends \Twig_Node
 			->outdent()
 			->write("}\n")
 			// Create the nav array for this item
-			->write("\$context['nav']['level'] = \$_thisItemLevel;\n")
+			->write("\$context['nav'] = array('level' => \$_thisItemLevel);\n")
 			->write("if (isset(\$_contextsByLevel[\$_thisItemLevel-1])) {\n")
 			->indent()
 				->write("\$context['nav']['parent'] = \$_contextsByLevel[\$_thisItemLevel-1];\n")

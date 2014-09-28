@@ -1,11 +1,7 @@
 'use strict';
 
-var fs = require('fs'),
-  util = require('util'),
-  path = require('path'),
-  spawn = require('child_process').spawn,
-  yeoman = require('yeoman-generator'),
-  yosay = require('yosay');
+var yeoman = require('yeoman-generator'),
+    yosay = require('yosay');
 
 var FrancisCraftGenerator = yeoman.generators.Base.extend({
   init: function() {
@@ -53,6 +49,7 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
   app: function() {
     this.mkdir('app');
     this.mkdir('app/images');
+    this.write('app/images/.gitkeep', '');
   },
 
   styles: function() {
@@ -70,7 +67,7 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
     this.write('app/scripts/main.js', 'console.log(\'\\\'Allo \\\'Allo!\');');
   },
 
-  projectfiles: function() {
+  projectFiles: function() {
     this.copy('gulpfile.js', 'gulpfile.js');
 
     this.copy('_package.json', 'package.json');
@@ -106,7 +103,6 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
     this.copy('init.pp', 'puppet/modules/app/manifests/init.pp');
 
     this.directory('bootstrap', 'puppet/bootstrap');
-
     this.directory('apache', 'puppet/modules/apache');
     this.directory('mysql', 'puppet/modules/mysql');
     this.directory('php', 'puppet/modules/php');
@@ -117,8 +113,12 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
 
   craft: function() {
     this.mkdir('craft');
+
     this.mkdir('craft/storage');
     this.write('craft/storage/.gitkeep', '');
+
+    this.mkdir('craft/plugins');
+    this.write('craft/plugins/.gitkeep', '');
 
     this.mkdir('public');
     this.mkdir('public/assets');
@@ -129,8 +129,6 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
 
     this.directory('app', 'craft/app');
     this.directory('config', 'craft/config');
-    this.mkdir('craft/plugins');
-    this.write('craft/plugins/.gitkeep', '');
 
     this.copy('general.php', 'craft/config/general.php');
     this.copy('db.php', 'craft/config/db.php');

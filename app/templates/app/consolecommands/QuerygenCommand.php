@@ -2,22 +2,31 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * The query generator console command.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Query generator console command
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.consolecommands
+ * @since     1.0
  */
 class QuerygenCommand extends BaseCommand
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var string
+	 */
 	public $defaultAction = 'all';
 
+	// Public Methods
+	// =========================================================================
+
+	/**
+	 * @param $args
+	 */
 	public function actionAll($args)
 	{
 		$this->actionCreateTableForRecord($args);
@@ -26,6 +35,10 @@ class QuerygenCommand extends BaseCommand
 
 	/**
 	 * Returns the PHP code to create a new table from a given record.
+	 *
+	 * @param $args
+	 *
+	 * @return int
 	 */
 	public function actionCreateTableForRecord($args)
 	{
@@ -50,8 +63,8 @@ class QuerygenCommand extends BaseCommand
 			$required = !empty($config['required']);
 			$columns[$columnName] = array('column' => ColumnType::Int, 'required' => $required);
 
-			// Add unique index for this column?
-			// (foreign keys already get indexed, so we're only concerned with whether it should be unique)
+			// Add unique index for this column? (foreign keys already get indexed, so we're only concerned with whether
+			// it should be unique)
 			if (!empty($config['unique']))
 			{
 				$indexes[] = array('columns' => array($columnName), 'unique' => true);
@@ -134,6 +147,10 @@ class QuerygenCommand extends BaseCommand
 
 	/**
 	 * Returns the PHP code to add foreign keys to a table for a given record.
+	 *
+	 * @param $args
+	 *
+	 * @return int
 	 */
 	public function actionAddForeignKeysForRecord($args)
 	{
@@ -191,11 +208,14 @@ class QuerygenCommand extends BaseCommand
 		return 1;
 	}
 
+	// Private Methods
+	// =========================================================================
+
 	/**
 	 * Returns a record instance by its class name.
 	 *
-	 * @access private
 	 * @param string $class
+	 *
 	 * @return BaseRecord
 	 */
 	private function _getRecord($class)
@@ -214,8 +234,8 @@ class QuerygenCommand extends BaseCommand
 	/**
 	 * A nicer version of var_export().
 	 *
-	 * @access private
 	 * @param mixed $var
+	 *
 	 * @return string
 	 */
 	private function _varExport($var)
@@ -241,7 +261,7 @@ class QuerygenCommand extends BaseCommand
 
 				if ($showingKeys)
 				{
-					$return .= $this->_varExport($key) . ' => ';
+					$return .= $this->_varExport($key).' => ';
 				}
 
 				$return .= $this->_varExport($value);

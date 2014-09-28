@@ -1,11 +1,9 @@
 /**
- * Craft by Pixel & Tonic
- *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.resources
  */
 
 (function($){
@@ -110,7 +108,7 @@ Craft.MatrixInput = Garnish.Base.extend(
 
 	setNewBlockBtn: function()
 	{
-		if (this.$addBlockBtnGroup.removeClass('hidden').height() > 30)
+		if (this.$addBlockBtnGroup.removeClass('hidden').width() > this.$addBlockBtnGroup.parent().width())
 		{
 			this.$addBlockBtnGroup.addClass('hidden');
 			this.$addBlockMenuBtn.removeClass('hidden');
@@ -159,15 +157,15 @@ Craft.MatrixInput = Garnish.Base.extend(
 				'<div class="actions">' +
 					'<div class="status off" title="'+Craft.t('Disabled')+'"></div>' +
 					'<a class="settings icon menubtn" title="'+Craft.t('Actions')+'" role="button"></a> ' +
-					'<div class="menu padded" data-align="right">' +
-						'<ul>' +
+					'<div class="menu" data-align="right">' +
+						'<ul class="padded">' +
 							'<li><a data-icon="collapse" data-action="collapse">'+Craft.t('Collapse')+'</a></li>' +
 							'<li class="hidden"><a data-icon="expand" data-action="expand">'+Craft.t('Expand')+'</a></li>' +
 							'<li><a data-icon="disabled" data-action="disable">'+Craft.t('Disable')+'</a></li>' +
 							'<li class="hidden"><a data-icon="enabled" data-action="enable">'+Craft.t('Enable')+'</a></li>' +
 						'</ul>' +
-						'<hr/>' +
-						'<ul>';
+						'<hr class="padded"/>' +
+						'<ul class="padded">';
 
 		for (var i = 0; i < this.blockTypes.length; i++)
 		{
@@ -177,8 +175,8 @@ Craft.MatrixInput = Garnish.Base.extend(
 
 		html +=
 						'</ul>' +
-						'<hr/>' +
-						'<ul>' +
+						'<hr class="padded"/>' +
+						'<ul class="padded">' +
 							'<li><a data-icon="remove" data-action="delete">'+Craft.t('Delete')+'</a></li>' +
 						'</ul>' +
 					'</div>' +
@@ -203,9 +201,9 @@ Craft.MatrixInput = Garnish.Base.extend(
 
 		$(bodyHtml).appendTo($fieldsContainer);
 
-		$block.css(this.getHiddenBlockCss($block)).animate({
+		$block.css(this.getHiddenBlockCss($block)).velocity({
 			opacity: 1,
-			'margin-bottom': 14
+			'margin-bottom': 10
 		}, 'fast', $.proxy(function()
 		{
 			$block.css('margin-bottom', '');
@@ -327,7 +325,7 @@ var MatrixBlock = Garnish.Base.extend(
 		menuBtn.menu.settings.onOptionSelect = $.proxy(this, 'onMenuOptionSelect');
 
 		// Was this block already collapsed?
-		if (this.$container.data('collapsed'))
+		if (Garnish.hasAttr(this.$container, 'data-collapsed'))
 		{
 			this.collapse();
 		}
@@ -433,15 +431,15 @@ var MatrixBlock = Garnish.Base.extend(
 
 		this.$previewContainer.html(previewHtml);
 
-		this.$previewContainer.stop();
-		this.$fieldsContainer.stop();
-		this.$container.stop();
+		this.$previewContainer.velocity('stop');
+		this.$fieldsContainer.velocity('stop');
+		this.$container.velocity('stop');
 
 		if (animate)
 		{
-			this.$previewContainer.fadeIn('fast');
-			this.$fieldsContainer.fadeOut('fast');
-			this.$container.animate({ height: 0 }, 'fast');
+			this.$previewContainer.velocity('fadeIn', { duration: 'fast' });
+			this.$fieldsContainer.velocity('fadeOut', { duration: 'fast' });
+			this.$container.velocity({ height: 0 }, 'fast');
 		}
 		else
 		{
@@ -482,18 +480,18 @@ var MatrixBlock = Garnish.Base.extend(
 			return;
 		}
 
-		this.$previewContainer.stop();
-		this.$fieldsContainer.stop();
-		this.$container.stop();
+		this.$previewContainer.velocity('stop');
+		this.$fieldsContainer.velocity('stop');
+		this.$container.velocity('stop');
 
 		var collapsedContainerHeight = this.$container.height();
 		this.$container.height('auto');
 		this.$fieldsContainer.show();
 		var expandedContainerHeight = this.$container.height();
 		this.$container.height(collapsedContainerHeight);
-		this.$fieldsContainer.hide().fadeIn('fast');
-		this.$previewContainer.fadeOut('fast');
-		this.$container.animate({ height: expandedContainerHeight }, 'fast', $.proxy(function() {
+		this.$fieldsContainer.hide().velocity('fadeIn', { duration: 'fast' });
+		this.$previewContainer.velocity('fadeOut', { duration: 'fast' });
+		this.$container.velocity({ height: expandedContainerHeight }, 'fast', $.proxy(function() {
 			this.$container.height('auto');
 		}, this));
 
@@ -600,7 +598,7 @@ var MatrixBlock = Garnish.Base.extend(
 
 	selfDestruct: function()
 	{
-		this.$container.animate(this.matrix.getHiddenBlockCss(this.$container), 'fast', $.proxy(function()
+		this.$container.velocity(this.matrix.getHiddenBlockCss(this.$container), 'fast', $.proxy(function()
 		{
 			this.$container.remove();
 			this.matrix.updateAddBlockBtn();

@@ -2,25 +2,42 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * The FieldsController class is a controller that handles various field and field group related tasks such as saving
+ * and deleting both fields and field groups.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * Note that all actions in the controller require an authenticated Craft session via {@link BaseController::allowAnonymous}.
+ *
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Handles field tasks
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.controllers
+ * @since     1.0
  */
 class FieldsController extends BaseController
 {
+	// Public Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc BaseController::init()
+	 *
+	 * @throws HttpException
+	 * @return null
+	 */
+	public function init()
+	{
+		// All field actions require an admin
+		craft()->userSession->requireAdmin();
+	}
+
 	// Groups
-	// ======
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Saves a field group.
+	 *
+	 * @return null
 	 */
 	public function actionSaveGroup()
 	{
@@ -55,6 +72,8 @@ class FieldsController extends BaseController
 
 	/**
 	 * Deletes a field group.
+	 *
+	 * @return null
 	 */
 	public function actionDeleteGroup()
 	{
@@ -72,10 +91,12 @@ class FieldsController extends BaseController
 	}
 
 	// Fields
-	// ======
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Saves a field.
+	 *
+	 * @return null
 	 */
 	public function actionSaveField()
 	{
@@ -123,6 +144,8 @@ class FieldsController extends BaseController
 
 	/**
 	 * Deletes a field.
+	 *
+	 * @return null
 	 */
 	public function actionDeleteField()
 	{

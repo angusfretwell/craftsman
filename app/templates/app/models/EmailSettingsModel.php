@@ -2,47 +2,24 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * EmailSettingsModel class.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * EmailSettingsModel class.
- * It is used by the 'saveEmail' action of 'settingsController'.
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.models
+ * @since     1.0
  */
 class EmailSettingsModel extends BaseModel
 {
-	/**
-	 * @access protected
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'protocol'                => AttributeType::String,
-			'host'                    => AttributeType::String,
-			'port'                    => AttributeType::String,
-			'smtpAuth'                => AttributeType::String,
-			'username'                => AttributeType::String,
-			'password'                => AttributeType::String,
-			'smtpKeepAlive'           => AttributeType::Bool,
-			'smtpSecureTransportType' => AttributeType::String,
-			'timeout'                 => AttributeType::String,
-			'emailAddress'            => AttributeType::Email,
-			'senderName'              => AttributeType::String,
-			'testEmailAddress'        => AttributeType::Email,
-		);
-	}
+	// Public Methods
+	// =========================================================================
 
 	/**
-	 * Declares the validation rules.
+	 * @inheritDoc BaseModel::rules()
 	 *
-	 * @return array of validation rules.
+	 * @return array
 	 */
 	public function rules()
 	{
@@ -82,5 +59,31 @@ class EmailSettingsModel extends BaseModel
 		}
 
 		return $rules;
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc BaseModel::defineAttributes()
+	 *
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'protocol'                => AttributeType::String,
+			'host'                    => AttributeType::String,
+			'port'                    => AttributeType::String,
+			'smtpAuth'                => AttributeType::String,
+			'username'                => AttributeType::String,
+			'password'                => AttributeType::String,
+			'smtpKeepAlive'           => AttributeType::Bool,
+			'smtpSecureTransportType' => AttributeType::String,
+			'timeout'                 => AttributeType::String,
+			'emailAddress'            => AttributeType::Email,
+			'senderName'              => AttributeType::String,
+			'testEmailAddress'        => AttributeType::Email,
+		);
 	}
 }

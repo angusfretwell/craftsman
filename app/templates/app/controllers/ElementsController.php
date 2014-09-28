@@ -2,22 +2,27 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * The ElementsController class is a controller that handles various element related actions including retrieving and
+ * saving element and their corresponding HTML.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * Note that all actions in the controller require an authenticated Craft session via {@link BaseController::allowAnonymous}.
+ *
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Element actions
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.controllers
+ * @since     1.0
  */
 class ElementsController extends BaseController
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Renders and returns the body of an ElementSelectorModal.
+	 *
+	 * @return null
 	 */
 	public function actionGetModalBody()
 	{
@@ -56,6 +61,8 @@ class ElementsController extends BaseController
 
 	/**
 	 * Renders and returns the list of elements in an ElementIndex.
+	 *
+	 * @return bool
 	 */
 	public function actionGetElements()
 	{
@@ -105,11 +112,14 @@ class ElementsController extends BaseController
 
 		$html = $elementType->getIndexHtml($criteria, $disabledElementIds, $viewState, $sourceKey, $context);
 
-		$totalVisible = $criteria->offset + count($criteria);
+		$totalElementsInBatch = count($criteria);
+		$totalVisible = $criteria->offset + $totalElementsInBatch;
 
 		if ($criteria->limit)
 		{
-			$more = ($criteria->total() > $totalVisible);
+			// We'll risk a pointless additional Ajax request in the unlikely event that there are exactly a factor of
+			// 50 elements, rather than running two separate element queries
+			$more = ($totalElementsInBatch == $criteria->limit);
 		}
 		else
 		{
@@ -127,6 +137,9 @@ class ElementsController extends BaseController
 
 	/**
 	 * Returns the HTML for an element editor HUD.
+	 *
+	 * @throws HttpException
+	 * @return null
 	 */
 	public function actionGetEditorHtml()
 	{
@@ -149,6 +162,9 @@ class ElementsController extends BaseController
 
 	/**
 	 * Saves an element.
+	 *
+	 * @throws HttpException
+	 * @return null
 	 */
 	public function actionSaveElement()
 	{
@@ -199,12 +215,14 @@ class ElementsController extends BaseController
 		}
 	}
 
+	// Private Methods
+	// =========================================================================
+
 	/**
 	 * Returns the element type based on the posted element type class.
 	 *
-	 * @access private
-	 * @return BaseElementType
 	 * @throws Exception
+	 * @return BaseElementType
 	 */
 	private function _getElementType()
 	{
@@ -222,10 +240,11 @@ class ElementsController extends BaseController
 	/**
 	 * Returns the editor HTML for a given element.
 	 *
-	 * @access private
 	 * @param BaseElementModel $element
-	 * @param bool $includeLocales
+	 * @param bool             $includeLocales
+	 *
 	 * @throws HttpException
+	 * @return null
 	 */
 	private function _returnEditorHtml(BaseElementModel $element, $includeLocales)
 	{

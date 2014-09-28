@@ -2,58 +2,58 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * This model represents an Asset Operation Response.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * This model represents an Asset Operation Response.
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.models
+ * @since     1.0
  */
 class AssetOperationResponseModel extends BaseModel
 {
+	// Constants
+	// =========================================================================
+
 	const StatusError = 'error';
 	const StatusSuccess = 'success';
 	const StatusConflict = 'conflict';
 
-	private $_data = array();
+	// Properties
+	// =========================================================================
 
 	/**
-	 * @access protected
-	 * @return array
+	 * @var array
 	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'status'		=> array(AttributeType::Enum, 'values' => array(self::StatusError, self::StatusSuccess, self::StatusConflict)),
-			'errorMessage'	=> AttributeType::String
-		);
-	}
+	private $_data = array();
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Set an error message.
 	 *
 	 * @param $message
+	 *
 	 * @return AssetOperationResponseModel
 	 */
 	public function setError($message)
 	{
 		$this->setAttribute('errorMessage', $message);
-		$this->setAttribute('status', self::StatusError);
+		$this->setAttribute('status', static::StatusError);
+
 		return $this;
 	}
 
 	/**
 	 * Set status to success.
+	 *
 	 * @return AssetOperationResponseModel
 	 */
 	public function setSuccess()
 	{
-		$this->setAttribute('status', self::StatusSuccess);
+		$this->setAttribute('status', static::StatusSuccess);
 		return $this;
 	}
 
@@ -61,11 +61,12 @@ class AssetOperationResponseModel extends BaseModel
 	 * Set prompt data array.
 	 *
 	 * @param $promptData
+	 *
 	 * @return AssetOperationResponseModel
 	 */
 	public function setPrompt($promptData)
 	{
-		$this->setAttribute('status', self::StatusConflict);
+		$this->setAttribute('status', static::StatusConflict);
 		$this->setDataItem('prompt', $promptData);
 		return $this;
 	}
@@ -75,6 +76,7 @@ class AssetOperationResponseModel extends BaseModel
 	 *
 	 * @param $name
 	 * @param $value
+	 *
 	 * @return AssetOperationResponseModel
 	 */
 	public function setDataItem($name, $value)
@@ -87,7 +89,8 @@ class AssetOperationResponseModel extends BaseModel
 	 * Get a data item.
 	 *
 	 * @param $name
-	 * @return null
+	 *
+	 * @return mixed
 	 */
 	public function getDataItem($name)
 	{
@@ -103,6 +106,8 @@ class AssetOperationResponseModel extends BaseModel
 	 * Delete a data item.
 	 *
 	 * @param $name
+	 *
+	 * @return null
 	 */
 	public function deleteDataItem($name)
 	{
@@ -117,7 +122,7 @@ class AssetOperationResponseModel extends BaseModel
 	 */
 	public function isConflict()
 	{
-		return $this->getAttribute('status') == self::StatusConflict;
+		return $this->getAttribute('status') == static::StatusConflict;
 	}
 
 	/**
@@ -125,7 +130,7 @@ class AssetOperationResponseModel extends BaseModel
 	 */
 	public function isSuccess()
 	{
-		return $this->getAttribute('status') == self::StatusSuccess;
+		return $this->getAttribute('status') == static::StatusSuccess;
 	}
 
 	/**
@@ -133,27 +138,29 @@ class AssetOperationResponseModel extends BaseModel
 	 */
 	public function isError()
 	{
-		return $this->getAttribute('status') == self::StatusError;
+		return $this->getAttribute('status') == static::StatusError;
 	}
 
 	/**
 	 * Return a response array ready to be transported.
+	 *
+	 * @return array
 	 */
 	public function getResponseData()
 	{
 		switch ($this->getAttribute('status'))
 		{
-			case self::StatusError:
+			case static::StatusError:
 			{
-				return array_merge($this->_data, array(self::StatusError => $this->getAttribute('errorMessage')));
+				return array_merge($this->_data, array(static::StatusError => $this->getAttribute('errorMessage')));
 			}
 
-			case self::StatusSuccess:
+			case static::StatusSuccess:
 			{
-				return array_merge($this->_data, array(self::StatusSuccess => true));
+				return array_merge($this->_data, array(static::StatusSuccess => true));
 			}
 
-			case self::StatusConflict:
+			case static::StatusConflict:
 			{
 				return $this->_data;
 			}
@@ -161,5 +168,21 @@ class AssetOperationResponseModel extends BaseModel
 		}
 
 		return array();
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc BaseModel::defineAttributes()
+	 *
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'status'		=> array(AttributeType::Enum, 'values' => array(static::StatusError, static::StatusSuccess, static::StatusConflict)),
+			'errorMessage'	=> AttributeType::String
+		);
 	}
 }

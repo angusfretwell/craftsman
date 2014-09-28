@@ -2,30 +2,33 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Class UsersFieldType
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Users fieldtype
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.fieldtypes
+ * @since     1.0
  */
 class UsersFieldType extends BaseElementFieldType
 {
+	// Properties
+	// =========================================================================
+
 	/**
-	 * @access protected
-	 * @var string $elementType The element type this field deals with.
+	 *  The element type this field deals with.
+	 *
+	 * @var string $elementType
 	 */
 	protected $elementType = 'User';
 
+	// Protected Methods
+	// =========================================================================
+
 	/**
-	 * Returns the label for the "Add" button.
+	 * @inheritDoc BaseElementFieldType::getAddButtonLabel()
 	 *
-	 * @access protected
 	 * @return string
 	 */
 	protected function getAddButtonLabel()

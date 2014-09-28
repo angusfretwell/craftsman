@@ -2,22 +2,22 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Class PlainTextFieldType
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- *
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.fieldtypes
+ * @since     1.0
  */
 class PlainTextFieldType extends BaseFieldType
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
-	 * Returns the type of field this is.
+	 * @inheritDoc IComponentType::getName()
 	 *
 	 * @return string
 	 */
@@ -27,23 +27,7 @@ class PlainTextFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Defines the settings.
-	 *
-	 * @access protected
-	 * @return array
-	 */
-	protected function defineSettings()
-	{
-		return array(
-			'placeholder'   => array(AttributeType::String),
-			'multiline'     => array(AttributeType::Bool),
-			'initialRows'   => array(AttributeType::Number, 'min' => 1, 'default' => 4),
-			'maxLength'     => array(AttributeType::Number, 'min' => 0),
-		);
-	}
-
-	/**
-	 * Returns the field's settings HTML.
+	 * @inheritDoc ISavableComponentType::getSettingsHtml()
 	 *
 	 * @return string|null
 	 */
@@ -55,7 +39,7 @@ class PlainTextFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Returns the content attribute config.
+	 * @inheritDoc IFieldType::defineContentAttribute()
 	 *
 	 * @return mixed
 	 */
@@ -89,10 +73,11 @@ class PlainTextFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Returns the field's input HTML.
+	 * @inheritDoc IFieldType::getInputHtml()
 	 *
 	 * @param string $name
 	 * @param mixed  $value
+	 *
 	 * @return string
 	 */
 	public function getInputHtml($name, $value)
@@ -102,5 +87,23 @@ class PlainTextFieldType extends BaseFieldType
 			'value'    => $value,
 			'settings' => $this->getSettings()
 		));
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc BaseSavableComponentType::defineSettings()
+	 *
+	 * @return array
+	 */
+	protected function defineSettings()
+	{
+		return array(
+			'placeholder'   => array(AttributeType::String),
+			'multiline'     => array(AttributeType::Bool),
+			'initialRows'   => array(AttributeType::Number, 'min' => 1, 'default' => 4),
+			'maxLength'     => array(AttributeType::Number, 'min' => 0),
+		);
 	}
 }

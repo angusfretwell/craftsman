@@ -2,24 +2,30 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Class RecentEntriesWidget
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- *
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.widgets
+ * @since     1.0
  */
 class RecentEntriesWidget extends BaseWidget
 {
-	public $multipleInstances = true;
+	// Properties
+	// =========================================================================
 
 	/**
-	 * Returns the type of widget this is.
+	 * @var bool
+	 */
+	public $multipleInstances = true;
+
+	// Public Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc IComponentType::getName()
 	 *
 	 * @return string
 	 */
@@ -29,21 +35,7 @@ class RecentEntriesWidget extends BaseWidget
 	}
 
 	/**
-	 * Defines the settings.
-	 *
-	 * @access protected
-	 * @return array
-	 */
-	protected function defineSettings()
-	{
-		return array(
-			'section' => array(AttributeType::Mixed, 'default' => '*'),
-			'limit'   => array(AttributeType::Number, 'default' => 10),
-		);
-	}
-
-	/**
-	 * Returns the widget's body HTML.
+	 * @inheritDoc ISavableComponentType::getSettingsHtml()
 	 *
 	 * @return string
 	 */
@@ -55,7 +47,7 @@ class RecentEntriesWidget extends BaseWidget
 	}
 
 	/**
-	 * Gets the widget's title.
+	 * @inheritDoc IWidget::getTitle()
 	 *
 	 * @return string
 	 */
@@ -71,7 +63,8 @@ class RecentEntriesWidget extends BaseWidget
 
 				if ($section)
 				{
-					return Craft::t('Recently in {section}', array('section' => $section->name));
+					$translatedSectionName = Craft::t($section->name);
+					return Craft::t('Recently in {section}', array('section' => $translatedSectionName));
 				}
 			}
 		}
@@ -80,7 +73,7 @@ class RecentEntriesWidget extends BaseWidget
 	}
 
 	/**
-	 * Returns the widget's body HTML.
+	 * @inheritDoc IWidget::getBodyHtml()
 	 *
 	 * @return string|false
 	 */
@@ -111,16 +104,34 @@ class RecentEntriesWidget extends BaseWidget
 		));
 	}
 
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc BaseSavableComponentType::defineSettings()
+	 *
+	 * @return array
+	 */
+	protected function defineSettings()
+	{
+		return array(
+			'section' => array(AttributeType::Mixed, 'default' => '*'),
+			'limit'   => array(AttributeType::Number, 'default' => 10),
+		);
+	}
+
+	// Private Methods
+	// =========================================================================
+
 	/**
 	 * Returns the recent entries, based on the widget settings and user permissions.
 	 *
-	 * @access private
 	 * @return array
 	 */
 	private function _getEntries()
 	{
-		// Make sure that the user is actually allowed to edit entries in the current locale.
-		// Otherwise grab entries in their first editable locale.
+		// Make sure that the user is actually allowed to edit entries in the current locale. Otherwise grab entries in
+		// their first editable locale.
 		$editableLocaleIds = craft()->i18n->getEditableLocaleIds();
 		$targetLocale = craft()->language;
 
@@ -163,7 +174,6 @@ class RecentEntriesWidget extends BaseWidget
 	/**
 	 * Returns the Channel and Structure section IDs that the user is allowed to edit.
 	 *
-	 * @access private
 	 * @return array
 	 */
 	private function _getEditableSectionIds()

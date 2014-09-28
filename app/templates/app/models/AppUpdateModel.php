@@ -2,22 +2,44 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Stores the available Craft update info.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Stores the available Craft update info.
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.models
+ * @since     1.0
  */
 class AppUpdateModel extends BaseModel
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
-	 * @access protected
+	 * @inheritDoc BaseModel::setAttribute()
+	 *
+	 * @param string $name
+	 * @param mixed  $value
+	 *
+	 * @return bool|null
+	 */
+	public function setAttribute($name, $value)
+	{
+		if ($name == 'releases')
+		{
+			$value = AppNewReleaseModel::populateModels($value);
+		}
+
+		parent::setAttribute($name, $value);
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc BaseModel::defineAttributes()
+	 *
 	 * @return array
 	 */
 	protected function defineAttributes()
@@ -41,20 +63,5 @@ class AppUpdateModel extends BaseModel
 		$attributes['releases']                = AttributeType::Mixed;
 
 		return $attributes;
-	}
-
-	/**
-	 * @param string $name
-	 * @param mixed  $value
-	 * @return bool|void
-	 */
-	public function setAttribute($name, $value)
-	{
-		if ($name == 'releases')
-		{
-			$value = AppNewReleaseModel::populateModels($value);
-		}
-
-		parent::setAttribute($name, $value);
 	}
 }

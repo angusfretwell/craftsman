@@ -2,30 +2,33 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Class EntriesFieldType
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Entries fieldtype
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.fieldtypes
+ * @since     1.0
  */
 class EntriesFieldType extends BaseElementFieldType
 {
+	// Properties
+	// =========================================================================
+
 	/**
-	 * @access protected
-	 * @var string $elementType The element type this field deals with.
+	 * The element type this field deals with.
+	 *
+	 * @var string $elementType
 	 */
 	protected $elementType = 'Entry';
 
+	// Protected Methods
+	// =========================================================================
+
 	/**
-	 * Returns the label for the "Add" button.
+	 * @inheritDoc BaseElementFieldType::getAddButtonLabel()
 	 *
-	 * @access protected
 	 * @return string
 	 */
 	protected function getAddButtonLabel()

@@ -1,11 +1,9 @@
 /**
- * Craft by Pixel & Tonic
- *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.resources
  */
 
 (function($) {
@@ -71,7 +69,7 @@ Craft.RecentEntriesWidget = Garnish.Base.extend(
 			this.hasEntries = true;
 		}
 
-		this.$container.animate(props);
+		this.$container.velocity(props);
 	}
 }, {
 	instances: []

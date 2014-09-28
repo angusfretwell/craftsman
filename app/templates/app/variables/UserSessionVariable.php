@@ -2,20 +2,20 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * User session functions.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * User session functions
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.variables
+ * @since     1.0
  */
 class UserSessionVariable
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Returns whether the user is logged in.
 	 *
@@ -37,6 +37,23 @@ class UserSessionVariable
 	}
 
 	/**
+	 * Returns the number of seconds the user will be logged in for.
+	 *
+	 * @return int
+	 */
+	public function getAuthTimeout()
+	{
+		if (craft()->isInstalled())
+		{
+			return craft()->userSession->getAuthTimeout();
+		}
+		else
+		{
+			return 0;
+		}
+	}
+
+	/**
 	 * Returns the remembered username from cookie.
 	 *
 	 * @return string
@@ -49,10 +66,11 @@ class UserSessionVariable
 	/**
 	 * Returns the URL the user was trying to access before getting sent to the login page.
 	 *
-	 * @param string $defaultUrl
-	 * @return mixed
+	 * @param string $defaultUrl The default URL that should be returned if no return URL was stored.
+	 *
+	 * @return string The return URL, or $defaultUrl.
 	 */
-	public function getReturnUrl($defaultUrl = '')
+	public function getReturnUrl($defaultUrl = null)
 	{
 		return craft()->userSession->getReturnUrl($defaultUrl);
 	}
@@ -61,6 +79,7 @@ class UserSessionVariable
 	 * Returns all flash data for the user.
 	 *
 	 * @param bool $delete
+	 *
 	 * @return array
 	 */
 	public function getFlashes($delete = true)
@@ -74,6 +93,8 @@ class UserSessionVariable
 	 * @param string $key
 	 * @param mixed  $defaultValue
 	 * @param bool   $delete
+	 *
+	 * @return mixed
 	 */
 	public function getFlash($key, $defaultValue = null, $delete = true)
 	{
@@ -84,6 +105,7 @@ class UserSessionVariable
 	 * Returns whether a flash message exists by a given key.
 	 *
 	 * @param string $key
+	 *
 	 * @return mixed
 	 */
 	public function hasFlash($key)

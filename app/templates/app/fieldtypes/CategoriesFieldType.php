@@ -2,52 +2,62 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Categories fieldtype.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Categories fieldtype
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.fieldtypes
+ * @since     2.0
  */
 class CategoriesFieldType extends BaseElementFieldType
 {
+	// Properties
+	// =========================================================================
+
 	/**
-	 * @access protected
-	 * @var string $elementType The element type this field deals with.
+	 * The element type this field deals with.
+	 *
+	 * @var string $elementType
 	 */
 	protected $elementType = 'Category';
 
 	/**
-	 * @access protected
-	 * @var bool $allowMultipleSources Whether to allow multiple source selection in the settings.
+	 * Whether to allow multiple source selection in the settings.
+	 *
+	 * @var bool $allowMultipleSources
 	 */
 	protected $allowMultipleSources = false;
 
 	/**
-	 * @access protected
-	 * @var string|null $inputJsClass The JS class that should be initialized for the input.
+	 * The JS class that should be initialized for the input.
+	 *
+	 * @var string|null $inputJsClass
 	 */
 	protected $inputJsClass = 'Craft.CategorySelectInput';
 
 	/**
 	 * Template to use for field rendering
+	 *
 	 * @var string
 	 */
 	protected $inputTemplate = '_components/fieldtypes/Categories/input';
 
 	/**
-	 * @access protected
-	 * @var bool $sortable Whether the elements have a custom sort order.
+	 * Whether the elements have a custom sort order.
+	 *
+	 * @var bool $sortable
 	 */
 	protected $sortable = false;
 
+	// Public Methods
+	// =========================================================================
+
 	/**
-	 * Performs any additional actions after the element has been saved.
+	 * @inheritDoc IFieldType::onAfterElementSave()
+	 *
+	 * @return null
 	 */
 	public function onAfterElementSave()
 	{
@@ -88,12 +98,15 @@ class CategoriesFieldType extends BaseElementFieldType
 		}
 	}
 
+	// Protected Methods
+	// =========================================================================
+
 	/**
-	 * Returns an array of variables that should be passed to the input template.
+	 * @inheritDoc BaseElementFieldType::getInputTemplateVariables()
 	 *
-	 * @access protected
 	 * @param string $name
 	 * @param mixed  $criteria
+	 *
 	 * @return array
 	 */
 	protected function getInputTemplateVariables($name, $criteria)

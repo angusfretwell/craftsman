@@ -1,13 +1,13 @@
 {
   "name": "generator-francis-craft",
-  "version": "0.0.0",
-  "description": "Yeoman generator",
+  "version": "0.1.0",
+  "description": "Scaffold out a Craft website",
   "license": "MIT",
   "main": "app/index.js",
-  "repository": "angusfretwell/generator-francis-craft",
+  "repository": "francisbond/generator-francis-craft",
   "author": {
     "name": "Angus Fretwell",
-    "email": "angusfretwell@me.com",
+    "email": "angus@francisbond.com",
     "url": "https://github.com/angusfretwell"
   },
   "engines": {
@@ -20,9 +20,6 @@
     "yeoman-generator"
   ],
   "dependencies": {
-    "chalk": "^0.4.0",
-    "cheerio": "^0.16.0",
-    "wiredep": "^1.4.3",
     "yeoman-generator": "^0.16.0",
     "yosay": "^0.2.0"
   },

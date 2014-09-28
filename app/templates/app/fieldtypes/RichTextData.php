@@ -2,25 +2,40 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Stores the data for Rich Text fields.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Stores the data for Rich Text fields.
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.fieldtypes
+ * @since     1.0
  */
 class RichTextData extends \Twig_Markup
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var
+	 */
 	private $_pages;
+
+	/**
+	 * @var string
+	 */
 	private $_rawContent;
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Constructor
+	 *
+	 * @param string $content
+	 * @param string $charset
+	 *
+	 * @return RichTextData
 	 */
 	public function __construct($content, $charset)
 	{
@@ -67,6 +82,7 @@ class RichTextData extends \Twig_Markup
 	 * Returns a specific page.
 	 *
 	 * @param int $pageNumber
+	 *
 	 * @return string|null
 	 */
 	public function getPage($pageNumber)

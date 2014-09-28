@@ -2,41 +2,56 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * The AssetSourcesController class is a controller that handles various actions related to asset sources, such as
+ * creating, editing, renaming and reordering them.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * Note that all actions in the controller require an authenticated Craft session via {@link BaseController::allowAnonymous}.
+ *
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Handles asset source tasks
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.controllers
+ * @since     1.0
  */
 class AssetSourcesController extends BaseController
 {
+	// Public Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc BaseController::init()
+	 *
+	 * @throws HttpException
+	 * @return null
+	 */
+	public function init()
+	{
+		// All asset source actions require an admin
+		craft()->userSession->requireAdmin();
+	}
+
 	/**
 	 * Shows the asset source list.
+	 *
+	 * @return null
 	 */
 	public function actionSourceIndex()
 	{
-		craft()->userSession->requireAdmin();
-
 		$variables['sources'] = craft()->assetSources->getAllSources();
-		$this->renderTemplate('settings/assets/sources/index', $variables);
+		$this->renderTemplate('settings/assets/sources/_index', $variables);
 	}
 
 	/**
 	 * Edit an asset source.
 	 *
 	 * @param array $variables
+	 *
 	 * @throws HttpException
+	 * @return null
 	 */
 	public function actionEditSource(array $variables = array())
 	{
-		craft()->userSession->requireAdmin();
-
 		if (empty($variables['source']))
 		{
 			if (!empty($variables['sourceId']))
@@ -93,10 +108,11 @@ class AssetSourcesController extends BaseController
 
 	/**
 	 * Saves an asset source.
+	 *
+	 * @return null
 	 */
 	public function actionSaveSource()
 	{
-		craft()->userSession->requireAdmin();
 		$this->requirePostRequest();
 
 		$existingSourceId = craft()->request->getPost('sourceId');
@@ -152,10 +168,11 @@ class AssetSourcesController extends BaseController
 
 	/**
 	 * Reorders asset sources.
+	 *
+	 * @return null
 	 */
 	public function actionReorderSources()
 	{
-		craft()->userSession->requireAdmin();
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
@@ -167,10 +184,11 @@ class AssetSourcesController extends BaseController
 
 	/**
 	 * Deletes an asset source.
+	 *
+	 * @return null
 	 */
 	public function actionDeleteSource()
 	{
-		craft()->userSession->requireAdmin();
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
@@ -183,10 +201,11 @@ class AssetSourcesController extends BaseController
 
 	/**
 	 * Get Amazon S3 buckets.
+	 *
+	 * @return null
 	 */
 	public function actionGetS3Buckets()
 	{
-		craft()->userSession->requireAdmin();
 		craft()->requireEdition(Craft::Pro);
 
 		$keyId = craft()->request->getRequiredPost('keyId');
@@ -204,10 +223,11 @@ class AssetSourcesController extends BaseController
 
 	/**
 	 * Get Rackspace regions.
+	 *
+	 * @return null
 	 */
 	public function actionGetRackspaceRegions()
 	{
-		craft()->userSession->requireAdmin();
 		craft()->requireEdition(Craft::Pro);
 
 		$username = craft()->request->getRequiredPost('username');
@@ -215,8 +235,8 @@ class AssetSourcesController extends BaseController
 
 		try
 		{
-			// Static methods here are no-go (without passing unneeded variables around, such as location), we'll
-			// have to mock up a SourceType object here.
+			// Static methods here are no-go (without passing unneeded variables around, such as location), we'll have
+			// to mock up a SourceType object here.
 			$model = new AssetSourceModel(array('type' => 'Rackspace', 'settings' => array('username' => $username, 'apiKey' => $apiKey)));
 
 			/** @var RackspaceAssetSourceType $source */
@@ -231,10 +251,11 @@ class AssetSourcesController extends BaseController
 
 	/**
 	 * Get Rackspace containers.
+	 *
+	 * @return null
 	 */
 	public function actionGetRackspaceContainers()
 	{
-		craft()->userSession->requireAdmin();
 		craft()->requireEdition(Craft::Pro);
 
 		$username = craft()->request->getRequiredPost('username');
@@ -243,8 +264,8 @@ class AssetSourcesController extends BaseController
 
 		try
 		{
-			// Static methods here are no-go (without passing unneeded variables around, such as location), we'll
-			// have to mock up a SourceType object here.
+			// Static methods here are no-go (without passing unneeded variables around, such as location), we'll have
+			// to mock up a SourceType object here.
 			$model = new AssetSourceModel(array('type' => 'Rackspace', 'settings' => array('username' => $username, 'apiKey' => $apiKey, 'region' => $region)));
 
 			/** @var RackspaceAssetSourceType $source */
@@ -259,10 +280,11 @@ class AssetSourcesController extends BaseController
 
 	/**
 	 * Get Google Cloud Storage buckets.
+	 *
+	 * @return null
 	 */
 	public function actionGetGoogleCloudBuckets()
 	{
-		craft()->userSession->requireAdmin();
 		craft()->requireEdition(Craft::Pro);
 
 		$keyId = craft()->request->getRequiredPost('keyId');

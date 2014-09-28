@@ -2,7 +2,7 @@
 /**
  * PHPUnit
  *
- * Copyright (c) 2002-2013, Sebastian Bergmann <sebastian@phpunit.de>.
+ * Copyright (c) 2002-2014, Sebastian Bergmann <sebastian@phpunit.de>.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@
  *
  * @package    DbUnit
  * @author     Mike Lively <m@digitalsandwich.com>
- * @copyright  2002-2013 Sebastian Bergmann <sebastian@phpunit.de>
+ * @copyright  2002-2014 Sebastian Bergmann <sebastian@phpunit.de>
  * @license    http://www.opensource.org/licenses/BSD-3-Clause  The BSD 3-Clause License
  * @link       http://www.phpunit.de/
  * @since      File available since Release 1.0.0
@@ -45,7 +45,7 @@
 /**
  * @package    DbUnit
  * @author     Mike Lively <m@digitalsandwich.com>
- * @copyright  2002-2013 Sebastian Bergmann <sebastian@phpunit.de>
+ * @copyright  2002-2014 Sebastian Bergmann <sebastian@phpunit.de>
  * @license    http://www.opensource.org/licenses/BSD-3-Clause  The BSD 3-Clause License
  * @link       http://www.phpunit.de/
  * @since      File available since Release 1.0.0
@@ -140,6 +140,7 @@ asdflkjsadf asdfsadfhl "adsf, halsdf" sadfhlasdf'
             'column12' => '0y8hosnd a/df7y olgbjs da'
         ));
 
+
         $this->expectedDataSet1 = new PHPUnit_Extensions_Database_DataSet_DefaultDataSet(array($table1, $table2));
         $this->expectedDataSet2 = new PHPUnit_Extensions_Database_DataSet_DefaultDataSet(array($table3));
         $this->expectedDataSet3 = new PHPUnit_Extensions_Database_DataSet_DefaultDataSet(array($table1, $table2, $table3));
@@ -152,11 +153,74 @@ asdflkjsadf asdfsadfhl "adsf, halsdf" sadfhlasdf'
         PHPUnit_Extensions_Database_TestCase::assertDataSetsEqual($this->expectedDataSet3, $actual);
     }
 
-    /**
-     * @expectedException InvalidArgumentException
-     */
-    public function testDuplicateTables()
+    public function testCompatibleTablesInDifferentDataSetsNonDuplicateRows()
     {
-        new PHPUnit_Extensions_Database_DataSet_CompositeDataSet(array($this->expectedDataSet1, $this->expectedDataSet1));
+        $compatibleTable = new PHPUnit_Extensions_Database_DataSet_DefaultTable(
+            $this->expectedDataSet3->getTable("table3")->getTableMetaData()
+        );
+
+        $compatibleTable->addRow(array(
+            'table3_id' => 4,
+            'column9' => 'asdasd',
+            'column10' => 17,
+            'column11' => 42.57,
+            'column12' => 'askldja'
+        ));
+
+        $compositeDataSet = new PHPUnit_Extensions_Database_DataSet_CompositeDataSet(array(
+            new PHPUnit_Extensions_Database_DataSet_DefaultDataSet(array($compatibleTable)),
+            $this->expectedDataSet2
+        ));
+
+        $this->assertEquals(4, $compositeDataSet->getTable("table3")->getRowCount());
+    }
+
+    /**
+     * @expectedException           InvalidArgumentException
+     * @expectedExceptionMessage    There is already a table named table3 with different table definition
+     */
+    public function testExceptionOnIncompatibleTablesSameTableNames()
+    {
+        $inCompatibleTableMetaData = new PHPUnit_Extensions_Database_DataSet_DefaultTableMetaData(
+            'table3', array('table3_id', 'column13', 'column14', 'column15', 'column16')
+        );
+
+        $inCompatibleTable = new PHPUnit_Extensions_Database_DataSet_DefaultTable($inCompatibleTableMetaData);
+        $inCompatibleTable->addRow(array(
+            'column13' => 'asdasda asdasd',
+            'column14' => 'aiafsjas asd',
+            'column15' => 'asdasdasd',
+            'column16' => 2141
+        ));
+
+        $compositeDataSet = new PHPUnit_Extensions_Database_DataSet_CompositeDataSet(array(
+            $this->expectedDataSet2,
+            new PHPUnit_Extensions_Database_DataSet_DefaultDataSet(array($inCompatibleTable))
+        ));
+    }
+
+
+    /**
+     * @expectedException           InvalidArgumentException
+     * @expectedExceptionMessage    There is already a table named table3 with different table definition
+     */
+    public function testExceptionOnIncompatibleTablesSameTableNames2()
+    {
+        $inCompatibleTableMetaData = new PHPUnit_Extensions_Database_DataSet_DefaultTableMetaData(
+            'table3', array('table3_id', 'column13', 'column14', 'column15', 'column16')
+        );
+
+        $inCompatibleTable = new PHPUnit_Extensions_Database_DataSet_DefaultTable($inCompatibleTableMetaData);
+        $inCompatibleTable->addRow(array(
+            'column13' => 'asdasda asdasd',
+            'column14' => 'aiafsjas asd',
+            'column15' => 'asdasdasd',
+            'column16' => 2141
+        ));
+
+        $compositeDataSet = new PHPUnit_Extensions_Database_DataSet_CompositeDataSet(array(
+            new PHPUnit_Extensions_Database_DataSet_DefaultDataSet(array($inCompatibleTable)),
+            $this->expectedDataSet2
+        ));
     }
 }

@@ -2,38 +2,48 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Active Record base class.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Active Record base class
- *
- * @abstract
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.records
+ * @since     1.0
  */
 abstract class BaseRecord extends \CActiveRecord
 {
+	// Constants
+	// =========================================================================
+
 	const RESTRICT = 'RESTRICT';
 	const CASCADE = 'CASCADE';
 	const NO_ACTION = 'NO ACTION';
 	const SET_DEFAULT = 'SET DEFAULT';
 	const SET_NULL = 'SET NULL';
 
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var
+	 */
 	private $_attributeConfigs;
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Constructor
+	 *
 	 * @param string $scenario
+	 *
+	 * @return BaseRecord
 	 */
-	function __construct($scenario = 'insert')
+	public function __construct($scenario = 'insert')
 	{
-		// If Craft isn't installed, this model's table won't exist yet,
-		// so just create an instance of the class, for use by the installer
+		// If Craft isn't installed, this model's table won't exist yet, so just create an instance of the class,
+		// for use by the installer
 		if ($scenario !== 'install')
 		{
 			parent::__construct($scenario);
@@ -41,7 +51,9 @@ abstract class BaseRecord extends \CActiveRecord
 	}
 
 	/**
-	 * Init
+	 * Initializes the application component.
+	 *
+	 * @return null
 	 */
 	public function init()
 	{
@@ -55,10 +67,21 @@ abstract class BaseRecord extends \CActiveRecord
 	/**
 	 * Returns the name of the associated database table.
 	 *
-	 * @abstract
 	 * @return string
 	 */
 	abstract public function getTableName();
+
+	/**
+	 * Returns an instance of the specified model
+	 *
+	 * @param string $class
+	 *
+	 * @return BaseRecord|object The model instance
+	 */
+	public static function model($class = __CLASS__)
+	{
+		return parent::model(get_called_class());
+	}
 
 	/**
 	 * Returns the table's primary key.
@@ -68,17 +91,6 @@ abstract class BaseRecord extends \CActiveRecord
 	public function primaryKey()
 	{
 		return 'id';
-	}
-
-	/**
-	 * Defines this model's attributes.
-	 *
-	 * @access protected
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array();
 	}
 
 	/**
@@ -190,13 +202,9 @@ abstract class BaseRecord extends \CActiveRecord
 				}
 				case AttributeType::Mixed:
 				{
-					if (!empty($value) && is_string($value))
+					if (is_string($value) && mb_strlen($value) && ($value[0] == '[' || $value[0] == '{'))
 					{
 						$this->setAttribute($name, JsonHelper::decode($value));
-					}
-					else
-					{
-						$this->setAttribute($name, array());
 					}
 
 					break;
@@ -224,7 +232,9 @@ abstract class BaseRecord extends \CActiveRecord
 	}
 
 	/**
-	 * Creates the model's table
+	 * Creates the model's table.
+	 *
+	 * @return null
 	 */
 	public function createTable()
 	{
@@ -315,7 +325,9 @@ abstract class BaseRecord extends \CActiveRecord
 	}
 
 	/**
-	 * Drops the model's table
+	 * Drops the model's table.
+	 *
+	 * @return null
 	 */
 	public function dropTable()
 	{
@@ -329,7 +341,9 @@ abstract class BaseRecord extends \CActiveRecord
 	}
 
 	/**
-	 * Adds foreign keys to the model's table
+	 * Adds foreign keys to the model's table.
+	 *
+	 * @return null
 	 */
 	public function addForeignKeys()
 	{
@@ -371,7 +385,9 @@ abstract class BaseRecord extends \CActiveRecord
 	}
 
 	/**
-	 * Drops the foreign keys from the model's table
+	 * Drops the foreign keys from the model's table.
+	 *
+	 * @return null
 	 */
 	public function dropForeignKeys()
 	{
@@ -407,7 +423,8 @@ abstract class BaseRecord extends \CActiveRecord
 	 * @param mixed $id
 	 * @param mixed $condition
 	 * @param array $params
-	 * @return \CActiveRecord
+	 *
+	 * @return BaseRecord
 	 */
 	public function findById($id, $condition = '', $params = array())
 	{
@@ -418,7 +435,8 @@ abstract class BaseRecord extends \CActiveRecord
 	 * @param mixed $id
 	 * @param mixed $condition
 	 * @param array $params
-	 * @return \CActiveRecord[]
+	 *
+	 * @return BaseRecord[]
 	 */
 	public function findAllById($id, $condition = '', $params = array())
 	{
@@ -426,17 +444,6 @@ abstract class BaseRecord extends \CActiveRecord
 	}
 
 	// CModel and CActiveRecord methods
-
-	/**
-	 * Returns an instance of the specified model
-	 * @static
-	 * @param string $class
-	 * @return \CActiveRecord|object The model instance
-	 */
-	public static function model($class = __CLASS__)
-	{
-		return parent::model(get_called_class());
-	}
 
 	/**
 	 * Returns the name of the associated database table.
@@ -489,10 +496,74 @@ abstract class BaseRecord extends \CActiveRecord
 	}
 
 	/**
+	 * Sets the named attribute value. You may also use $this->AttributeName to set the attribute value.
+	 *
+	 * @param string $name  The attribute name.
+	 * @param mixed  $value The attribute value.
+	 *
+	 * @return bool Whether the attribute exists and the assignment is conducted successfully.
+	 */
+	public function setAttribute($name, $value)
+	{
+		if (property_exists($this, $name))
+		{
+			$this->$name = $value;
+		}
+		else if (isset($this->getMetaData()->columns[$name]))
+		{
+			$this->_attributes[$name] = $value;
+		}
+		else
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Adds search criteria based on this model's attributes.
+	 *
+	 * @return \CActiveDataProvider
+	 */
+	public function search()
+	{
+		// Warning: Please modify the following code to remove attributes that should not be searched.
+		$criteria = new \CDbCriteria;
+
+		foreach (array_keys($this->getAttributeConfigs()) as $name)
+		{
+			$criteria->compare($name, $this->$name);
+		}
+
+		return new \CActiveDataProvider($this, array(
+			'criteria' => $criteria
+		));
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * Defines this model's attributes.
+	 *
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array();
+	}
+
+	// Private Methods
+	// =========================================================================
+
+	/**
 	 * Normalizes a relation's config
 	 *
 	 * @param string $name
-	 * @param array &$config
+	 * @param array  &$config
+	 *
+	 * @return null
 	 */
 	private function _normalizeRelation($name, &$config)
 	{
@@ -520,52 +591,5 @@ abstract class BaseRecord extends \CActiveRecord
 				break;
 			}
 		}
-	}
-
-	/**
-	 * Adds search criteria based on this model's attributes.
-	 *
-	 * @return \CActiveDataProvider
-	 */
-	public function search()
-	{
-		// Warning: Please modify the following code to remove attributes that should not be searched.
-		$criteria = new \CDbCriteria;
-
-		foreach (array_keys($this->getAttributeConfigs()) as $name)
-		{
-			$criteria->compare($name, $this->$name);
-		}
-
-		return new \CActiveDataProvider($this, array(
-			'criteria' => $criteria
-		));
-	}
-
-	/**
-	 * Sets the named attribute value.
-	 * You may also use $this->AttributeName to set the attribute value.
-	 *
-	 * @param string $name the attribute name
-	 * @param mixed $value the attribute value.
-	 * @return boolean whether the attribute exists and the assignment is conducted successfully
-	 * @see hasAttribute
-	 */
-	public function setAttribute($name, $value)
-	{
-		if (property_exists($this, $name))
-		{
-			$this->$name = $value;
-		}
-		else if (isset($this->getMetaData()->columns[$name]))
-		{
-			$this->_attributes[$name] = $value;
-		}
-		else
-		{
-			return false;
-		}
-
-		return true;
 	}
 }

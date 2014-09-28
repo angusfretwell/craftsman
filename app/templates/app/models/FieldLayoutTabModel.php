@@ -2,36 +2,32 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Field layout tab model class.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Field layout tab model class
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.models
+ * @since     1.0
  */
 class FieldLayoutTabModel extends BaseModel
 {
-	private $_layout;
-	private $_fields;
+	// Properties
+	// =========================================================================
 
 	/**
-	 * @access protected
-	 * @return array
+	 * @var
 	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'id'        => AttributeType::Number,
-			'layoutId'  => AttributeType::Number,
-			'name'      => AttributeType::Name,
-			'sortOrder' => AttributeType::SortOrder,
-		);
-	}
+	private $_layout;
+
+	/**
+	 * @var
+	 */
+	private $_fields;
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns the tab's layout.
@@ -62,6 +58,8 @@ class FieldLayoutTabModel extends BaseModel
 	 * Sets the tab's layout.
 	 *
 	 * @param FieldLayoutModel $layout
+	 *
+	 * @return null
 	 */
 	public function setLayout(FieldLayoutModel $layout)
 	{
@@ -102,6 +100,8 @@ class FieldLayoutTabModel extends BaseModel
 	 * Sets the tab's fields.
 	 *
 	 * @param array $fields
+	 *
+	 * @return null
 	 */
 	public function setFields($fields)
 	{
@@ -116,5 +116,23 @@ class FieldLayoutTabModel extends BaseModel
 
 			$this->_fields[] = $field;
 		}
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc BaseModel::defineAttributes()
+	 *
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'id'        => AttributeType::Number,
+			'layoutId'  => AttributeType::Number,
+			'name'      => AttributeType::Name,
+			'sortOrder' => AttributeType::SortOrder,
+		);
 	}
 }

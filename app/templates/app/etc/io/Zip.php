@@ -2,25 +2,25 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Class Zip
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- *
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.etc.io
+ * @since     1.0
  */
 class Zip
 {
+	// Protected Methods
+	// =========================================================================
+
 	/**
-	 * @static
 	 * @param $source
 	 * @param $destZip
-	 * @return bool 'true' if the zip was successfully create, 'false' if not.
+	 *
+	 * @return bool 'true' if the zip was successfully created, 'false' if not.
 	 */
 	public static function compress($source, $destZip)
 	{
@@ -47,9 +47,9 @@ class Zip
 	}
 
 	/**
-	 * @static
 	 * @param $srcZip
 	 * @param $destFolder
+	 *
 	 * @return bool
 	 */
 	public static function unzip($srcZip, $destFolder)
@@ -114,6 +114,7 @@ class Zip
 	 * @param      $pathToAdd
 	 * @param      $basePath
 	 * @param null $pathPrefix
+	 *
 	 * @return bool
 	 */
 	public static function add($sourceZip, $pathToAdd, $basePath, $pathPrefix = null)
@@ -131,6 +132,7 @@ class Zip
 		craft()->config->maxPowerCaptain();
 
 		$zip = static::_getZipInstance($sourceZip);
+
 		if ($zip->add($sourceZip, $pathToAdd, $basePath, $pathPrefix))
 		{
 			return true;
@@ -138,6 +140,9 @@ class Zip
 
 		return false;
 	}
+
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * @return PclZip|ZipArchive

@@ -11,7 +11,7 @@ require __DIR__ . '/../../vendor/autoload.php';
 $generator = new PHPUnit_Framework_MockObject_Generator;
 
 print $generator->generateClassFromWsdl(
-  dirname(dirname(__FILE__)) . '/_files/GoogleSearch.wsdl',
+  dirname(dirname(__FILE__)) . '/_fixture/GoogleSearch.wsdl',
   'GoogleSearch'
 );
 ?>
@@ -23,15 +23,15 @@ class GoogleSearch extends \SoapClient
         parent::__construct('%s/GoogleSearch.wsdl', $options);
     }
 
+    public function doGoogleSearch($key, $q, $start, $maxResults, $filter, $restrict, $safeSearch, $lr, $ie, $oe)
+    {
+    }
+
     public function doGetCachedPage($key, $url)
     {
     }
 
     public function doSpellingSuggestion($key, $phrase)
-    {
-    }
-
-    public function doGoogleSearch($key, $q, $start, $maxResults, $filter, $restrict, $safeSearch, $lr, $ie, $oe)
     {
     }
 }

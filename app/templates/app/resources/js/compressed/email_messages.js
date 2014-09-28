@@ -1,7 +1,8 @@
 /*
  Copyright (c) 2014, Pixel & Tonic, Inc.
  @license   http://buildwithcraft.com/license Craft License Agreement
- @link      http://buildwithcraft.com
+ @see       http://buildwithcraft.com
+ @package   craft.app.resources
 */
 (function(c){var f=Garnish.Base.extend({messages:null,init:function(){this.messages=[];for(var a=c("#messages").find(".message"),b=0;b<a.length;b++){var e=new d(a[b]);this.messages.push(e)}}}),d=Garnish.Base.extend({$container:null,key:null,$subject:null,$body:null,modal:null,init:function(a){this.$container=c(a);this.key=this.$container.attr("data-key");this.$subject=this.$container.find(".subject:first");this.$body=this.$container.find(".body:first");this.addListener(this.$container,"click","edit")},
 edit:function(){this.modal?this.modal.show():this.modal=new g(this)},updateHtmlFromModal:function(){var a=this.modal.$subjectInput.val(),b=this.modal.$bodyInput.val().replace(/\n/g,"<br>");this.$subject.html(a);this.$body.html(b)}}),g=Garnish.Modal.extend({message:null,$localeSelect:null,$subjectInput:null,$bodyInput:null,$saveBtn:null,$cancelBtn:null,$spinner:null,loading:!1,init:function(a){this.message=a;this.base(null,{resizable:!0});this.loadContainer()},loadContainer:function(a){a={key:this.message.key,

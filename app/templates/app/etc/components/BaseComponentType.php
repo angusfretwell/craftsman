@@ -2,34 +2,39 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Base component base class.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Base component base class
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.etc.components
+ * @since     1.0
  */
 abstract class BaseComponentType extends BaseApplicationComponent implements IComponentType
 {
+	// Properties
+	// =========================================================================
+
 	/**
-	 * @access protected
-	 * @var string The type of component, e.g. "Plugin", "Widget", or "Field". Defined by the component type's base class.
+	 * The type of component, e.g. "Plugin", "Widget", "FieldType", etc. Defined by the component type's base class.
+	 *
+	 * @var string
 	 */
 	protected $componentType;
 
 	/**
-	 * @access private
-	 * @var string The component's class handle.
+	 * The component's class handle.
+	 *
+	 * @var string
 	 */
 	private $_classHandle;
 
+	// Public Methods
+	// =========================================================================
+
 	/**
-	 * Returns the component’s name.
+	 * @inheritDoc IComponentType::getName()
 	 *
 	 * @return string
 	 */
@@ -39,7 +44,7 @@ abstract class BaseComponentType extends BaseApplicationComponent implements ICo
 	}
 
 	/**
-	 * Get the class name, sans namespace and suffix.
+	 * @inheritDoc IComponentType::getClassHandle()
 	 *
 	 * @return string
 	 */
@@ -65,7 +70,7 @@ abstract class BaseComponentType extends BaseApplicationComponent implements ICo
 	}
 
 	/**
-	 * Returns whether this component should be selectable when choosing a component of this type.
+	 * @inheritDoc IComponentType::isSelectable()
 	 *
 	 * @return bool
 	 */

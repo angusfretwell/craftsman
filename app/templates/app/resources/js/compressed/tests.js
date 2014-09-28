@@ -1,7 +1,8 @@
 /*
  Copyright (c) 2014, Pixel & Tonic, Inc.
  @license   http://buildwithcraft.com/license Craft License Agreement
- @link      http://buildwithcraft.com
+ @see       http://buildwithcraft.com
+ @package   craft.app.resources
 */
 test("Craft.getUrl()",function(){Craft.baseUrl="http://craft.dev/admin";Craft.baseCpUrl="http://craft.dev/admin";Craft.baseSiteUrl="http://craft.dev/";Craft.actionUrl="http://craft.dev/index.php/admin/actions";Craft.resourceUrl="http://craft.dev/admin/resources";Craft.omitScriptNameInUrls=!0;Craft.usePathInfo=!0;Craft.resourceTrigger="resources";Craft.actionTrigger="actions";Craft.path="";Craft.locale="en_us";Craft.translations=[];Craft.maxUploadSize=33554432;equal(Craft.getUrl("http://example.com/"),
 "http://example.com/");equal(Craft.getUrl(),"http://craft.dev/admin");equal(Craft.getUrl(""),"http://craft.dev/admin");equal(Craft.getUrl("",{foo:1,bar:1}),"http://craft.dev/admin?foo=1&bar=1");equal(Craft.getUrl("","foo=1&bar=1"),"http://craft.dev/admin?foo=1&bar=1");equal(Craft.getUrl("","?foo=1&bar=1&"),"http://craft.dev/admin?foo=1&bar=1");equal(Craft.getUrl("",{foo:1,"#":"bar"}),"http://craft.dev/admin?foo=1#bar");equal(Craft.getUrl("about",{foo:1,bar:1}),"http://craft.dev/admin/about?foo=1&bar=1");

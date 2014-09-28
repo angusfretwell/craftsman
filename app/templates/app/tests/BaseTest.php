@@ -1,71 +1,44 @@
 <?php
 namespace Craft;
 
-/**
- * Craft by Pixel & Tonic
- *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
- * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
 use \Mockery as m;
 
 /**
- * Base test class
+ * Base test class.
+ *
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.tests
+ * @since     1.0
  */
 abstract class BaseTest extends \CTestCase
 {
-	private $_originalComponentValues;
-	private $_originalApplication;
+	// Properties
+	// =========================================================================
 
 	/**
-	 * Sets a component, while taking care to restore it in the tear down.
-	 *
-	 * @param \CModule $obj
-	 * @param string   $name
-	 * @param mixed    $val
+	 * @var
 	 */
-	protected function setComponent(\CModule $obj, $name, $val)
-	{
-		// Save the original value for tearDown()
-		$this->_originalComponentValues[] = array($obj, $name, $obj->getComponent($name));
+	private $_originalComponentValues;
 
-		// Set the new one
-		$obj->setComponent($name, $val);
-	}
+	/**
+	 * @var
+	 */
+	private $_originalApplication;
 
-	protected function setApplication($val)
-	{
-		// Save the original one for tearDown()
-		if (!isset($this->_originalApplication))
-		{
-			$this->_originalApplication = craft();
-		}
-
-		// Call null to clear the app singleton.
-		Craft::setApplication(null);
-
-		// Set the new one.
-		Craft::setApplication($val);
-	}
-
-	protected function mockApplication()
-	{
-		$app = m::mock('Craft\WebApp')->makePartial();
-		$this->setApplication($app);
-		return $app;
-	}
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Tear down once all tests have been run.
+	 *
+	 * @return null
 	 */
 	public function tearDown()
 	{
-		// Restore any modified component values
-		// Go backwards in case the same component was set twice
+		// Restore any modified component values. Go backwards in case the same component was set twice.
 		if (isset($this->_originalComponentValues))
 		{
 			for ($i = count($this->_originalComponentValues)-1; $i >= 0; $i--)
@@ -89,12 +62,63 @@ abstract class BaseTest extends \CTestCase
 		m::close();
 	}
 
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * Sets a component, while taking care to restore it in the tear down.
+	 *
+	 * @param \CModule $obj
+	 * @param string   $name
+	 * @param mixed    $val
+	 *
+	 * @return null
+	 */
+	protected function setComponent(\CModule $obj, $name, $val)
+	{
+		// Save the original value for tearDown()
+		$this->_originalComponentValues[] = array($obj, $name, $obj->getComponent($name));
+
+		// Set the new one
+		$obj->setComponent($name, $val);
+	}
+
+	/**
+	 * @param $val
+	 *
+	 * @return null
+	 */
+	protected function setApplication($val)
+	{
+		// Save the original one for tearDown()
+		if (!isset($this->_originalApplication))
+		{
+			$this->_originalApplication = craft();
+		}
+
+		// Call null to clear the app singleton.
+		Craft::setApplication(null);
+
+		// Set the new one.
+		Craft::setApplication($val);
+	}
+
+	/**
+	 * @return mixed
+	 */
+	protected function mockApplication()
+	{
+		$app = m::mock('Craft\WebApp')->makePartial();
+		$this->setApplication($app);
+		return $app;
+	}
+
 	/**
 	 * Returns an accessible ReflectionMethod for a given class/object and method name.
 	 *
-	 * @access protected
-	 * @param mixed $obj
+	 * @param mixed  $obj
 	 * @param string $name
+	 *
 	 * @return \ReflectionMethod
 	 */
 	protected function getMethod($obj, $name)

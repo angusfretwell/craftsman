@@ -2,20 +2,20 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Class AssetIndexingService
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- *
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.services
+ * @since     1.0
  */
 class AssetIndexingService extends BaseApplicationComponent
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Returns a unique indexing session id.
 	 *
@@ -31,6 +31,7 @@ class AssetIndexingService extends BaseApplicationComponent
 	 *
 	 * @param $sessionId
 	 * @param $sourceId
+	 *
 	 * @return array
 	 */
 	public function getIndexListForSource($sessionId, $sourceId)
@@ -44,6 +45,7 @@ class AssetIndexingService extends BaseApplicationComponent
 	 * @param $sessionId
 	 * @param $offset
 	 * @param $sourceId
+	 *
 	 * @return mixed
 	 */
 	public function processIndexForSource($sessionId, $offset, $sourceId)
@@ -52,8 +54,10 @@ class AssetIndexingService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Ensures a top level folder exists that matches the model
+	 * Ensures a top level folder exists that matches the model.
+	 *
 	 * @param AssetSourceModel $model
+	 *
 	 * @return int
 	 */
 	public function ensureTopFolder(AssetSourceModel $model)
@@ -71,7 +75,7 @@ class AssetIndexingService extends BaseApplicationComponent
 			$folder->sourceId = $model->id;
 			$folder->parentId = null;
 			$folder->name = $model->name;
-			$folder->path = "";
+			$folder->path = '';
 			$folder->save();
 		}
 
@@ -101,6 +105,7 @@ class AssetIndexingService extends BaseApplicationComponent
 	 * @param $sourceId
 	 * @param $sessionId
 	 * @param $offset
+	 *
 	 * @return AssetIndexDataModel|bool
 	 */
 	public function getIndexEntry($sourceId, $sessionId, $offset)
@@ -124,6 +129,8 @@ class AssetIndexingService extends BaseApplicationComponent
 	/**
 	 * @param $entryId
 	 * @param $recordId
+	 *
+	 * @return null
 	 */
 	public function updateIndexEntryRecordId($entryId, $recordId)
 	{
@@ -136,6 +143,7 @@ class AssetIndexingService extends BaseApplicationComponent
 	 *
 	 * @param $sources
 	 * @param $sessionId
+	 *
 	 * @return array
 	 */
 	public function getMissingFiles($sources, $sessionId)
@@ -174,6 +182,8 @@ class AssetIndexingService extends BaseApplicationComponent
 	 * Remove obsolete file records.
 	 *
 	 * @param $fileIds
+	 *
+	 * @return null
 	 */
 	public function removeObsoleteFileRecords($fileIds)
 	{
@@ -190,6 +200,8 @@ class AssetIndexingService extends BaseApplicationComponent
 	 * Remove obsolete folder records.
 	 *
 	 * @param $folderIds
+	 *
+	 * @return null
 	 */
 	public function removeObsoleteFolderRecords($folderIds)
 	{

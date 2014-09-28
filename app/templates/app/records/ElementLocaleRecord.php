@@ -2,21 +2,23 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Element locale data record class.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Element locale data record class
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.records
+ * @since     1.0
  */
 class ElementLocaleRecord extends BaseRecord
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
+	 * @inheritDoc BaseRecord::getTableName()
+	 *
 	 * @return string
 	 */
 	public function getTableName()
@@ -25,20 +27,8 @@ class ElementLocaleRecord extends BaseRecord
 	}
 
 	/**
-	 * @access protected
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'locale'  => array(AttributeType::Locale, 'required' => true),
-			'slug'    => array(AttributeType::String),
-			'uri'     => array(AttributeType::Uri, 'label' => 'URI'),
-			'enabled' => array(AttributeType::Bool, 'default' => true),
-		);
-	}
-
-	/**
+	 * @inheritDoc BaseRecord::defineRelations()
+	 *
 	 * @return array
 	 */
 	public function defineRelations()
@@ -50,6 +40,8 @@ class ElementLocaleRecord extends BaseRecord
 	}
 
 	/**
+	 * @inheritDoc BaseRecord::defineIndexes()
+	 *
 	 * @return array
 	 */
 	public function defineIndexes()
@@ -59,6 +51,24 @@ class ElementLocaleRecord extends BaseRecord
 			array('columns' => array('slug', 'locale')),
 			array('columns' => array('uri', 'locale'), 'unique' => true),
 			array('columns' => array('enabled')),
+		);
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc BaseRecord::defineAttributes()
+	 *
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'locale'  => array(AttributeType::Locale, 'required' => true),
+			'slug'    => array(AttributeType::String),
+			'uri'     => array(AttributeType::Uri, 'label' => 'URI'),
+			'enabled' => array(AttributeType::Bool, 'default' => true),
 		);
 	}
 }

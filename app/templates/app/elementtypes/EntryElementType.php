@@ -2,22 +2,22 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * The EntryElementType class is responsible for implementing and defining entries as a native element type in Craft.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Entry element type
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.elementtypes
+ * @since     1.0
  */
 class EntryElementType extends BaseElementType
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
-	 * Returns the element type name.
+	 * @inheritDoc IComponentType::getName()
 	 *
 	 * @return string
 	 */
@@ -27,7 +27,7 @@ class EntryElementType extends BaseElementType
 	}
 
 	/**
-	 * Returns whether this element type has content.
+	 * @inheritDoc IElementType::hasContent()
 	 *
 	 * @return bool
 	 */
@@ -37,7 +37,7 @@ class EntryElementType extends BaseElementType
 	}
 
 	/**
-	 * Returns whether this element type has titles.
+	 * @inheritDoc IElementType::hasTitles()
 	 *
 	 * @return bool
 	 */
@@ -47,7 +47,7 @@ class EntryElementType extends BaseElementType
 	}
 
 	/**
-	 * Returns whether this element type stores data on a per-locale basis.
+	 * @inheritDoc IElementType::isLocalized()
 	 *
 	 * @return bool
 	 */
@@ -57,7 +57,7 @@ class EntryElementType extends BaseElementType
 	}
 
 	/**
-	 * Returns whether this element type can have statuses.
+	 * @inheritDoc IElementType::hasStatuses()
 	 *
 	 * @return bool
 	 */
@@ -67,7 +67,7 @@ class EntryElementType extends BaseElementType
 	}
 
 	/**
-	 * Returns all of the possible statuses that elements of this type may have.
+	 * @inheritDoc IElementType::getStatuses()
 	 *
 	 * @return array|null
 	 */
@@ -82,10 +82,11 @@ class EntryElementType extends BaseElementType
 	}
 
 	/**
-	 * Returns this element type's sources.
+	 * @inheritDoc IElementType::getSources()
 	 *
-	 * @param string|null $context
-	 * @return array|false
+	 * @param null $context
+	 *
+	 * @return array|bool|false
 	 */
 	public function getSources($context = null)
 	{
@@ -167,9 +168,10 @@ class EntryElementType extends BaseElementType
 	}
 
 	/**
-	 * Returns the attributes that can be shown/sorted by in table views.
+	 * @inheritDoc IElementType::defineTableAttributes()
 	 *
-	 * @param string|null $source
+	 * @param null $source
+	 *
 	 * @return array
 	 */
 	public function defineTableAttributes($source = null)
@@ -199,11 +201,12 @@ class EntryElementType extends BaseElementType
 	}
 
 	/**
-	 * Returns the table view HTML for a given attribute.
+	 * @inheritDoc IElementType::getTableAttributeHtml()
 	 *
 	 * @param BaseElementModel $element
-	 * @param string $attribute
-	 * @return string
+	 * @param string           $attribute
+	 *
+	 * @return mixed|null|string
 	 */
 	public function getTableAttributeHtml(BaseElementModel $element, $attribute)
 	{
@@ -237,7 +240,7 @@ class EntryElementType extends BaseElementType
 	}
 
 	/**
-	 * Defines any custom element criteria attributes for this element type.
+	 * @inheritDoc IElementType::defineCriteriaAttributes()
 	 *
 	 * @return array
 	 */
@@ -260,11 +263,12 @@ class EntryElementType extends BaseElementType
 	}
 
 	/**
-	 * Returns the element query condition for a custom status criteria.
+	 * @inheritDoc IElementType::getElementQueryStatusCondition()
 	 *
 	 * @param DbCommand $query
-	 * @param string $status
-	 * @return string|false
+	 * @param string    $status
+	 *
+	 * @return array|false|string|void
 	 */
 	public function getElementQueryStatusCondition(DbCommand $query, $status)
 	{
@@ -304,11 +308,12 @@ class EntryElementType extends BaseElementType
 	}
 
 	/**
-	 * Modifies an element query targeting elements of this type.
+	 * @inheritDoc IElementType::modifyElementsQuery()
 	 *
-	 * @param DbCommand $query
+	 * @param DbCommand            $query
 	 * @param ElementCriteriaModel $criteria
-	 * @return mixed
+	 *
+	 * @return bool|false|null|void
 	 */
 	public function modifyElementsQuery(DbCommand $query, ElementCriteriaModel $criteria)
 	{
@@ -497,10 +502,11 @@ class EntryElementType extends BaseElementType
 	}
 
 	/**
-	 * Populates an element model based on a query result.
+	 * @inheritDoc IElementType::populateElementModel()
 	 *
 	 * @param array $row
-	 * @return array
+	 *
+	 * @return BaseElementModel|BaseModel|void
 	 */
 	public function populateElementModel($row)
 	{
@@ -508,9 +514,10 @@ class EntryElementType extends BaseElementType
 	}
 
 	/**
-	 * Returns the HTML for an editor HUD for the given element.
+	 * @inheritDoc IElementType::getEditorHtml()
 	 *
 	 * @param BaseElementModel $element
+	 *
 	 * @return string
 	 */
 	public function getEditorHtml(BaseElementModel $element)
@@ -532,12 +539,22 @@ class EntryElementType extends BaseElementType
 	}
 
 	/**
+	 * @inheritdoc BaseElementType::saveElement()
+	 *
+	 * @return bool
+	 */
+	public function saveElement(BaseElementModel $element, $params)
+	{
+		// Route this through EntriesService::saveEntry() so the proper entry events get fired.
+		return craft()->entries->saveEntry($element);
+	}
+
+	/**
 	 * Routes the request when the URI matches an element.
 	 *
-	 * @param BaseElementModel
-	 * @return mixed Can be false if no special action should be taken,
-	 *               a string if it should route to a template path,
-	 *               or an array that can specify a controller action path, params, etc.
+	 * @param BaseElementModel $element
+	 *
+	 * @return array|bool|mixed
 	 */
 	public function routeRequestForMatchedElement(BaseElementModel $element)
 	{
@@ -565,10 +582,12 @@ class EntryElementType extends BaseElementType
 	}
 
 	/**
-	 * Performs actions after an element has been moved within a structure.
+	 * @inheritDoc IElementType::onAfterMoveElementInStructure()
 	 *
 	 * @param BaseElementModel $element
-	 * @param int $structureId
+	 * @param int              $structureId
+	 *
+	 * @return null|void
 	 */
 	public function onAfterMoveElementInStructure(BaseElementModel $element, $structureId)
 	{

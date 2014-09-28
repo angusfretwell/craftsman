@@ -2,26 +2,33 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * EntriesService provides APIs for managing entries in Craft.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * An instance of EntriesService is globally accessible in Craft via {@link WebApp::entries `craft()->entries`}.
+ *
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- *
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.services
+ * @since     1.0
  */
 class EntriesService extends BaseApplicationComponent
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Returns an entry by its ID.
 	 *
-	 * @param int $entryId
-	 * @param string|null $localeId
-	 * @return EntryModel|null
+	 * ```php
+	 * $entry = craft()->entries->getEntryById($entryId);
+	 * ```
+	 *
+	 * @param int    $entryId  The entry’s ID.
+	 * @param string $localeId The locale to fetch the entry in. Defaults to {@link WebApp::language `craft()->language`}.
+	 *
+	 * @return EntryModel|null The entry with the given ID, or `null` if an entry could not be found.
 	 */
 	public function getEntryById($entryId, $localeId = null)
 	{
@@ -29,11 +36,30 @@ class EntriesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Saves an entry.
+	 * Saves a new or existing entry.
 	 *
-	 * @param EntryModel $entry
+	 * ```php
+	 * $entry = new EntryModel();
+	 * $entry->sectionId = 10;
+	 * $entry->typeId    = 1;
+	 * $entry->authorId  = 5;
+	 * $entry->enabled   = true;
+	 *
+	 * $entry->getContent()->title = "Hello World!";
+	 * $entry->getContent()->body  = "<p>I can’t believe I literally just called this “Hello World!”.</p>";
+	 *
+	 * $success = craft()->entries->saveEntry($entry);
+	 *
+	 * if (!$success)
+	 * {
+	 *     Craft::log('Couldn’t save the entry "'.$entry->title.'"', LogLevel::Error);
+	 * }
+	 * ```
+	 *
+	 * @param EntryModel $entry The entry to be saved.
+	 *
 	 * @throws \Exception
-	 * @return bool
+	 * @return bool Whether the entry was saved successfully.
 	 */
 	public function saveEntry(EntryModel $entry)
 	{
@@ -100,7 +126,6 @@ class EntriesService extends BaseApplicationComponent
 		{
 			$entryRecord->authorId   = $entry->authorId = null;
 			$entryRecord->expiryDate = $entry->expiryDate = null;
-			$entry->enabled = true;
 		}
 		else
 		{
@@ -119,119 +144,125 @@ class EntriesService extends BaseApplicationComponent
 		$entryRecord->validate();
 		$entry->addErrors($entryRecord->getErrors());
 
-		if (!$entry->hasErrors())
+		if ($entry->hasErrors())
 		{
-			if (!$entryType->hasTitleField)
-			{
-				$entry->getContent()->title = craft()->templates->renderObjectTemplate($entryType->titleFormat, $entry);
-			}
+			return false;
+		}
 
-			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
-			try
-			{
-				// Fire an 'onBeforeSaveEntry' event
-				$this->onBeforeSaveEntry(new Event($this, array(
-					'entry'      => $entry,
-					'isNewEntry' => $isNewEntry
-				)));
+		if (!$entryType->hasTitleField)
+		{
+			$entry->getContent()->title = craft()->templates->renderObjectTemplate($entryType->titleFormat, $entry);
+		}
 
-				// Save the element
-				if (craft()->elements->saveElement($entry))
+		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+		try
+		{
+			// Fire an 'onBeforeSaveEntry' event
+			$this->onBeforeSaveEntry(new Event($this, array(
+				'entry'      => $entry,
+				'isNewEntry' => $isNewEntry
+			)));
+
+			// Save the element
+			if (craft()->elements->saveElement($entry))
+			{
+				// Now that we have an element ID, save it on the other stuff
+				if ($isNewEntry)
 				{
-					// Now that we have an element ID, save it on the other stuff
-					if ($isNewEntry)
-					{
-						$entryRecord->id = $entry->id;
-					}
+					$entryRecord->id = $entry->id;
+				}
 
-					// Save the actual entry row
-					$entryRecord->save(false);
+				// Save the actual entry row
+				$entryRecord->save(false);
 
-					if ($section->type == SectionType::Structure)
+				if ($section->type == SectionType::Structure)
+				{
+					// Has the parent changed?
+					if ($hasNewParent)
 					{
-						// Has the parent changed?
-						if ($hasNewParent)
+						if (!$entry->parentId)
 						{
-							if (!$entry->parentId)
-							{
-								craft()->structures->appendToRoot($section->structureId, $entry);
-							}
-							else
-							{
-								craft()->structures->append($section->structureId, $entry, $parentEntry);
-							}
+							craft()->structures->appendToRoot($section->structureId, $entry);
 						}
-
-						// Update the entry's descendants, who may be using this entry's URI in their own URIs
-						craft()->elements->updateDescendantSlugsAndUris($entry);
+						else
+						{
+							craft()->structures->append($section->structureId, $entry, $parentEntry);
+						}
 					}
 
-					// Save a new version
-					if (craft()->getEdition() >= Craft::Client)
-					{
-						craft()->entryRevisions->saveVersion($entry);
-					}
-
-					// Fire an 'onSaveEntry' event
-					$this->onSaveEntry(new Event($this, array(
-						'entry'      => $entry,
-						'isNewEntry' => $isNewEntry
-					)));
-
-					if ($transaction !== null)
-					{
-						$transaction->commit();
-					}
-
-					return true;
+					// Update the entry's descendants, who may be using this entry's URI in their own URIs
+					craft()->elements->updateDescendantSlugsAndUris($entry);
 				}
-				else
+
+				// Save a new version
+				if (craft()->getEdition() >= Craft::Client && $section->enableVersioning)
 				{
-					if ($transaction !== null)
-					{
-						$transaction->rollback();
-					}
+					craft()->entryRevisions->saveVersion($entry);
+				}
 
-					// If "title" has an error, check if they've defined a custom title label.
-					if ($entry->getError('title'))
-					{
-						// Grab all of the original errors.
-						$errors = $entry->getErrors();
-
-						// Grab just the title error message.
-						$originalTitleError = $errors['title'];
-
-						// Clear the old.
-						$entry->clearErrors();
-
-						// Create the new "title" error message.
-						$errors['title'] = str_replace('Title', $entryType->titleLabel, $originalTitleError);
-
-						// Add all of the errors back on the model.
-						$entry->addErrors($errors);
-
-					}
+				if ($transaction !== null)
+				{
+					$transaction->commit();
 				}
 			}
-			catch (\Exception $e)
+			else
 			{
 				if ($transaction !== null)
 				{
 					$transaction->rollback();
 				}
 
-				throw $e;
+				// If "title" has an error, check if they've defined a custom title label.
+				if ($entry->getError('title'))
+				{
+					// Grab all of the original errors.
+					$errors = $entry->getErrors();
+
+					// Grab just the title error message.
+					$originalTitleError = $errors['title'];
+
+					// Clear the old.
+					$entry->clearErrors();
+
+					// Create the new "title" error message.
+					$errors['title'] = str_replace('Title', $entryType->titleLabel, $originalTitleError);
+
+					// Add all of the errors back on the model.
+					$entry->addErrors($errors);
+
+				}
+
+				return false;
 			}
 		}
+		catch (\Exception $e)
+		{
+			if ($transaction !== null)
+			{
+				$transaction->rollback();
+			}
 
-		return false;
+			throw $e;
+		}
+
+		// If we've made it here, everything has been successful so far.
+
+		// Fire an 'onSaveEntry' event
+		$this->onSaveEntry(new Event($this, array(
+			'entry'      => $entry,
+			'isNewEntry' => $isNewEntry
+		)));
+
+		return true;
 	}
 
 	/**
 	 * Deletes an entry(s).
-	 * @param EntryModel|array $entries
+	 *
+	 * @param EntryModel|EntryModel[] $entries An entry, or an array of entries, to be deleted.
+	 *
 	 * @throws \Exception
-	 * @return bool
+	 * @return bool Whether the entry deletion was successful.
 	 */
 	public function deleteEntry($entries)
 	{
@@ -312,8 +343,9 @@ class EntriesService extends BaseApplicationComponent
 	/**
 	 * Deletes an entry(s) by its ID.
 	 *
-	 * @param int|array $entryId
-	 * @return bool
+	 * @param int|array $entryId The ID of an entry to delete, or an array of entry IDs.
+	 *
+	 * @return bool Whether the entry deletion was successful.
 	 */
 	public function deleteEntryById($entryId)
 	{
@@ -339,13 +371,12 @@ class EntriesService extends BaseApplicationComponent
 		}
 	}
 
-	// Events
-	// ======
-
 	/**
 	 * Fires an 'onBeforeSaveEntry' event.
 	 *
 	 * @param Event $event
+	 *
+	 * @return null
 	 */
 	public function onBeforeSaveEntry(Event $event)
 	{
@@ -356,6 +387,8 @@ class EntriesService extends BaseApplicationComponent
 	 * Fires an 'onSaveEntry' event.
 	 *
 	 * @param Event $event
+	 *
+	 * @return null
 	 */
 	public function onSaveEntry(Event $event)
 	{
@@ -366,6 +399,8 @@ class EntriesService extends BaseApplicationComponent
 	 * Fires an 'onBeforeDeleteEntry' event.
 	 *
 	 * @param Event $event
+	 *
+	 * @return null
 	 */
 	public function onBeforeDeleteEntry(Event $event)
 	{
@@ -376,20 +411,22 @@ class EntriesService extends BaseApplicationComponent
 	 * Fires an 'onDeleteEntry' event.
 	 *
 	 * @param Event $event
+	 *
+	 * @return null
 	 */
 	public function onDeleteEntry(Event $event)
 	{
 		$this->raiseEvent('onDeleteEntry', $event);
 	}
 
-	// Private methods
-	// ===============
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Checks if an entry was submitted with a new parent entry selected.
 	 *
-	 * @access private
 	 * @param EntryModel $entry
+	 *
 	 * @return bool
 	 */
 	private function _checkForNewParent(EntryModel $entry)

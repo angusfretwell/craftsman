@@ -2,22 +2,22 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * The UserElementType class is responsible for implementing and defining users as a native element type in Craft.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * User element type
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.elementtypes
+ * @since     1.0
  */
 class UserElementType extends BaseElementType
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
-	 * Returns the element type name.
+	 * @inheritDoc IComponentType::getName()
 	 *
 	 * @return string
 	 */
@@ -27,7 +27,7 @@ class UserElementType extends BaseElementType
 	}
 
 	/**
-	 * Returns whether this element type has content.
+	 * @inheritDoc IElementType::hasContent()
 	 *
 	 * @return bool
 	 */
@@ -63,9 +63,10 @@ class UserElementType extends BaseElementType
 	}
 
 	/**
-	 * Returns this element type's sources.
+	 * @inheritDoc IElementType::getSources()
 	 *
 	 * @param string|null $context
+	 *
 	 * @return array|false
 	 */
 	public function getSources($context = null)
@@ -95,7 +96,7 @@ class UserElementType extends BaseElementType
 	}
 
 	/**
-	 * Defines which model attributes should be searchable.
+	 * @inheritDoc IElementType::defineSearchableAttributes()
 	 *
 	 * @return array
 	 */
@@ -105,28 +106,45 @@ class UserElementType extends BaseElementType
 	}
 
 	/**
-	 * Returns the attributes that can be shown/sorted by in table views.
+	 * @inheritDoc IElementType::defineTableAttributes()
 	 *
 	 * @param string|null $source
+	 *
 	 * @return array
 	 */
 	public function defineTableAttributes($source = null)
 	{
-		return array(
-			'username'      => Craft::t('Username'),
-			'firstName'     => Craft::t('First Name'),
-			'lastName'      => Craft::t('Last Name'),
-			'email'         => Craft::t('Email'),
-			'dateCreated'   => Craft::t('Join Date'),
-			'lastLoginDate' => Craft::t('Last Login'),
-		);
+		if (craft()->config->get('useEmailAsUsername'))
+		{
+			$attributes = array(
+				'email'         => Craft::t('Email'),
+				'firstName'     => Craft::t('First Name'),
+				'lastName'      => Craft::t('Last Name'),
+				'dateCreated'   => Craft::t('Join Date'),
+				'lastLoginDate' => Craft::t('Last Login'),
+			);
+		}
+		else
+		{
+			$attributes = array(
+				'username'      => Craft::t('Username'),
+				'firstName'     => Craft::t('First Name'),
+				'lastName'      => Craft::t('Last Name'),
+				'email'         => Craft::t('Email'),
+				'dateCreated'   => Craft::t('Join Date'),
+				'lastLoginDate' => Craft::t('Last Login'),
+			);
+		}
+
+		return $attributes;
 	}
 
 	/**
-	 * Returns the table view HTML for a given attribute.
+	 * @inheritDoc IElementType::getTableAttributeHtml()
 	 *
 	 * @param BaseElementModel $element
-	 * @param string $attribute
+	 * @param string           $attribute
+	 *
 	 * @return string
 	 */
 	public function getTableAttributeHtml(BaseElementModel $element, $attribute)
@@ -169,7 +187,7 @@ class UserElementType extends BaseElementType
 	}
 
 	/**
-	 * Defines any custom element criteria attributes for this element type.
+	 * @inheritDoc IElementType::defineCriteriaAttributes()
 	 *
 	 * @return array
 	 */
@@ -184,7 +202,7 @@ class UserElementType extends BaseElementType
 			'group'          => AttributeType::Mixed,
 			'groupId'        => AttributeType::Number,
 			'lastName'       => AttributeType::String,
-			'lastLoginDate'  => AttributeType::DateTime,
+			'lastLoginDate'  => AttributeType::Mixed,
 			'order'          => array(AttributeType::String, 'default' => 'username asc'),
 			'preferredLocale'=> AttributeType::String,
 			'status'         => array(AttributeType::Enum, 'values' => array(UserStatus::Active, UserStatus::Locked, UserStatus::Suspended, UserStatus::Pending, UserStatus::Archived), 'default' => UserStatus::Active),
@@ -193,10 +211,11 @@ class UserElementType extends BaseElementType
 	}
 
 	/**
-	 * Returns the element query condition for a custom status criteria.
+	 * @inheritDoc IElementType::getElementQueryStatusCondition()
 	 *
 	 * @param DbCommand $query
-	 * @param string $status
+	 * @param string    $status
+	 *
 	 * @return string|false
 	 */
 	public function getElementQueryStatusCondition(DbCommand $query, $status)
@@ -205,10 +224,11 @@ class UserElementType extends BaseElementType
 	}
 
 	/**
-	 * Modifies an element query targeting elements of this type.
+	 * @inheritDoc IElementType::modifyElementsQuery()
 	 *
-	 * @param DbCommand $query
+	 * @param DbCommand            $query
 	 * @param ElementCriteriaModel $criteria
+	 *
 	 * @return mixed
 	 */
 	public function modifyElementsQuery(DbCommand $query, ElementCriteriaModel $criteria)
@@ -229,34 +249,96 @@ class UserElementType extends BaseElementType
 
 		if ($criteria->can)
 		{
-			$query->leftJoin('userpermissions_users opt1_userpermissions_users', 'opt1_userpermissions_users.userId = users.id');
-			$query->leftJoin('userpermissions opt1_userpermissions', 'opt1_userpermissions.id = opt1_userpermissions_users.permissionId');
+			// Get the actual permission ID
+			if (is_numeric($criteria->can))
+			{
+				$permissionId = $criteria->can;
+			}
+			else
+			{
+				$permissionId = craft()->db->createCommand()
+					->select('id')
+					->from('userpermissions')
+					->where('name = :name', array(':name' => strtolower($criteria->can)))
+					->queryScalar();
+			}
 
-			$query->leftJoin('usergroups_users opt2_usergroups_users', 'opt2_usergroups_users.userId = users.id');
-			$query->leftJoin('userpermissions_usergroups opt2_userpermissions_usergroups', 'opt2_userpermissions_usergroups.groupId = opt2_usergroups_users.groupId');
-			$query->leftJoin('userpermissions opt2_userpermissions', 'opt2_userpermissions.id = opt2_userpermissions_usergroups.permissionId');
+			// Find the users that have that permission, either directly or through a group
+			$permittedUserIds = array();
 
-			$query->andWhere(array('or',
-				'users.admin = 1',
-				'users.client = 1',
-				'opt1_userpermissions.name = :permission',
-				'opt2_userpermissions.name = :permission',
-			), array(
-				':permission' => $criteria->can
-			));
+			// If the permission hasn't been assigned to any groups/users before, it won't have an ID. Don't bail
+			// though, since we still want to look for admins.
+			if ($permissionId)
+			{
+				// Get the user groups that have that permission
+				$permittedGroupIds = craft()->db->createCommand()
+					->select('groupId')
+					->from('userpermissions_usergroups')
+					->where('permissionId = :permissionId', array(':permissionId' => $permissionId))
+					->queryColumn();
+
+				if ($permittedGroupIds)
+				{
+					$permittedUserIds = $this->_getUserIdsByGroupIds($permittedGroupIds);
+				}
+
+				// Get the users that have that permission directly
+				$permittedUserIds = array_merge(
+					$permittedUserIds,
+					craft()->db->createCommand()
+						->select('userId')
+						->from('userpermissions_users')
+						->where('permissionId = :permissionId', array(':permissionId' => $permissionId))
+						->queryColumn()
+				);
+			}
+
+			if ($permittedUserIds)
+			{
+				$permissionConditions = array('or', 'users.admin = 1', DbHelper::parseParam('elements.id', $permittedUserIds, $query->params));
+			}
+			else
+			{
+				$permissionConditions = 'users.admin = 1';
+			}
+
+			$query->andWhere($permissionConditions);
 		}
 
 		if ($criteria->groupId)
 		{
-			$query->join('usergroups_users usergroups_users', 'usergroups_users.userId = users.id');
-			$query->andWhere(DbHelper::parseParam('usergroups_users.groupId', $criteria->groupId, $query->params));
+			$userIds = $this->_getUserIdsByGroupIds($criteria->groupId);
+
+			if (!$userIds)
+			{
+				return false;
+			}
+
+			// TODO: MySQL specific. Manually building the string because DbHelper::parseParam() chokes with large
+			// arrays.
+			$query->andWhere('elements.id IN ('.implode(',', $userIds).')');
 		}
 
 		if ($criteria->group)
 		{
-			$query->join('usergroups_users usergroups_users', 'usergroups_users.userId = users.id');
-			$query->join('usergroups usergroups', 'usergroups.id = usergroups_users.groupId');
-			$query->andWhere(DbHelper::parseParam('usergroups.handle', $criteria->group, $query->params));
+			// Get the actual group ID(s)
+			$groupIdsQuery = craft()->db->createCommand()
+				->select('id')
+				->from('usergroups');
+
+			$groupIdsQuery->where(DbHelper::parseParam('handle', $criteria->group, $groupIdsQuery->params));
+			$groupIds = $groupIdsQuery->queryColumn();
+
+			$userIds = $this->_getUserIdsByGroupIds($groupIds);
+
+			if (!$userIds)
+			{
+				return false;
+			}
+
+			// TODO: MySQL specific. Manually building the string because DbHelper::parseParam() chokes with large
+			// arrays.
+			$query->andWhere('elements.id IN ('.implode(',', $userIds).')');
 		}
 
 		if ($criteria->username)
@@ -283,16 +365,41 @@ class UserElementType extends BaseElementType
 		{
 			$query->andWhere(DbHelper::parseParam('users.preferredLocale', $criteria->preferredLocale, $query->params));
 		}
+
+		if ($criteria->lastLoginDate)
+		{
+			$query->andWhere(DbHelper::parseDateParam('users.lastLoginDate', $criteria->lastLoginDate, $query->params));
+		}
 	}
 
 	/**
-	 * Populates an element model based on a query result.
+	 * @inheritDoc IElementType::populateElementModel()
 	 *
 	 * @param array $row
+	 *
 	 * @return array
 	 */
 	public function populateElementModel($row)
 	{
 		return UserModel::populateModel($row);
+	}
+
+	// Private Methods
+	// =========================================================================
+
+	/**
+	 * @param $groupIds
+	 *
+	 * @return array
+	 */
+	private function _getUserIdsByGroupIds($groupIds)
+	{
+		$query = craft()->db->createCommand()
+			->select('userId')
+			->from('usergroups_users');
+
+		$query->where(DbHelper::parseParam('groupId', $groupIds, $query->params));
+
+		return $query->queryColumn();
 	}
 }

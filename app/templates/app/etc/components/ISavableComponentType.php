@@ -2,37 +2,48 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Savable component type interface.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Savable component type interface
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.etc.components
+ * @since     1.0
  */
 interface ISavableComponentType extends IComponentType
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
+	 * Gets the settings.
+	 *
 	 * @return BaseModel
 	 */
 	public function getSettings();
 
 	/**
-	 * @param array $values
+	 * Sets the setting values.
+	 *
+	 * @param array|BaseModel $values
+	 *
+	 * @return null
 	 */
 	public function setSettings($values);
 
 	/**
+	 * Preps the settings before they're saved to the database.
+	 *
 	 * @param array $settings
+	 *
 	 * @return array
 	 */
 	public function prepSettings($settings);
 
 	/**
+	 * Returns the component's settings HTML.
+	 *
 	 * @return string|null
 	 */
 	public function getSettingsHtml();

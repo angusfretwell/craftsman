@@ -1,25 +1,42 @@
 <?php
 namespace Craft;
 
-/**
- * Craft by Pixel & Tonic
- *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
- * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
 craft()->requireEdition(Craft::Pro);
 
 /**
- * Handles localization actions.
+ * The LocalizationController class is a controller that handles various localization related tasks such adding,
+ * deleting and re-ordering locales in the control panel.
+ *
+ * Note that all actions in the controller require an authenticated Craft session via {@link BaseController::allowAnonymous}.
+ *
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.controllers
+ * @since     1.0
  */
 class LocalizationController extends BaseController
 {
+	// Public Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc BaseController::init()
+	 *
+	 * @throws HttpException
+	 * @return null
+	 */
+	public function init()
+	{
+		// All localization related actions require an admin
+		craft()->userSession->requireAdmin();
+	}
+
 	/**
 	 * Adds a new a locale.
+	 *
+	 * @return null
 	 */
 	public function actionAddLocale()
 	{
@@ -33,6 +50,8 @@ class LocalizationController extends BaseController
 
 	/**
 	 * Saves the new locale order.
+	 *
+	 * @return null
 	 */
 	public function actionReorderLocales()
 	{
@@ -46,6 +65,8 @@ class LocalizationController extends BaseController
 
 	/**
 	 * Deletes a locale.
+	 *
+	 * @return null
 	 */
 	public function actionDeleteLocale()
 	{

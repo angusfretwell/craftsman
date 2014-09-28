@@ -2,21 +2,23 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Class CategoryGroupLocaleRecord
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- *
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.records
+ * @since     2.0
  */
 class CategoryGroupLocaleRecord extends BaseRecord
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
+	 * @inheritDoc BaseRecord::getTableName()
+	 *
 	 * @return string
 	 */
 	public function getTableName()
@@ -25,19 +27,8 @@ class CategoryGroupLocaleRecord extends BaseRecord
 	}
 
 	/**
-	 * @access protected
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'locale'          => array(AttributeType::Locale, 'required' => true),
-			'urlFormat'       => AttributeType::UrlFormat,
-			'nestedUrlFormat' => AttributeType::UrlFormat,
-		);
-	}
-
-	/**
+	 * @inheritDoc BaseRecord::defineRelations()
+	 *
 	 * @return array
 	 */
 	public function defineRelations()
@@ -49,12 +40,31 @@ class CategoryGroupLocaleRecord extends BaseRecord
 	}
 
 	/**
+	 * @inheritDoc BaseRecord::defineIndexes()
+	 *
 	 * @return array
 	 */
 	public function defineIndexes()
 	{
 		return array(
 			array('columns' => array('groupId', 'locale'), 'unique' => true),
+		);
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc BaseRecord::defineAttributes()
+	 *
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'locale'          => array(AttributeType::Locale, 'required' => true),
+			'urlFormat'       => AttributeType::UrlFormat,
+			'nestedUrlFormat' => AttributeType::UrlFormat,
 		);
 	}
 }

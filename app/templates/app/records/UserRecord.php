@@ -2,21 +2,23 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Class UserRecord
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- *
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.records
+ * @since     1.0
  */
 class UserRecord extends BaseRecord
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
+	 * @inheritDoc BaseRecord::getTableName()
+	 *
 	 * @return string
 	 */
 	public function getTableName()
@@ -25,7 +27,67 @@ class UserRecord extends BaseRecord
 	}
 
 	/**
-	 * @access protected
+	 * @inheritDoc BaseRecord::defineRelations()
+	 *
+	 * @return array
+	 */
+	public function defineRelations()
+	{
+		$relations = array(
+			'element'         => array(static::BELONGS_TO, 'ElementRecord', 'id', 'required' => true, 'onDelete' => static::CASCADE),
+			'preferredLocale' => array(static::BELONGS_TO, 'LocaleRecord', 'preferredLocale', 'onDelete' => static::SET_NULL, 'onUpdate' => static::CASCADE),
+		);
+
+		if (craft()->getEdition() == Craft::Pro)
+		{
+			$relations['groups']  = array(static::MANY_MANY, 'UserGroupRecord', 'usergroups_users(userId, groupId)');
+		}
+
+		$relations['sessions']              = array(static::HAS_MANY, 'SessionRecord', 'userId');
+
+		return $relations;
+	}
+
+	/**
+	 * @inheritDoc BaseRecord::defineIndexes()
+	 *
+	 * @return array
+	 */
+	public function defineIndexes()
+	{
+		return array(
+			array('columns' => array('username'), 'unique' => true),
+			array('columns' => array('email'), 'unique' => true),
+			array('columns' => array('verificationCode')),
+			array('columns' => array('uid')),
+		);
+	}
+
+	/**
+	 * @inheritDoc BaseRecord::validate()
+	 *
+	 * @param null $attributes
+	 * @param bool $clearErrors
+	 *
+	 * @return bool|null
+	 */
+	public function validate($attributes = null, $clearErrors = true)
+	{
+		// Don't allow whitespace in the username.
+		if (preg_match('/\s+/', $this->username))
+		{
+			$this->addError('username', Craft::t('Spaces are not allowed in the username.'));
+		}
+
+		return parent::validate($attributes, false);
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc BaseRecord::defineAttributes()
+	 *
 	 * @return array
 	 */
 	protected function defineAttributes()
@@ -53,54 +115,5 @@ class UserRecord extends BaseRecord
 			'passwordResetRequired'      => array(AttributeType::Bool),
 			'lastPasswordChangeDate'     => array(AttributeType::DateTime),
 		);
-	}
-
-	/**
-	 * @return array
-	 */
-	public function defineRelations()
-	{
-		$relations = array(
-			'element'         => array(static::BELONGS_TO, 'ElementRecord', 'id', 'required' => true, 'onDelete' => static::CASCADE),
-			'preferredLocale' => array(static::BELONGS_TO, 'LocaleRecord', 'preferredLocale', 'onDelete' => static::SET_NULL, 'onUpdate' => static::CASCADE),
-		);
-
-		if (craft()->getEdition() == Craft::Pro)
-		{
-			$relations['groups']  = array(static::MANY_MANY, 'UserGroupRecord', 'usergroups_users(userId, groupId)');
-		}
-
-		$relations['sessions']              = array(static::HAS_MANY, 'SessionRecord', 'userId');
-
-		return $relations;
-	}
-
-	/**
-	 * @return array
-	 */
-	public function defineIndexes()
-	{
-		return array(
-			array('columns' => array('username'), 'unique' => true),
-			array('columns' => array('email'), 'unique' => true),
-			array('columns' => array('verificationCode')),
-			array('columns' => array('uid')),
-		);
-	}
-
-	/**
-	 * @param null $attributes
-	 * @param bool $clearErrors
-	 * @return bool|void
-	 */
-	public function validate($attributes = null, $clearErrors = true)
-	{
-		// Don't allow whitespace in the username.
-		if (preg_match('/\s+/', $this->username))
-		{
-			$this->addError('username', Craft::t('Spaces are not allowed in the username.'));
-		}
-
-		return parent::validate($attributes, false);
 	}
 }

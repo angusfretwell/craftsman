@@ -2,21 +2,23 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Class SectionLocaleRecord
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- *
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.records
+ * @since     1.0
  */
 class SectionLocaleRecord extends BaseRecord
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
+	 * @inheritDoc BaseRecord::getTableName()
+	 *
 	 * @return string
 	 */
 	public function getTableName()
@@ -25,20 +27,8 @@ class SectionLocaleRecord extends BaseRecord
 	}
 
 	/**
-	 * @access protected
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'locale'           => array(AttributeType::Locale, 'required' => true),
-			'enabledByDefault' => array(AttributeType::Bool, 'default' => true),
-			'urlFormat'        => AttributeType::UrlFormat,
-			'nestedUrlFormat'  => AttributeType::UrlFormat,
-		);
-	}
-
-	/**
+	 * @inheritDoc BaseRecord::defineRelations()
+	 *
 	 * @return array
 	 */
 	public function defineRelations()
@@ -50,12 +40,32 @@ class SectionLocaleRecord extends BaseRecord
 	}
 
 	/**
+	 * @inheritDoc BaseRecord::defineIndexes()
+	 *
 	 * @return array
 	 */
 	public function defineIndexes()
 	{
 		return array(
 			array('columns' => array('sectionId', 'locale'), 'unique' => true),
+		);
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc BaseRecord::defineAttributes()
+	 *
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'locale'           => array(AttributeType::Locale, 'required' => true),
+			'enabledByDefault' => array(AttributeType::Bool, 'default' => true),
+			'urlFormat'        => AttributeType::UrlFormat,
+			'nestedUrlFormat'  => AttributeType::UrlFormat,
 		);
 	}
 }

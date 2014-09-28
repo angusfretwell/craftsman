@@ -2,28 +2,32 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Get Help widget.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Get Help widget
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.widgets
+ * @since     1.0
  */
 class GetHelpWidget extends BaseWidget
 {
+	// Properties
+	// =========================================================================
+
 	/**
-	 * @access protected
-	 * @var bool Whether users should be able to select more than one of this widget type.
+	 * Whether users should be able to select more than one of this widget type.
+	 *
+	 * @var bool
 	 */
 	protected $multi = false;
 
+	// Public Methods
+	// =========================================================================
+
 	/**
-	 * Returns the type of widget this is.
+	 * @inheritDoc IComponentType::getName()
 	 *
 	 * @return string
 	 */
@@ -33,7 +37,7 @@ class GetHelpWidget extends BaseWidget
 	}
 
 	/**
-	 * Gets the widget's title.
+	 * @inheritDoc IWidget::getTitle()
 	 *
 	 * @return string
 	 */
@@ -43,7 +47,7 @@ class GetHelpWidget extends BaseWidget
 	}
 
 	/**
-	 * Returns the widget's body HTML.
+	 * @inheritDoc IWidget::getBodyHtml()
 	 *
 	 * @return string|false
 	 */
@@ -66,6 +70,8 @@ class GetHelpWidget extends BaseWidget
 	}
 
 	/**
+	 * @inheritDoc IComponentType::isSelectable()
+	 *
 	 * @return bool
 	 */
 	public function isSelectable()

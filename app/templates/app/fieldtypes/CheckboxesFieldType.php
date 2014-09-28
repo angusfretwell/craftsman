@@ -2,24 +2,30 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Class CheckboxesFieldType
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- *
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.fieldtypes
+ * @since     1.0
  */
 class CheckboxesFieldType extends BaseOptionsFieldType
 {
-	protected $multi = true;
+	// Properties
+	// =========================================================================
 
 	/**
-	 * Returns the type of field this is.
+	 * @var bool
+	 */
+	protected $multi = true;
+
+	// Public Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc IComponentType::getName()
 	 *
 	 * @return string
 	 */
@@ -29,21 +35,11 @@ class CheckboxesFieldType extends BaseOptionsFieldType
 	}
 
 	/**
-	 * Returns the label for the Options setting.
-	 *
-	 * @access protected
-	 * @return string
-	 */
-	protected function getOptionsSettingsLabel()
-	{
-		return Craft::t('Checkbox Options');
-	}
-
-	/**
-	 * Returns the field's input HTML.
+	 * @inheritDoc IFieldType::getInputHtml()
 	 *
 	 * @param string $name
 	 * @param mixed  $values
+	 *
 	 * @return string
 	 */
 	public function getInputHtml($name, $values)
@@ -53,15 +49,7 @@ class CheckboxesFieldType extends BaseOptionsFieldType
 		// If this is a new entry, look for any default options
 		if ($this->isFresh())
 		{
-			$values = array();
-
-			foreach ($options as $option)
-			{
-				if (!empty($option['default']))
-				{
-					$values[] = $option['value'];
-				}
-			}
+			$values = $this->getDefaultValue();
 		}
 
 		return craft()->templates->render('_includes/forms/checkboxGroup', array(
@@ -69,5 +57,18 @@ class CheckboxesFieldType extends BaseOptionsFieldType
 			'options' => $options,
 			'values'  => $values
 		));
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc BaseOptionsFieldType::getOptionsSettingsLabel()
+	 *
+	 * @return string
+	 */
+	protected function getOptionsSettingsLabel()
+	{
+		return Craft::t('Checkbox Options');
 	}
 }

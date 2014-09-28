@@ -2,25 +2,26 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Class ElementHelper
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- *
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.helpers
+ * @since     2.0
  */
 class ElementHelper
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Sets a valid slug on a given element.
 	 *
-	 * @static
 	 * @param BaseElementModel $element
+	 *
+	 * @return null
 	 */
 	public static function setValidSlug(BaseElementModel $element)
 	{
@@ -37,8 +38,8 @@ class ElementHelper
 	/**
 	 * Creates a slug based on a given string.
 	 *
-	 * @static
 	 * @param string $str
+	 *
 	 * @return string
 	 */
 	public static function createSlug($str)
@@ -49,11 +50,14 @@ class ElementHelper
 		// Remove inner-word punctuation.
 		$slug = preg_replace('/[\'"‘’“”\[\]\(\)\{\}:]/u', '', $slug);
 
-		// Make it lowercase
-		$slug = StringHelper::toLowerCase($slug, 'UTF-8');
+		if (craft()->config->get('allowUppercaseInSlug') === false)
+		{
+			// Make it lowercase
+			$slug = StringHelper::toLowerCase($slug, 'UTF-8');
+		}
 
-		// Get the "words".  Split on anything that is not a unicode letter or number.
-		// Periods, underscores and hyphens get a pass.
+		// Get the "words".  Split on anything that is not a unicode letter or number. Periods, underscores and hyphens
+		// get a pass.
 		preg_match_all('/[\p{L}\p{N}\._-]+/u', $slug, $words);
 		$words = ArrayHelper::filterEmptyStringsFromArray($words[0]);
 		$slug = implode(craft()->config->get('slugWordSeparator'), $words);
@@ -62,11 +66,10 @@ class ElementHelper
 	}
 
 	/**
-	 * Sets the URI on an element using a given URL format,
-	 * tweaking its slug if necessary to ensure it's unique.
+	 * Sets the URI on an element using a given URL format, tweaking its slug if necessary to ensure it's unique.
 	 *
-	 * @static
 	 * @param BaseElementModel $element
+	 *
 	 * @throws Exception
 	 */
 	public static function setUniqueUri(BaseElementModel $element)
@@ -103,8 +106,9 @@ class ElementHelper
 		}
 
 		$slugWordSeparator = craft()->config->get('slugWordSeparator');
+		$maxSlugIncrement = craft()->config->get('maxSlugIncrement');
 
-		for ($i = 0; $i < 100; $i++)
+		for ($i = 0; $i < $maxSlugIncrement; $i++)
 		{
 			$testSlug = $element->slug;
 
@@ -172,14 +176,15 @@ class ElementHelper
 	/**
 	 * Returns whether a given URL format has a proper {slug} tag.
 	 *
-	 * @static
 	 * @param string $urlFormat
+	 *
 	 * @return bool
 	 */
 	public static function doesUrlFormatHaveSlugTag($urlFormat)
 	{
 		$element = (object) array('slug' => StringHelper::randomString());
 		$uri = craft()->templates->renderObjectTemplate($urlFormat, $element);
+
 		return (strpos($uri, $element->slug) !== false);
 	}
 
@@ -187,6 +192,7 @@ class ElementHelper
 	 * Returns whether the given element is editable by the current user, taking user locale permissions into account.
 	 *
 	 * @param BaseElementModel $element
+	 *
 	 * @return bool
 	 */
 	public static function isElementEditable(BaseElementModel $element)
@@ -221,6 +227,7 @@ class ElementHelper
 	 * Returns the editable locale IDs for a given element, taking user locale permissions into account.
 	 *
 	 * @param BaseElementModel $element
+	 *
 	 * @return array
 	 */
 	public static function getEditableLocaleIdsForElement(BaseElementModel $element)

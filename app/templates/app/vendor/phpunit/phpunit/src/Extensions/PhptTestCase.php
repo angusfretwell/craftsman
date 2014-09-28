@@ -102,10 +102,10 @@ class PHPUnit_Extensions_PhptTestCase implements PHPUnit_Framework_Test, PHPUnit
 
         if (!is_file($filename)) {
             throw new PHPUnit_Framework_Exception(
-              sprintf(
-                'File "%s" does not exist.',
-                $filename
-              )
+                sprintf(
+                    'File "%s" does not exist.',
+                    $filename
+                )
             );
         }
 
@@ -148,7 +148,7 @@ class PHPUnit_Extensions_PhptTestCase implements PHPUnit_Framework_Test, PHPUnit
 
             if (!strncasecmp('skip', ltrim($jobResult['stdout']), 4)) {
                 if (preg_match('/^\s*skip\s*(.+)\s*/i', $jobResult['stdout'], $message)) {
-                    $message = $message[1];
+                    $message = substr($message[1], 2);
                 } else {
                     $message = '';
                 }
@@ -242,15 +242,15 @@ class PHPUnit_Extensions_PhptTestCase implements PHPUnit_Framework_Test, PHPUnit
     private function render($code)
     {
         return str_replace(
-          array(
+            array(
             '__DIR__',
             '__FILE__'
-          ),
-          array(
+            ),
+            array(
             "'" . dirname($this->filename) . "'",
             "'" . $this->filename . "'"
-          ),
-          $code
+            ),
+            $code
         );
     }
 }

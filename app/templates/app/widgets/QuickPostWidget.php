@@ -2,26 +2,35 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Class QuickPostWidget
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- *
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.widgets
+ * @since     1.0
  */
 class QuickPostWidget extends BaseWidget
 {
-	public $multipleInstances = true;
-
-	private $_section;
+	// Properties
+	// =========================================================================
 
 	/**
-	 * Returns the type of widget this is.
+	 * @var bool
+	 */
+	public $multipleInstances = true;
+
+	/**
+	 * @var
+	 */
+	private $_section;
+
+	// Public Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc IComponentType::getName()
 	 *
 	 * @return string
 	 */
@@ -31,22 +40,7 @@ class QuickPostWidget extends BaseWidget
 	}
 
 	/**
-	 * Defines the settings.
-	 *
-	 * @access protected
-	 * @return array
-	 */
-	protected function defineSettings()
-	{
-		return array(
-			'section'   => array(AttributeType::Number, 'required' => true),
-			'entryType' => AttributeType::Number,
-			'fields'    => AttributeType::Mixed,
-		);
-	}
-
-	/**
-	 * Returns the widget's body HTML.
+	 * @inheritDoc ISavableComponentType::getSettingsHtml()
 	 *
 	 * @return string
 	 */
@@ -76,6 +70,7 @@ class QuickPostWidget extends BaseWidget
 	 * Preps the settings before they're saved to the database.
 	 *
 	 * @param array $settings
+	 *
 	 * @return array
 	 */
 	public function prepSettings($settings)
@@ -96,7 +91,7 @@ class QuickPostWidget extends BaseWidget
 	}
 
 	/**
-	 * Gets the widget's title.
+	 * @inheritDoc IWidget::getTitle()
 	 *
 	 * @return string
 	 */
@@ -116,7 +111,7 @@ class QuickPostWidget extends BaseWidget
 	}
 
 	/**
-	 * Returns the widget's body HTML.
+	 * @inheritDoc IWidget::getBodyHtml()
 	 *
 	 * @return string|false
 	 */
@@ -152,7 +147,7 @@ class QuickPostWidget extends BaseWidget
 
 		$params = array(
 			'sectionId'   => $section->id,
-			'entryTypeId' => $entryTypeId,
+			'typeId' => $entryTypeId,
 		);
 
 		craft()->templates->startJsBuffer();
@@ -173,6 +168,26 @@ class QuickPostWidget extends BaseWidget
 
 		return $html;
 	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc BaseSavableComponentType::defineSettings()
+	 *
+	 * @return array
+	 */
+	protected function defineSettings()
+	{
+		return array(
+			'section'   => array(AttributeType::Number, 'required' => true),
+			'entryType' => AttributeType::Number,
+			'fields'    => AttributeType::Mixed,
+		);
+	}
+
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns the widget's section.

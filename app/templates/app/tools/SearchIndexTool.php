@@ -2,22 +2,22 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Search Index tool.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Search Index tool
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.tools
+ * @since     1.0
  */
 class SearchIndexTool extends BaseTool
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
-	 * Returns the tool name.
+	 * @inheritDoc IComponentType::getName()
 	 *
 	 * @return string
 	 */
@@ -27,7 +27,7 @@ class SearchIndexTool extends BaseTool
 	}
 
 	/**
-	 * Returns the tool's icon value.
+	 * @inheritDoc ITool::getIconValue()
 	 *
 	 * @return string
 	 */
@@ -37,9 +37,10 @@ class SearchIndexTool extends BaseTool
 	}
 
 	/**
-	 * Performs the tool's action.
+	 * @inheritDoc ITool::performAction()
 	 *
 	 * @param array $params
+	 *
 	 * @return array
 	 */
 	public function performAction($params = array())
@@ -97,8 +98,6 @@ class SearchIndexTool extends BaseTool
 						if ($elementType->hasContent())
 						{
 							$fieldLayout = $element->getFieldLayout();
-							$content     = $element->getContent();
-
 							$keywords = array();
 
 							foreach ($fieldLayout->getFields() as $fieldLayoutField)
@@ -116,7 +115,7 @@ class SearchIndexTool extends BaseTool
 										$handle = $field->handle;
 
 										// Set the keywords for the content's locale
-										$fieldSearchKeywords = $fieldType->getSearchKeywords($element->$handle);
+										$fieldSearchKeywords = $fieldType->getSearchKeywords($element->getFieldValue($handle));
 										$keywords[$field->id] = $fieldSearchKeywords;
 									}
 								}

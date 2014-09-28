@@ -1,52 +1,38 @@
 <?php
 namespace Craft;
 
-/**
- * Craft by Pixel & Tonic
- *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
- * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
 craft()->requireEdition(Craft::Pro);
 
 /**
- * User group model class
+ * User group model class.
  *
- * Used for transporting user group data throughout the system.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.models
+ * @since     1.0
  */
 class UserGroupModel extends BaseModel
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Use the translated group name as the string representation.
 	 *
 	 * @return string
 	 */
-	function __toString()
+	public function __toString()
 	{
 		return Craft::t($this->name);
-	}
-
-	/**
-	 * @access protected
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		$attributes['id'] = AttributeType::Number;
-		$attributes['name'] = AttributeType::String;
-		$attributes['handle'] = AttributeType::String;
-
-		return $attributes;
 	}
 
 	/**
 	 * Returns whether the group has permission to perform a given action.
 	 *
 	 * @param string $permission
+	 *
 	 * @return bool
 	 */
 	public function can($permission)
@@ -59,5 +45,22 @@ class UserGroupModel extends BaseModel
 		{
 			return false;
 		}
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc BaseModel::defineAttributes()
+	 *
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		$attributes['id'] = AttributeType::Number;
+		$attributes['name'] = AttributeType::String;
+		$attributes['handle'] = AttributeType::String;
+
+		return $attributes;
 	}
 }

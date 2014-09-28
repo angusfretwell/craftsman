@@ -2,49 +2,36 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Field model class.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Field model class
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.models
+ * @since     1.0
  */
 class FieldModel extends BaseComponentModel
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var
+	 */
 	private $_fieldType;
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Use the translated field name as the string representation.
 	 *
 	 * @return string
 	 */
-	function __toString()
+	public function __toString()
 	{
 		return Craft::t($this->name);
-	}
-
-	/**
-	 * @access protected
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array_merge(parent::defineAttributes(), array(
-			'groupId'      => AttributeType::Number,
-			'name'         => AttributeType::String,
-			'handle'       => AttributeType::String,
-			'context'      => AttributeType::String,
-			'instructions' => AttributeType::String,
-			'required'     => AttributeType::Bool,
-			'translatable' => AttributeType::Bool,
-
-			'oldHandle'    => AttributeType::String,
-		));
 	}
 
 	/**
@@ -80,5 +67,28 @@ class FieldModel extends BaseComponentModel
 	public function getGroup()
 	{
 		return craft()->fields->getGroupById($this->groupId);
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc BaseModel::defineAttributes()
+	 *
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array_merge(parent::defineAttributes(), array(
+			'groupId'      => AttributeType::Number,
+			'name'         => AttributeType::String,
+			'handle'       => AttributeType::String,
+			'context'      => AttributeType::String,
+			'instructions' => AttributeType::String,
+			'required'     => AttributeType::Bool,
+			'translatable' => AttributeType::Bool,
+
+			'oldHandle'    => AttributeType::String,
+		));
 	}
 }

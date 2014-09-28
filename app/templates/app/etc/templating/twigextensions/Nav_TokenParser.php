@@ -2,20 +2,20 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Recursively outputs a hierarchical navigation.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Recursively outputs a hierarchical navigation.
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.etc.templating.twigextensions
+ * @since     1.2
  */
 class Nav_TokenParser extends \Twig_TokenParser
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Gets the tag name associated with this token parser.
 	 *
@@ -30,6 +30,7 @@ class Nav_TokenParser extends \Twig_TokenParser
 	 * Parses a token and returns a node.
 	 *
 	 * @param \Twig_Token $token
+	 *
 	 * @return \Twig_NodeInterface
 	 */
 	public function parse(\Twig_Token $token)
@@ -85,6 +86,7 @@ class Nav_TokenParser extends \Twig_TokenParser
 
 	/**
 	 * @param \Twig_Token $token
+	 *
 	 * @return bool
 	 */
 	public function decideNavFork(\Twig_Token $token)
@@ -94,6 +96,7 @@ class Nav_TokenParser extends \Twig_TokenParser
 
 	/**
 	 * @param \Twig_Token $token
+	 *
 	 * @return bool
 	 */
 	public function decideChildrenFork(\Twig_Token $token)
@@ -103,6 +106,7 @@ class Nav_TokenParser extends \Twig_TokenParser
 
 	/**
 	 * @param \Twig_Token $token
+	 *
 	 * @return bool
 	 */
 	public function decideChildrenEnd(\Twig_Token $token)
@@ -112,6 +116,7 @@ class Nav_TokenParser extends \Twig_TokenParser
 
 	/**
 	 * @param \Twig_Token $token
+	 *
 	 * @return bool
 	 */
 	public function decideNavEnd(\Twig_Token $token)

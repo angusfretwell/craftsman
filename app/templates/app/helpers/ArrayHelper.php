@@ -2,26 +2,26 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Class ArrayHelper
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- *
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.helpers
+ * @since     1.0
  */
 class ArrayHelper
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
-	 * Flattens a multi-dimensional array into a single-dimensional array
+	 * Flattens a multi-dimensional array into a single-dimensional array.
 	 *
-	 * @static
 	 * @param        $arr
 	 * @param string $prefix
+	 *
 	 * @return array
 	 */
 	public static function flattenArray($arr, $prefix = null)
@@ -51,8 +51,8 @@ class ArrayHelper
 	/**
 	 * Expands a flattened array back into its original form
 	 *
-	 * @static
-	 * @param $arr
+	 * @param array $arr
+	 *
 	 * @return array
 	 */
 	public static function expandArray($arr)
@@ -64,7 +64,7 @@ class ArrayHelper
 			// is this an array element?
 			if (preg_match('/^(\w+)(\[.*)/', $key, $m))
 			{
-				$key = '$expanded["'.$m[1].'"]' . preg_replace('/\[([a-zA-Z]\w*?)\]/', "[\"$1\"]", $m[2]);
+				$key = '$expanded["'.$m[1].'"]'.preg_replace('/\[([a-zA-Z]\w*?)\]/', "[\"$1\"]", $m[2]);
 				eval($key.' = "'.addslashes($value).'";');
 			}
 			else
@@ -77,8 +77,8 @@ class ArrayHelper
 	}
 
 	/**
-	 * @static
 	 * @param $settings
+	 *
 	 * @return array
 	 */
 	public static function expandSettingsArray($settings)
@@ -94,11 +94,12 @@ class ArrayHelper
 	}
 
 	/**
-	 * Converts a comma-delimited string into a trimmed array
-	 * ex: ArrayHelper::stringToArray('one, two, three') => array('one', 'two', 'three')
+	 * Converts a comma-delimited string into a trimmed array, ex:
 	 *
-	 * @static
+	 *     ArrayHelper::stringToArray('one, two, three') => array('one', 'two', 'three')
+	 *
 	 * @param mixed $str The string to convert to an array
+	 *
 	 * @return array The trimmed array
 	 */
 	public static function stringToArray($str)
@@ -117,7 +118,25 @@ class ArrayHelper
 		}
 		else if (is_string($str))
 		{
-			return array_merge(array_filter(array_map('trim', preg_split('/(?<!\\\),/', $str))));
+			// Split it on the non-escaped commas
+			$arr = preg_split('/(?<!\\\),/', $str);
+
+			// Remove any of the backslashes used to escape the commas
+			foreach ($arr as $key => $val)
+			{
+				// Remove leading/trailing whitespace
+				$val = trim($val);
+
+				// Remove any backslashes used to escape commas
+				$val = str_replace('\,', ',', $val);
+
+				$arr[$key] = $val;
+			}
+
+			// Remove any empty elements and reset the keys
+			$arr = array_merge(array_filter($arr));
+
+			return $arr;
 		}
 		else
 		{
@@ -128,9 +147,9 @@ class ArrayHelper
 	/**
 	 * Prepends or appends a value to an array.
 	 *
-	 * @static
 	 * @param array &$arr
 	 * @param mixed $value
+	 *
 	 * @param bool  $prepend
 	 */
 	public static function prependOrAppend(&$arr, $value, $prepend)
@@ -148,8 +167,8 @@ class ArrayHelper
 	/**
 	 * Filters empty strings from an array.
 	 *
-	 * @static
 	 * @param array $arr
+	 *
 	 * @return array
 	 */
 	public static function filterEmptyStringsFromArray($arr)
@@ -158,11 +177,35 @@ class ArrayHelper
 	}
 
 	/**
+	 * Returns the first value in a given array.
+	 *
+	 * @param array $arr
+	 *
+	 * @return mixed|null
+	 */
+	public static function getFirstValue($arr)
+	{
+		if (count($arr))
+		{
+			if (isset($arr[0]))
+			{
+				return $arr[0];
+			}
+			else
+			{
+				return $arr[array_shift(array_keys($arr))];
+			}
+		}
+	}
+
+	// Private Methods
+	// =========================================================================
+
+	/**
 	 * The array_filter() callback function for filterEmptyStringsFromArray().
 	 *
-	 * @static
-	 * @access private
-	 * @param $val
+	 * @param string $val
+	 *
 	 * @return bool
 	 */
 	private function _isNotAnEmptyString($val)

@@ -1,7 +1,8 @@
 /*
  Copyright (c) 2014, Pixel & Tonic, Inc.
  @license   http://buildwithcraft.com/license Craft License Agreement
- @link      http://buildwithcraft.com
+ @see       http://buildwithcraft.com
+ @package   craft.app.resources
 */
 (function(b){Craft.MatrixConfigurator=Garnish.Base.extend({fieldTypeInfo:null,inputNamePrefix:null,inputIdPrefix:null,$container:null,$blockTypesColumnContainer:null,$fieldsColumnContainer:null,$fieldSettingsColumnContainer:null,$blockTypeItemsContainer:null,$fieldItemsContainer:null,$fieldSettingItemsContainer:null,$newBlockTypeBtn:null,$newFieldBtn:null,blockTypes:null,selectedBlockType:null,blockTypeSort:null,totalNewBlockTypes:0,init:function(a,e){this.fieldTypeInfo=a;this.inputNamePrefix=e;this.inputIdPrefix=
 Craft.formatInputId(this.inputNamePrefix);this.$container=b(".matrix-configurator:first .input:first");this.$blockTypesColumnContainer=this.$container.children(".block-types").children();this.$fieldsColumnContainer=this.$container.children(".fields").children();this.$fieldSettingsColumnContainer=this.$container.children(".field-settings").children();this.$blockTypeItemsContainer=this.$blockTypesColumnContainer.children(".items");this.$fieldItemsContainer=this.$fieldsColumnContainer.children(".items");

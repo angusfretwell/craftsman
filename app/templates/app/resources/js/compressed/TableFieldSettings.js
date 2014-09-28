@@ -1,7 +1,8 @@
 /*
  Copyright (c) 2014, Pixel & Tonic, Inc.
  @license   http://buildwithcraft.com/license Craft License Agreement
- @link      http://buildwithcraft.com
+ @see       http://buildwithcraft.com
+ @package   craft.app.resources
 */
 (function(d){Craft.TableFieldSettings=Garnish.Base.extend({columnsTableName:null,defaultsTableName:null,columnsTableId:null,defaultsTableId:null,columnsTableInputPath:null,defaultsTableInputPath:null,defaults:null,columnSettings:null,columnsTable:null,defaultsTable:null,init:function(a,c,b,e,f){this.columnsTableName=a;this.defaultsTableName=c;this.columnsTableId=Craft.formatInputId(this.columnsTableName);this.defaultsTableId=Craft.formatInputId(this.defaultsTableName);this.columnsTableInputPath=this.columnsTableId.split("-");
 this.defaultsTableInputPath=this.defaultsTableId.split("-");this.defaults=e;this.columnSettings=f;this.initColumnsTable();this.initDefaultsTable(b)},initColumnsTable:function(){this.columnsTable=new Craft.EditableTable(this.columnsTableId,this.columnsTableName,this.columnSettings,{rowIdPrefix:"col",onAddRow:d.proxy(this,"onAddColumn"),onDeleteRow:d.proxy(this,"reconstructDefaultsTable")});this.initColumnSettingInputs(this.columnsTable.$tbody);this.columnsTable.sorter.settings.onSortChange=d.proxy(this,

@@ -2,20 +2,20 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Class ElementsVariable
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- *
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.variables
+ * @since     1.0
  */
 class ElementsVariable
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Returns all installed element types.
 	 *
@@ -37,6 +37,7 @@ class ElementsVariable
 	 * Returns an element type.
 	 *
 	 * @param string $class
+	 *
 	 * @return ElementTypeVariable|null
 	 */
 	public function getElementType($class)

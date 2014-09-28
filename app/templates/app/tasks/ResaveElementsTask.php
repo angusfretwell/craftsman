@@ -2,24 +2,40 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Resave Elements Task
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Resave Elements Task
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.tasks
+ * @since     2.0
  */
 class ResaveElementsTask extends BaseTask
 {
-	private $_elementIds;
+	// Properties
+	// =========================================================================
 
 	/**
-	 * Returns the default description for this task.
+	 * @var
+	 */
+	private $_elementType;
+
+	/**
+	 * @var
+	 */
+	private $_localeId;
+
+	/**
+	 * @var
+	 */
+	private $_elementIds;
+
+	// Public Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc ITask::getDescription()
 	 *
 	 * @return string
 	 */
@@ -33,21 +49,7 @@ class ResaveElementsTask extends BaseTask
 	}
 
 	/**
-	 * Defines the settings.
-	 *
-	 * @access protected
-	 * @return array
-	 */
-	protected function defineSettings()
-	{
-		return array(
-			'elementType' => AttributeType::String,
-			'criteria'    => AttributeType::Mixed,
-		);
-	}
-
-	/**
-	 * Gets the total number of steps for this task.
+	 * @inheritDoc ITask::getTotalSteps()
 	 *
 	 * @return int
 	 */
@@ -63,34 +65,62 @@ class ResaveElementsTask extends BaseTask
 		$criteria->offset = null;
 		$criteria->limit = null;
 		$criteria->order = null;
+
+		$this->_elementType = $criteria->getElementType()->getClassHandle();
+		$this->_localeId = $criteria->locale;
 		$this->_elementIds = $criteria->ids();
+
 		return count($this->_elementIds);
 	}
 
 	/**
-	 * Runs a task step.
+	 * @inheritDoc ITask::runStep()
 	 *
 	 * @param int $step
+	 *
 	 * @return bool
 	 */
 	public function runStep($step)
 	{
-		$element = craft()->elements->getElementById($this->_elementIds[$step]);
-
-		if (craft()->elements->saveElement($element, false))
+		try
 		{
-			return true;
-		}
-		else
-		{
-			$error = 'Encountered the following validation errors when trying to save '.strtolower($element->getElementType()).' element "'.$element.'" with the ID "'.$element->id.'":';
+			$element = craft()->elements->getElementById($this->_elementIds[$step], $this->_elementType, $this->_localeId);
 
-			foreach ($element->getAllErrors() as $attributeError)
+			if (!$element || craft()->elements->saveElement($element, false))
 			{
-				$error .= "\n - {$attributeError}";
+				return true;
 			}
+			else
+			{
+				$error = 'Encountered the following validation errors when trying to save '.strtolower($element->getElementType()).' element "'.$element.'" with the ID "'.$element->id.'":';
 
-			return $error;
+				foreach ($element->getAllErrors() as $attributeError)
+				{
+					$error .= "\n - {$attributeError}";
+				}
+
+				return $error;
+			}
 		}
+		catch (\Exception $e)
+		{
+			return 'An exception was thrown while trying to save the '.$this->_elementType.' with the ID “'.$this->_elementIds[$step].'”: '.$e->getMessage();
+		}
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc BaseSavableComponentType::defineSettings()
+	 *
+	 * @return array
+	 */
+	protected function defineSettings()
+	{
+		return array(
+			'elementType' => AttributeType::String,
+			'criteria'    => AttributeType::Mixed,
+		);
 	}
 }

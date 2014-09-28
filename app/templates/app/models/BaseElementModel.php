@@ -2,77 +2,173 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Base element model class.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Base element model class
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.models
+ * @since     1.0
  */
 abstract class BaseElementModel extends BaseModel
 {
-	protected $elementType;
-
-	private $_contentPostLocation;
-	private $_rawPostContent;
-	private $_content;
-	private $_preppedContent;
-
-	private $_nextElement;
-	private $_prevElement;
-
-	private $_parent;
-	private $_prevSibling;
-	private $_nextSibling;
-	private $_ancestorsCriteria;
-	private $_descendantsCriteria;
-	private $_childrenCriteria;
-	private $_siblingsCriteria;
+	// Constants
+	// =========================================================================
 
 	const ENABLED  = 'enabled';
 	const DISABLED = 'disabled';
 	const ARCHIVED = 'archived';
 
-	/**
-	 * @access protected
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'id'            => AttributeType::Number,
-			'enabled'       => array(AttributeType::Bool, 'default' => true),
-			'archived'      => array(AttributeType::Bool, 'default' => false),
-			'locale'        => array(AttributeType::Locale, 'default' => craft()->i18n->getPrimarySiteLocaleId()),
-			'localeEnabled' => array(AttributeType::Bool, 'default' => true),
-			'slug'          => AttributeType::String,
-			'uri'           => AttributeType::String,
-			'dateCreated'   => AttributeType::DateTime,
-			'dateUpdated'   => AttributeType::DateTime,
+	// Properties
+	// =========================================================================
 
-			'root'          => AttributeType::Number,
-			'lft'           => AttributeType::Number,
-			'rgt'           => AttributeType::Number,
-			'level'         => AttributeType::Number,
-		);
+	/**
+	 * @var
+	 */
+	protected $elementType;
+
+	/**
+	 * @var
+	 */
+	private $_fieldsByHandle;
+
+	/**
+	 * @var
+	 */
+	private $_contentPostLocation;
+
+	/**
+	 * @var
+	 */
+	private $_rawPostContent;
+
+	/**
+	 * @var
+	 */
+	private $_content;
+
+	/**
+	 * @var
+	 */
+	private $_preppedContent;
+
+	/**
+	 * @var
+	 */
+	private $_nextElement;
+
+	/**
+	 * @var
+	 */
+	private $_prevElement;
+
+	/**
+	 * @var
+	 */
+	private $_parent;
+
+	/**
+	 * @var
+	 */
+	private $_prevSibling;
+
+	/**
+	 * @var
+	 */
+	private $_nextSibling;
+
+	/**
+	 * @var
+	 */
+	private $_ancestorsCriteria;
+
+	/**
+	 * @var
+	 */
+	private $_descendantsCriteria;
+
+	/**
+	 * @var
+	 */
+	private $_childrenCriteria;
+
+	/**
+	 * @var
+	 */
+	private $_siblingsCriteria;
+
+	// Public Methods
+	// =========================================================================
+
+	/**
+	 * Treats custom fields as properties.
+	 *
+	 * @param string $name
+	 *
+	 * @return bool
+	 */
+	public function __isset($name)
+	{
+		if (parent::__isset($name) || $this->getFieldByHandle($name))
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	/**
-	 * Populates a new model instance with a given set of attributes.
+	 * Getter
 	 *
-	 * @static
+	 * @param string $name
+	 *
+	 * @throws \Exception
+	 * @return mixed
+	 */
+	public function __get($name)
+	{
+		// Run through the BaseModel/CModel stuff first
+		try
+		{
+			return parent::__get($name);
+		}
+		catch (\Exception $e)
+		{
+			// Is $name a field handle?
+			if ($this->getFieldByHandle($name))
+			{
+				return $this->getFieldValue($name);
+			}
+
+			// Fine, throw the exception
+			throw $e;
+		}
+	}
+
+	/**
+	 * Use the element's title as its string representation.
+	 *
+	 * @return string
+	 */
+	public function __toString()
+	{
+		return (string) $this->getTitle();
+	}
+
+	/**
+	 * @inheritDoc BaseModel::populateModel()
+	 *
 	 * @param mixed $values
+	 *
 	 * @return BaseModel
 	 */
 	public static function populateModel($values)
 	{
-		// Strip out the element record attributes if this is getting called from a child class
-		// based on an Active Record result eager-loaded with the ElementRecord
+		// Strip out the element record attributes if this is getting called from a child class based on an Active
+		// Record result eager-loaded with the ElementRecord
 		if (isset($values['element']))
 		{
 			$elementAttributes = $values['element'];
@@ -94,16 +190,6 @@ abstract class BaseElementModel extends BaseModel
 		}
 
 		return $model;
-	}
-
-	/**
-	 * Use the element's title as its string representation.
-	 *
-	 * @return string
-	 */
-	function __toString()
-	{
-		return (string) $this->getTitle();
 	}
 
 	/**
@@ -192,7 +278,7 @@ abstract class BaseElementModel extends BaseModel
 	}
 
 	/**
-	 * Returns an anchor prefilled with this element's URL and title.
+	 * Returns an anchor pre-filled with this element's URL and title.
 	 *
 	 * @return \Twig_Markup
 	 */
@@ -235,6 +321,7 @@ abstract class BaseElementModel extends BaseModel
 	 * Returns the URL to the element's thumbnail, if there is one.
 	 *
 	 * @param int|null $size
+	 *
 	 * @return string|false
 	 */
 	public function getThumbUrl($size = null)
@@ -246,6 +333,7 @@ abstract class BaseElementModel extends BaseModel
 	 * Returns the URL to the element's icon image, if there is one.
 	 *
 	 * @param int|null $size
+	 *
 	 * @return string|false
 	 */
 	public function getIconUrl($size = null)
@@ -278,6 +366,7 @@ abstract class BaseElementModel extends BaseModel
 	 * Returns the next element relative to this one, from a given set of criteria.
 	 *
 	 * @param mixed $criteria
+	 *
 	 * @return ElementCriteriaModel|null
 	 */
 	public function getNext($criteria = false)
@@ -296,6 +385,7 @@ abstract class BaseElementModel extends BaseModel
 	 * Returns the previous element relative to this one, from a given set of criteria.
 	 *
 	 * @param mixed $criteria
+	 *
 	 * @return ElementCriteriaModel|null
 	 */
 	public function getPrev($criteria = false)
@@ -314,6 +404,8 @@ abstract class BaseElementModel extends BaseModel
 	 * Sets the default next element.
 	 *
 	 * @param BaseElementModel|false $element
+	 *
+	 * @return null
 	 */
 	public function setNext($element)
 	{
@@ -324,6 +416,8 @@ abstract class BaseElementModel extends BaseModel
 	 * Sets the default previous element.
 	 *
 	 * @param BaseElementModel|false $element
+	 *
+	 * return void
 	 */
 	public function setPrev($element)
 	{
@@ -361,6 +455,8 @@ abstract class BaseElementModel extends BaseModel
 	 * Sets the element's parent.
 	 *
 	 * @param BaseElementModel|null $parent
+	 *
+	 * @return null
 	 */
 	public function setParent($parent)
 	{
@@ -380,6 +476,7 @@ abstract class BaseElementModel extends BaseModel
 	 * Returns the element's ancestors.
 	 *
 	 * @param int|null $dist
+	 *
 	 * @return ElementCriteriaModel
 	 */
 	public function getAncestors($dist = null)
@@ -405,6 +502,7 @@ abstract class BaseElementModel extends BaseModel
 	 * Returns the element's descendants.
 	 *
 	 * @param int|null $dist
+	 *
 	 * @return ElementCriteriaModel
 	 */
 	public function getDescendants($dist = null)
@@ -429,13 +527,16 @@ abstract class BaseElementModel extends BaseModel
 	/**
 	 * Returns the element's children.
 	 *
-	 * @param mixed $field If this function is being used in the deprecated relationship-focussed way, $field defines which field (if any) to limit the relationships by.
+	 * @param mixed $field If this function is being used in the deprecated relationship-focused way, $field defines
+	 *                     which field (if any) to limit the relationships by.
+	 *
 	 * @return ElementCriteriaModel
 	 */
 	public function getChildren($field = null)
 	{
 		// TODO: deprecated
-		// Maintain support for the deprecated relationship-focussed getChildren() function for the element types that were around before Craft 1.3
+		// Maintain support for the deprecated relationship-focussed getChildren() function for the element types that
+		// were around before Craft 1.3
 		if (
 			($this->elementType == ElementType::Entry && $this->getSection()->type == SectionType::Channel) ||
 			in_array($this->elementType, array(ElementType::Asset, ElementType::GlobalSet, ElementType::Tag, ElementType::User))
@@ -484,6 +585,8 @@ abstract class BaseElementModel extends BaseModel
 			$criteria = craft()->elements->getCriteria($this->elementType);
 			$criteria->prevSiblingOf = $this;
 			$criteria->locale        = $this->locale;
+			$criteria->status        = null;
+			$criteria->localeEnabled = null;
 			$this->_prevSibling = $criteria->first();
 		}
 
@@ -502,6 +605,8 @@ abstract class BaseElementModel extends BaseModel
 			$criteria = craft()->elements->getCriteria($this->elementType);
 			$criteria->nextSiblingOf = $this;
 			$criteria->locale        = $this->locale;
+			$criteria->status        = null;
+			$criteria->localeEnabled = null;
 			$this->_nextSibling = $criteria->first();
 		}
 
@@ -509,9 +614,20 @@ abstract class BaseElementModel extends BaseModel
 	}
 
 	/**
+	 * Returns whether the element has descendants.
+	 *
+	 * @return bool
+	 */
+	public function hasDescendants()
+	{
+		return ($this->lft && $this->rgt && $this->rgt > $this->lft + 1);
+	}
+
+	/**
 	 * Returns whether this element is an ancestor of another one.
 	 *
 	 * @param BaseElementModel $element
+	 *
 	 * @return bool
 	 */
 	public function isAncestorOf(BaseElementModel $element)
@@ -523,6 +639,7 @@ abstract class BaseElementModel extends BaseModel
 	 * Returns whether this element is a descendant of another one.
 	 *
 	 * @param BaseElementModel $element
+	 *
 	 * @return bool
 	 */
 	public function isDescendantOf(BaseElementModel $element)
@@ -534,6 +651,7 @@ abstract class BaseElementModel extends BaseModel
 	 * Returns whether this element is a direct parent of another one.
 	 *
 	 * @param BaseElementModel $element
+	 *
 	 * @return bool
 	 */
 	public function isParentOf(BaseElementModel $element)
@@ -545,6 +663,7 @@ abstract class BaseElementModel extends BaseModel
 	 * Returns whether this element is a direct child of another one.
 	 *
 	 * @param BaseElementModel $element
+	 *
 	 * @return bool
 	 */
 	public function isChildOf(BaseElementModel $element)
@@ -556,6 +675,7 @@ abstract class BaseElementModel extends BaseModel
 	 * Returns whether this element is a sibling of another one.
 	 *
 	 * @param BaseElementModel $element
+	 *
 	 * @return bool
 	 */
 	public function isSiblingOf(BaseElementModel $element)
@@ -584,6 +704,7 @@ abstract class BaseElementModel extends BaseModel
 	 * Returns whether this element is the direct previous sibling of another one.
 	 *
 	 * @param BaseElementModel $element
+	 *
 	 * @return bool
 	 */
 	public function isPrevSiblingOf(BaseElementModel $element)
@@ -595,6 +716,7 @@ abstract class BaseElementModel extends BaseModel
 	 * Returns whether this element is the direct next sibling of another one.
 	 *
 	 * @param BaseElementModel $element
+	 *
 	 * @return bool
 	 */
 	public function isNextSiblingOf(BaseElementModel $element)
@@ -614,28 +736,11 @@ abstract class BaseElementModel extends BaseModel
 	}
 
 	/**
-	 * Treats custom fields as properties.
-	 *
-	 * @param $name
-	 * @return bool
-	 */
-	function __isset($name)
-	{
-		if (parent::__isset($name) || $this->getFieldByHandle($name))
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
-
-	/**
 	 * Treats custom fields as array offsets.
 	 *
 	 * @param mixed $offset
-	 * @return boolean
+	 *
+	 * @return bool
 	 */
 	public function offsetExists($offset)
 	{
@@ -650,39 +755,11 @@ abstract class BaseElementModel extends BaseModel
 	}
 
 	/**
-	 * Getter
+	 * @inheritDoc BaseModel::getAttribute()
 	 *
 	 * @param string $name
-	 * @throws \Exception
-	 * @return mixed
-	 */
-	function __get($name)
-	{
-		// Run through the BaseModel/CModel stuff first
-		try
-		{
-			return parent::__get($name);
-		}
-		catch (\Exception $e)
-		{
-			// Is $name a field handle?
-			$field = $this->getFieldByHandle($name);
-
-			if ($field)
-			{
-				return $this->_getPreppedContentForField($field);
-			}
-
-			// Fine, throw the exception
-			throw $e;
-		}
-	}
-
-	/**
-	 * Gets an attribute's value.
+	 * @param bool   $flattenValue
 	 *
-	 * @param string $name
-	 * @param bool $flattenValue
 	 * @return mixed
 	 */
 	public function getAttribute($name, $flattenValue = false)
@@ -696,12 +773,13 @@ abstract class BaseElementModel extends BaseModel
 	 * This is now deprecated. Use getContent() to get the ContentModel instead.
 	 *
 	 * @param string|null $fieldHandle
+	 *
+	 * @deprecated Deprecated in 2.0. Use {@link getContent()} instead.
 	 * @return mixed
-	 * @deprecated Deprecated in 2.0.
 	 */
 	public function getRawContent($fieldHandle = null)
 	{
-		craft()->deprecator->log('BsaeElementModel::getRawContent()', 'BaseElementModel::getRawContent() has been deprecated. Use getContent() instead.');
+		craft()->deprecator->log('BaseElementModel::getRawContent()', 'BaseElementModel::getRawContent() has been deprecated. Use getContent() instead.');
 
 		$content = $this->getContent();
 
@@ -746,6 +824,8 @@ abstract class BaseElementModel extends BaseModel
 	 * Sets the content for the element.
 	 *
 	 * @param ContentModel|array $content
+	 *
+	 * @return null
 	 */
 	public function setContent($content)
 	{
@@ -768,13 +848,15 @@ abstract class BaseElementModel extends BaseModel
 	 * Sets the content from post data, calling prepValueFromPost() on the field types.
 	 *
 	 * @param array|string $content
+	 *
+	 * @return null
 	 */
 	public function setContentFromPost($content)
 	{
 		if (is_string($content))
 		{
-			// Keep track of where the post data is coming from,
-			// in case any field types need to know where to look in $_FILES
+			// Keep track of where the post data is coming from, in case any field types need to know where to
+			// look in $_FILES
 			$this->setContentPostLocation($content);
 
 			$content = craft()->request->getPost($content, array());
@@ -803,12 +885,12 @@ abstract class BaseElementModel extends BaseModel
 					// Do we have any post data for this field?
 					if (isset($content[$handle]))
 					{
-						$this->_content->$handle = $this->_rawPostContent[$handle] = $content[$handle];
+						$value = $this->_rawPostContent[$handle] = $content[$handle];
 					}
 					// Were any files uploaded for this field?
 					else if (!empty($this->_contentPostLocation) && UploadedFile::getInstancesByName($this->_contentPostLocation.'.'.$handle))
 					{
-						$this->_content->$handle = null;
+						$value = null;
 					}
 					else
 					{
@@ -822,15 +904,18 @@ abstract class BaseElementModel extends BaseModel
 					if ($fieldType)
 					{
 						$fieldType->element = $this;
-						$this->_content->$handle = $fieldType->prepValueFromPost($this->_content->$handle);
+						$value = $fieldType->prepValueFromPost($value);
 					}
+
+					// Now set the prepped value on the ContentModel
+					$this->_content->$handle = $value;
 				}
 			}
 		}
 	}
 
 	/**
-	 * Returns the raw content from the post data, before it was passed through prepValueFromPost().
+	 * Returns the raw content from the post data, before it was passed through {@link prepValueFromPost()}.
 	 *
 	 * @return array
 	 */
@@ -859,11 +944,58 @@ abstract class BaseElementModel extends BaseModel
 	/**
 	 * Sets the location in POST that the content was pulled from.
 	 *
+	 * @param $contentPostLocation
+	 *
 	 * @return string|null
 	 */
 	public function setContentPostLocation($contentPostLocation)
 	{
 		$this->_contentPostLocation = $contentPostLocation;
+	}
+
+	/**
+	 * Returns the prepped content for a given field.
+	 *
+	 * @param string $fieldHandle
+	 *
+	 * @throws Exception
+	 * @return mixed
+	 */
+	public function getFieldValue($fieldHandle)
+	{
+		if (!isset($this->_preppedContent) || !array_key_exists($fieldHandle, $this->_preppedContent))
+		{
+			$field = $this->getFieldByHandle($fieldHandle);
+
+			if (!$field)
+			{
+				throw new Exception(Craft::t('No field exists with the handle “{handle}”', array('handle' => $fieldHandle)));
+			}
+
+			$content = $this->getContent();
+
+			if (isset($content->$fieldHandle))
+			{
+				$value = $content->$fieldHandle;
+			}
+			else
+			{
+				$value = null;
+			}
+
+			// Give the field type a chance to prep the value for use
+			$fieldType = $field->getFieldType();
+
+			if ($fieldType)
+			{
+				$fieldType->element = $this;
+				$value = $fieldType->prepValue($value);
+			}
+
+			$this->_preppedContent[$fieldHandle] = $value;
+		}
+
+		return $this->_preppedContent[$fieldHandle];
 	}
 
 	/**
@@ -896,30 +1028,15 @@ abstract class BaseElementModel extends BaseModel
 		return craft()->content->fieldContext;
 	}
 
-	// Deprecated methods
-
-	/**
-	 * Returns a new ElementCriteriaModel prepped to return this element's same-type children.
-	 *
-	 * @access private (Use the public getChildren() instead.)
-	 * @param mixed $field
-	 * @return ElementCriteriaModel
-	 * @deprecated
-	 */
-	private function _getRelChildren($field = null)
-	{
-		$criteria = craft()->elements->getCriteria($this->elementType);
-		$criteria->childOf    = $this;
-		$criteria->childField = $field;
-		return $criteria;
-	}
-
 	/**
 	 * Returns a new ElementCriteriaModel prepped to return this element's same-type parents.
 	 *
 	 * @param mixed $field
+	 *
+	 * @deprecated Deprecated in 1.3. Use the [relatedTo](http://buildwithcraft.com/docs/relations#the-relatedTo-param)
+	 *             param instead.
+	 *
 	 * @return ElementCriteriaModel
-	 * @deprecated Deprecated in 1.3.
 	 */
 	public function getParents($field = null)
 	{
@@ -931,35 +1048,84 @@ abstract class BaseElementModel extends BaseModel
 		return $criteria;
 	}
 
-	// Protected and private methods
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * Returns the field with a given handle.
 	 *
-	 * @access protected
 	 * @param string $handle
+	 *
 	 * @return FieldModel|null
 	 */
 	protected function getFieldByHandle($handle)
 	{
-		$contentService = craft()->content;
+		if (!isset($this->_fieldsByHandle) || !array_key_exists($handle, $this->_fieldsByHandle))
+		{
+			$contentService = craft()->content;
 
-		$originalFieldContext = $contentService->fieldContext;
-		$contentService->fieldContext = $this->getFieldContext();
+			$originalFieldContext = $contentService->fieldContext;
+			$contentService->fieldContext = $this->getFieldContext();
 
-		$field = craft()->fields->getFieldByHandle($handle);
+			$this->_fieldsByHandle[$handle] = craft()->fields->getFieldByHandle($handle);
 
-		$contentService->fieldContext = $originalFieldContext;
+			$contentService->fieldContext = $originalFieldContext;
+		}
 
-		return $field;
+		return $this->_fieldsByHandle[$handle];
+	}
+
+
+	/**
+	 * @inheritDoc BaseModel::defineAttributes()
+	 *
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'id'            => AttributeType::Number,
+			'enabled'       => array(AttributeType::Bool, 'default' => true),
+			'archived'      => array(AttributeType::Bool, 'default' => false),
+			'locale'        => array(AttributeType::Locale, 'default' => craft()->i18n->getPrimarySiteLocaleId()),
+			'localeEnabled' => array(AttributeType::Bool, 'default' => true),
+			'slug'          => array(AttributeType::String, 'label' => 'Slug'),
+			'uri'           => array(AttributeType::String, 'label' => 'URI'),
+			'dateCreated'   => AttributeType::DateTime,
+			'dateUpdated'   => AttributeType::DateTime,
+
+			'root'          => AttributeType::Number,
+			'lft'           => AttributeType::Number,
+			'rgt'           => AttributeType::Number,
+			'level'         => AttributeType::Number,
+		);
+	}
+
+	// Private Methods
+	// =========================================================================
+
+	/**
+	 * Returns a new ElementCriteriaModel prepped to return this element's same-type children.
+	 *
+	 * @param mixed $field
+	 *
+	 * @deprecated Deprecated in 1.3. Use {@link getChildren()} instead.
+	 * @return ElementCriteriaModel
+	 */
+	private function _getRelChildren($field = null)
+	{
+		$criteria = craft()->elements->getCriteria($this->elementType);
+		$criteria->childOf    = $this;
+		$criteria->childField = $field;
+		return $criteria;
 	}
 
 	/**
 	 * Returns an element right before/after this one, from a given set of criteria.
 	 *
-	 * @access private
 	 * @param mixed $criteria
-	 * @param int $dir
+	 * @param int   $dir
+	 *
 	 * @return BaseElementModel|null
 	 */
 	private function _getRelativeElement($criteria, $dir)
@@ -976,50 +1142,14 @@ abstract class BaseElementModel extends BaseModel
 
 			if ($key !== false && isset($elementIds[$key+$dir]))
 			{
-				// Create a new criteria regardless of whether they passed in an ElementCriteriaModel
-				// so that our 'id' modification doesn't stick
+				// Create a new criteria regardless of whether they passed in an ElementCriteriaModel so that our 'id'
+				// modification doesn't stick
 				$criteria = craft()->elements->getCriteria($this->elementType, $criteria);
 
 				$criteria->id = $elementIds[$key+$dir];
+
 				return $criteria->first();
 			}
 		}
-	}
-
-	/**
-	 * Returns the prepped content for a given field.
-	 *
-	 * @param FieldModel $field
-	 * @return mixed
-	 */
-	private function _getPreppedContentForField(FieldModel $field)
-	{
-		if (!isset($this->_preppedContent) || !array_key_exists($field->handle, $this->_preppedContent))
-		{
-			$content = $this->getContent();
-			$fieldHandle = $field->handle;
-
-			if (isset($content->$fieldHandle))
-			{
-				$value = $content->$fieldHandle;
-			}
-			else
-			{
-				$value = null;
-			}
-
-			// Give the field type a chance to prep the value for use
-			$fieldType = $field->getFieldType();
-
-			if ($fieldType)
-			{
-				$fieldType->element = $this;
-				$value = $fieldType->prepValue($value);
-			}
-
-			$this->_preppedContent[$field->handle] = $value;
-		}
-
-		return $this->_preppedContent[$field->handle];
 	}
 }

@@ -46,6 +46,10 @@
 
 	<h2>{{ "Design your field layout"|t }}</h2>
 
+	{% if instructions is defined %}
+		<div class="instructions">{{ instructions|md }}</div>
+	{% endif %}
+
 	<div class="fld-tabs">
 		{% if fieldLayout %}
 			{% import _self as macros %}
@@ -61,8 +65,8 @@
 	</div>
 
 	{% if customizableTabs %}
-		<div class="buttons">
-			<div id="newtabbtn" class="btn add icon">{{ "New Tab"|t }}</div>
+		<div class="newtabbtn-container">
+			<div class="btn add icon">{{ "New Tab"|t }}</div>
 			<h3>{{ "…Or use one of your field groups as a starting point:"|t }}</h3>
 		</div>
 	{% endif %}

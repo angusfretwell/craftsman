@@ -2,20 +2,20 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Class DateInterval
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- *
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.etc.dates
+ * @since     1.0
  */
 class DateInterval extends \DateInterval
 {
+	// Constants
+	// =========================================================================
+
 	/**
 	 * Number of seconds in a minute.
 	 *
@@ -55,6 +55,9 @@ class DateInterval extends \DateInterval
 	 */
 	const SECONDS_YEAR = 31556874;
 
+	// Properties
+	// =========================================================================
+
 	/**
 	 * The date properties.
 	 *
@@ -69,6 +72,9 @@ class DateInterval extends \DateInterval
 	 */
 	private static $_time = array('h' => 'H', 'i' => 'M', 's' => 'S');
 
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Returns the interval specification.
 	 *
@@ -82,16 +88,19 @@ class DateInterval extends \DateInterval
 	/**
 	 * Returns the DateInterval instance for the number of seconds.
 	 *
-	 * @param integer|string $seconds The number of seconds.
+	 * @param int|string $seconds The number of seconds.
+	 *
 	 * @return DateInterval The date interval.
 	 */
 	public static function fromSeconds($seconds)
 	{
 		$interval = new static('PT0S');
 		$seconds = (int)$seconds;
+
 		foreach (array('y' => self::SECONDS_YEAR, 'm' => self::SECONDS_MONTH, 'd' => self::SECONDS_DAY, 'h' => self::SECONDS_HOUR, 'i' => self::SECONDS_MINUTE) as $property => $increment)
 		{
 			$increment = (int)$increment;
+
 			if ($seconds === $increment || $seconds > $increment)
 			{
 				$count = (int)floor($seconds / $increment);
@@ -109,6 +118,7 @@ class DateInterval extends \DateInterval
 	 * Returns the total number of seconds in the interval.
 	 *
 	 * @param \DateInterval $interval The date interval.
+	 *
 	 * @return string The number of seconds.
 	 */
 	public function toSeconds(\DateInterval $interval = null)
@@ -152,6 +162,7 @@ class DateInterval extends \DateInterval
 	 * Returns the interval specification.
 	 *
 	 * @param \DateInterval $interval The date interval.
+	 *
 	 * @return string The interval specification.
 	 */
 	public function toSpec(\DateInterval $interval = null)
@@ -179,7 +190,7 @@ class DateInterval extends \DateInterval
 			{
 				if ($interval->{$property})
 				{
-					$string .= $interval->{$property} . $suffix;
+					$string .= $interval->{$property}.$suffix;
 				}
 			}
 		}
@@ -191,6 +202,7 @@ class DateInterval extends \DateInterval
 	 * Returns the interval in a human-friendly string.
 	 *
 	 * @param bool $showSeconds
+	 *
 	 * @return string
 	 */
 	public function humanDuration($showSeconds = true)

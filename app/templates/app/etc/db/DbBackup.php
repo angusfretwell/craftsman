@@ -2,31 +2,89 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * This class provides methods for backing up and restore Craft databases.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- *
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.etc.db
+ * @since     1.0
  */
 class DbBackup
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * Holds the list of foreign key constraints for the database.
+	 *
+	 * @var array
+	 */
 	private $_constraints;
+
+	/**
+	 * Stores the current Craft version/build of the database that is being backed up.
+	 *
+	 * @var string
+	 */
 	private $_currentVersion;
+
+	/**
+	 * The file path to the database backup.
+	 *
+	 * @var string
+	 */
 	private $_filePath;
 
 	/**
-	 * Dump all tables
+	 * A list of tables that will be ignored during the database backup. These store temporary data, that is O.K. to
+	 * lose and will be re-created as needed.
 	 *
-	 * @return string
+	 * @var array
+	 */
+	private $_ignoreDataTables = array('assetindexdata', 'templatecaches', 'templatecachecriteria', 'templatecacheelements');
+
+	// Public Methods
+	// =========================================================================
+
+	/**
+	 * Controls which (if any) tables will have their data ignored in this database backup.
+	 *
+	 * @param array|false $tables If set to an array, will merge the given tables with the default list of tables to
+	 *                            ignore for data backup in $_ignoreDataTables.  If set to false, no tables will be
+	 *                            ignored and a full database backup will be performed.
+	 *
+	 * @return null
+	 */
+	public function setIgnoreDataTables($tables)
+	{
+		if (is_array($tables))
+		{
+			$this->_ignoreDataTables = array_merge($this->_ignoreDataTables, $tables);
+		}
+		else if ($tables === false)
+		{
+			$this->_ignoreDataTables = array();
+		}
+	}
+
+	/**
+	 * Triggers the database backup including all DML and DDL and writes it out to a file.
+	 *
+	 * @return string The path to the database backup file.
 	 */
 	public function run()
 	{
+		// Normalize the ignored table names if there is a table prefix set.
+		if (($tablePrefix = craft()->config->get('tablePrefix', ConfigFile::Db)) !== '')
+		{
+			foreach ($this->_ignoreDataTables as $key => $tableName)
+			{
+				$this->_ignoreDataTables[$key] = $tablePrefix.'_'.$tableName;
+			}
+		}
+
 		$this->_currentVersion = 'v'.craft()->getVersion().'.'.craft()->getBuild();
 		$fileName = IOHelper::cleanFilename(craft()->getSiteName()).'_'.gmdate('ymd_His').'_'.$this->_currentVersion.'.sql';
 		$this->_filePath = craft()->path->getDbBackupPath().StringHelper::toLowerCase($fileName);
@@ -45,9 +103,13 @@ class DbBackup
 	}
 
 	/**
-	 * @param $filePath
+	 * Restores a database backup with the given backup file. Note that all tables and data in the database will be
+	 * deleted before the backup file is executed.
+	 *
+	 * @param $filePath The file path of the database backup to restore.
 	 *
 	 * @throws Exception
+	 * @return null
 	 */
 	public function restore($filePath)
 	{
@@ -75,12 +137,22 @@ class DbBackup
 
 	/**
 	 * @param $value
+	 *
+	 * @return null
 	 */
 	public function trimValue(&$value)
 	{
 		$value = trim($value);
 	}
 
+	// Private Methods
+	// =========================================================================
+
+	/**
+	 * @param array $sql
+	 *
+	 * @return array
+	 */
 	private function _buildSQLStatements($sql)
 	{
 		$statementArray = array();
@@ -116,7 +188,7 @@ class DbBackup
 	}
 
 	/**
-	 *
+	 * @return null
 	 */
 	private function _nukeDb()
 	{
@@ -127,6 +199,7 @@ class DbBackup
 		$sql = 'SET FOREIGN_KEY_CHECKS = 0;'.PHP_EOL.PHP_EOL;
 
 		$tables = craft()->db->getSchema()->getTableNames();
+
 		foreach ($tables as $table)
 		{
 			$sql .= 'DROP TABLE IF EXISTS '.craft()->db->quoteDatabaseName($databaseName).'.'.craft()->db->quoteTableName($table).';'.PHP_EOL;
@@ -142,9 +215,9 @@ class DbBackup
 
 
 	/**
-	 * Generate the foreign key constraints for all tables
+	 * Generate the foreign key constraints for all tables.
 	 *
-	 * @return string
+	 * @return null
 	 */
 	private function _processConstraints()
 	{
@@ -190,7 +263,8 @@ class DbBackup
 
 	/**
 	 * Set sql file header
-	 * @return string
+	 *
+	 * @return null
 	 */
 	private function _processHeader()
 	{
@@ -207,7 +281,8 @@ class DbBackup
 
 	/**j
 	 * Set sql file footer
-	 * @return string
+	 *
+	 * @return null
 	 */
 	private function _processFooter()
 	{
@@ -219,7 +294,8 @@ class DbBackup
 	 * Create the SQL for a table dump
 	 *
 	 * @param $tableName
-	 * @return mixed
+	 *
+	 * @return null
 	 */
 	private function _processTable($tableName)
 	{
@@ -239,10 +315,12 @@ class DbBackup
 		$createQuery = preg_replace($pattern, '', $createQuery);
 
 		$removed = false;
+
 		foreach ($createQuery as $key => $statement)
 		{
 			// Stupid PHP.
 			$temp = trim($createQuery[$key]);
+
 			if (empty($temp))
 			{
 				unset($createQuery[$key]);
@@ -270,53 +348,57 @@ class DbBackup
 
 		// See if we have any data.
 		$totalRows =  $db->createCommand('SELECT count(*) FROM '.$db->quoteTableName($tableName).';')->queryScalar();
+
 		if ($totalRows == 0)
 		{
 			return;
 		}
 
-		// Data!
-		IOHelper::writeToFile($this->_filePath, PHP_EOL.'--'.PHP_EOL.'-- Data for table `'.$tableName.'`'.PHP_EOL.'--'.PHP_EOL.PHP_EOL, true, true);
-
-		$batchSize = 1000;
-
-		// Going to grab the data in batches.
-		$totalBatches = ceil($totalRows / $batchSize);
-
-		for ($counter = 0; $counter < $totalBatches; $counter++)
+		if (!in_array($tableName, $this->_ignoreDataTables))
 		{
-			@set_time_limit(120);
+			// Data!
+			IOHelper::writeToFile($this->_filePath, PHP_EOL.'--'.PHP_EOL.'-- Data for table `'.$tableName.'`'.PHP_EOL.'--'.PHP_EOL.PHP_EOL, true, true);
 
-			$offset = $batchSize * $counter;
-			$rows =  $db->createCommand('SELECT * FROM '.$db->quoteTableName($tableName).' LIMIT '.$offset.','.$batchSize.';')->queryAll();
+			$batchSize = 1000;
 
-			if (!empty($rows))
+			// Going to grab the data in batches.
+			$totalBatches = ceil($totalRows / $batchSize);
+
+			for ($counter = 0; $counter < $totalBatches; $counter++)
 			{
-				$attrs = array_map(array($db, 'quoteColumnName'), array_keys($rows[0]));
+				@set_time_limit(120);
 
-				foreach($rows as $row)
+				$offset = $batchSize * $counter;
+				$rows =  $db->createCommand('SELECT * FROM '.$db->quoteTableName($tableName).' LIMIT '.$offset.','.$batchSize.';')->queryAll();
+
+				if (!empty($rows))
 				{
-					$insertStatement = 'INSERT INTO '.$db->quoteTableName($tableName).' ('.implode(', ', $attrs).') VALUES';
+					$attrs = array_map(array($db, 'quoteColumnName'), array_keys($rows[0]));
 
-					// Process row
-					foreach($row as $columnName => $value)
+					foreach($rows as $row)
 					{
-						if ($value === null)
-						{
-							$row[$columnName] = 'NULL';
-						}
-						else
-						{
-							$row[$columnName] = $db->getPdoInstance()->quote($value);
-						}
-					}
+						$insertStatement = 'INSERT INTO '.$db->quoteTableName($tableName).' ('.implode(', ', $attrs).') VALUES';
 
-					$insertStatement .= ' ('.implode(', ', $row).');';
-					IOHelper::writeToFile($this->_filePath, $insertStatement.PHP_EOL, true, true);
+						// Process row
+						foreach($row as $columnName => $value)
+						{
+							if ($value === null)
+							{
+								$row[$columnName] = 'NULL';
+							}
+							else
+							{
+								$row[$columnName] = $db->getPdoInstance()->quote($value);
+							}
+						}
+
+						$insertStatement .= ' ('.implode(', ', $row).');';
+						IOHelper::writeToFile($this->_filePath, $insertStatement.PHP_EOL, true, true);
+					}
 				}
 			}
-		}
 
-		IOHelper::writeToFile($this->_filePath, PHP_EOL.PHP_EOL, true, true);
+			IOHelper::writeToFile($this->_filePath, PHP_EOL.PHP_EOL, true, true);
+		}
 	}
 }

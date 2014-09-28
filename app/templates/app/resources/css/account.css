@@ -1,7 +1,9 @@
 @charset "UTF-8";
 /* RTL stuff */
+#verifypasswordmodal { width: 350px; }
+
 #verifypasswordmodal .buttons { margin-top: 1em; }
 
-#verifypasswordmodal .buttons .spinner { position: absolute; top: 0; }
-body.ltr #verifypasswordmodal .buttons .spinner { right: -24px; }
-body.rtl #verifypasswordmodal .buttons .spinner { left: -24px; }
+#verifypasswordmodal .buttons .spinner { position: absolute; top: 0; margin-top: 0; }
+body.ltr #verifypasswordmodal .buttons .spinner { right: -19px; }
+body.rtl #verifypasswordmodal .buttons .spinner { left: -19px; }

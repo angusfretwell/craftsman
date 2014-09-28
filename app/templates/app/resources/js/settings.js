@@ -1,11 +1,9 @@
 /**
- * Craft by Pixel & Tonic
- *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.resources
  */
 
 (function($) {
@@ -88,9 +86,9 @@ Craft.Tool = Garnish.Base.extend(
 		})
 			.removeClass('hidden');
 
-		this.$form.stop().animateLeft(-200, 'fast');
+		this.$form.velocity('stop').animateLeft(-200, 'fast');
 
-		this.progressBar.$progressBar.stop().animateLeft(30, 'fast', $.proxy(function()
+		this.progressBar.$progressBar.velocity('stop').animateLeft(30, 'fast', $.proxy(function()
 		{
 			var postData = Garnish.getPostData(this.$form),
 				params = Craft.expandPostArray(postData);

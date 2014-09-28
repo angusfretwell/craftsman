@@ -2,7 +2,7 @@
 /**
  * PHPUnit
  *
- * Copyright (c) 2002-2013, Sebastian Bergmann <sebastian@phpunit.de>.
+ * Copyright (c) 2002-2014, Sebastian Bergmann <sebastian@phpunit.de>.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,34 +36,43 @@
  *
  * @package    DbUnit
  * @author     Mike Lively <m@digitalsandwich.com>
- * @copyright  2002-2013 Sebastian Bergmann <sebastian@phpunit.de>
+ * @copyright  2002-2014 Sebastian Bergmann <sebastian@phpunit.de>
  * @license    http://www.opensource.org/licenses/BSD-3-Clause  The BSD 3-Clause License
  * @link       http://www.phpunit.de/
  * @since      File available since Release 1.0.0
  */
 
-require_once 'BankAccount.php';
+require_once dirname(__FILE__) . '/BankAccount.php';
 
 /**
- * Tests for the BankAccount class.
+ * Base class for tests for the BankAccount class.
  *
  * @package    DbUnit
  * @author     Mike Lively <m@digitalsandwich.com>
- * @copyright  2002-2013 Sebastian Bergmann <sebastian@phpunit.de>
+ * @copyright  2002-2014 Sebastian Bergmann <sebastian@phpunit.de>
  * @license    http://www.opensource.org/licenses/BSD-3-Clause  The BSD 3-Clause License
  * @version    Release: @package_version@
  * @link       http://www.phpunit.de/
  * @since      Class available since Release 1.0.0
  */
-class BankAccountDBTest extends PHPUnit_Extensions_Database_TestCase
+abstract class BankAccountDBTest extends PHPUnit_Extensions_Database_TestCase
 {
     protected $pdo;
 
-    public function __construct()
+    public function __construct($name = null, array $data = array(), $dataName = '')
     {
-        $this->pdo = new PDO('sqlite::memory:');
+        parent::__construct($name, $data, $dataName);
+
+        $this->pdo = $this->getPdo();
         BankAccount::createTable($this->pdo);
     }
+
+    /**
+     * Custom method to obtain a configured PDO instance.
+     *
+     * @return \PDO
+     */
+    abstract protected function getPdo();
 
     /**
      * Returns the test database connection.
@@ -72,7 +81,7 @@ class BankAccountDBTest extends PHPUnit_Extensions_Database_TestCase
      */
     protected function getConnection()
     {
-        return $this->createDefaultDBConnection($this->pdo, 'sqlite');
+        return $this->createDefaultDBConnection($this->pdo);
     }
 
     protected function getDataSet()
@@ -112,7 +121,7 @@ class BankAccountDBTest extends PHPUnit_Extensions_Database_TestCase
         $bank_account = new BankAccount('12348612357236185', $this->pdo);
         $bank_account->depositMoney(24);
 
-           $xml_dataset = $this->createFlatXMLDataSet(dirname(__FILE__).'/_files/bank-account-after-deposits.xml');
+        $xml_dataset = $this->createFlatXMLDataSet(dirname(__FILE__).'/_files/bank-account-after-deposits.xml');
         $this->assertDataSetsEqual($xml_dataset, $this->getConnection()->createDataSet());
     }
 
@@ -138,6 +147,4 @@ class BankAccountDBTest extends PHPUnit_Extensions_Database_TestCase
         $xml_dataset = $this->createFlatXMLDataSet(dirname(__FILE__).'/_files/bank-account-after-new-account.xml');
         $this->assertDataSetsEqual($xml_dataset, $this->getConnection()->createDataSet());
     }
-    /*
-    */
 }

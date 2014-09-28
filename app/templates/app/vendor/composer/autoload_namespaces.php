@@ -11,6 +11,8 @@ return array(
     'Symfony\\Component\\EventDispatcher\\' => array($vendorDir . '/symfony/event-dispatcher'),
     'SimplePie' => array($vendorDir . '/simplepie/simplepie/library'),
     'Mockery' => array($vendorDir . '/mockery/mockery/library'),
+    'LazyMap\\' => array($vendorDir . '/ocramius/lazy-map/src'),
+    'Instantiator\\' => array($vendorDir . '/ocramius/instantiator/src'),
     'Imagine' => array($vendorDir . '/imagine/imagine/lib'),
     'Guzzle\\Tests' => array($vendorDir . '/guzzle/guzzle/tests'),
     'Guzzle' => array($vendorDir . '/guzzle/guzzle/src'),

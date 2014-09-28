@@ -86,10 +86,9 @@ class PHPUnit_Framework_TestFailure
     public function toString()
     {
         return sprintf(
-          '%s: %s',
-
-          $this->failedTest->toString(),
-          $this->thrownException->getMessage()
+            '%s: %s',
+            $this->failedTest->toString(),
+            $this->thrownException->getMessage()
         );
     }
 
@@ -117,7 +116,7 @@ class PHPUnit_Framework_TestFailure
             $buffer = $e->toString();
 
             if ($e instanceof PHPUnit_Framework_ExpectationFailedException && $e->getComparisonFailure()) {
-                $buffer = $buffer . "\n" . $e->getComparisonFailure()->getDiff();
+                $buffer = $buffer . $e->getComparisonFailure()->getDiff();
             }
 
             if (!empty($buffer)) {

@@ -1,6 +1,34 @@
 # CHANGELOG
 
-### 0.5.0 (2013-xx-xx)
+### 0.6.0 (2014-06-16)
+  * Fix invalid namespace usage (#336 @csanquer).
+
+### 0.6.0 (2014-06-13)
+
+  * BC break: Colors are now provided through the PaletteInterface. Any call
+    to previous Imagine\Image\Color constructor must be removed and use the
+    palette provided by Imagine\Image\ImageInterface::getPalette to create
+    colors.
+  * BC break : Animated GIF default delay is no longer 800ms but null. This 
+    avoids resettings a delay on animated image.
+  * Add support for ICC profiles
+  * Add support for CMYK and grayscale colorspace images.
+  * Add filter argument to ImageInterface::thumbnail method.
+  * Add priority to filters (@Richtermeister).
+  * Add blur effect (@Nokrosis).
+  * Rename "quality" option to "jpeg_quality" and apply it only to JPEG files (@vlakoff).
+  * Add "png_compression_level" option (@vlakoff).
+  * Rename "filters" option to "png_compression_filter" (@vlakoff).
+  * Deprecate `quality` and `filters` ManipulatorInterface::save options, use
+    `jpeg_quality`, `png_compression_level` and `png_compression_filter` instead.
+  * Add support for alpha blending in GD drawer (@salem).
+  * Add width parameter to Drawer::text (@salemgolemugoo).
+  * Add NotSupportedException when a driver does not support an operation (@rouffj).
+  * Add support for metadata.
+  * Fix #158: GD alpha detection + Color::isOpaque are broken.
+  * Fix color extraction for non-RGB palettes.
+
+### 0.5.0 (2013-07-10)
 
   * Add `Layers::coalesce`.
   * Add filter option to `ImageInterface::resize`.

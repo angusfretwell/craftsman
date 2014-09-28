@@ -1,7 +1,8 @@
 /*
  Copyright (c) 2014, Pixel & Tonic, Inc.
  @license   http://buildwithcraft.com/license Craft License Agreement
- @link      http://buildwithcraft.com
+ @see       http://buildwithcraft.com
+ @package   craft.app.resources
 */
 (function(c){Craft.Locales=Garnish.Base.extend({$addLocaleField:null,$addLocaleInput:null,$addLocaleSpinner:null,$resultsSheet:null,$resultsList:null,$activeLocale:null,locales:null,selectedLocales:null,adminTable:null,inputVal:null,showingResultsSheet:!1,init:function(a,b){this.locales={};for(var d in a)this.locales[d]={name:a[d],words:Craft.asciiString(d+" "+a[d]).match(Craft.Locales.wordRegex)};this.selectedLocales=b;this.$addLocaleField=c("#addlocale");this.$addLocaleInput=c("#addlocaleinput");
 this.$addLocaleSpinner=this.$addLocaleField.find(".spinner");this.adminTable=new Craft.AdminTable({tableSelector:"#locales",sortable:!0,minObjects:1,reorderAction:"localization/reorderLocales",deleteAction:"localization/deleteLocale",confirmDeleteMessage:Craft.t("Are you sure you want to delete \u201c{name}\u201d and all its associated content?"),onDeleteObject:c.proxy(function(a){a=c.inArray(a,this.selectedLocales);-1!=a&&this.selectedLocales.splice(a,1)},this)});this.addListener(this.$addLocaleInput,

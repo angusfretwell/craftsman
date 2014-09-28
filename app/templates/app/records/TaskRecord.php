@@ -2,21 +2,23 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Class TaskRecord
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- *
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.records
+ * @since     2.0
  */
 class TaskRecord extends BaseRecord
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
+	 * @inheritDoc BaseRecord::getTableName()
+	 *
 	 * @return string
 	 */
 	public function getTableName()
@@ -25,7 +27,50 @@ class TaskRecord extends BaseRecord
 	}
 
 	/**
-	 * @access protected
+	 * @inheritDoc BaseRecord::defineIndexes()
+	 *
+	 * @return array
+	 */
+	public function defineIndexes()
+	{
+		return array(
+			array('columns' => array('root')),
+			array('columns' => array('lft')),
+			array('columns' => array('rgt')),
+			array('columns' => array('level')),
+		);
+	}
+
+	/**
+	 * @inheritDoc BaseRecord::behaviors()
+	 *
+	 * @return array
+	 */
+	public function behaviors()
+	{
+		return array(
+			'nestedSet' => 'app.extensions.NestedSetBehavior',
+		);
+	}
+
+	/**
+	 * @inheritDoc BaseRecord::scopes()
+	 *
+	 * @return array
+	 */
+	public function scopes()
+	{
+		return array(
+			'ordered' => array('order' => 'dateCreated'),
+		);
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc BaseRecord::defineAttributes()
+	 *
 	 * @return array
 	 */
 	protected function defineAttributes()
@@ -41,39 +86,6 @@ class TaskRecord extends BaseRecord
 			'type'          => array(AttributeType::ClassName, 'required' => true),
 			'description'   => AttributeType::String,
 			'settings'      => AttributeType::Mixed,
-		);
-	}
-
-	/**
-	 * @return array
-	 */
-	public function defineIndexes()
-	{
-		return array(
-			array('columns' => array('root')),
-			array('columns' => array('lft')),
-			array('columns' => array('rgt')),
-			array('columns' => array('level')),
-		);
-	}
-
-	/**
-	 * @return array
-	 */
-	public function behaviors()
-	{
-		return array(
-			'nestedSet' => 'app.extensions.NestedSetBehavior',
-		);
-	}
-
-	/**
-	 * @return array
-	 */
-	public function scopes()
-	{
-		return array(
-			'ordered' => array('order' => 'dateCreated'),
 		);
 	}
 }

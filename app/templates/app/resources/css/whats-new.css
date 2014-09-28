@@ -2,10 +2,16 @@
 /* RTL stuff */
 #page-header { padding: 12px 0; }
 
-#content h1, #content p { margin: 45px auto !important; max-width: 700px; text-align: center; }
+#content h1, #content p { margin: 45px auto !important; max-width: 750px; text-align: center; }
 
 #content h1 + p { margin-top: -25px !important; }
+
+#content h1 { color: #29323d; }
 
 #content p { font-size: 17px; line-height: 1.4; }
 
 #content img { display: block; margin: 45px auto; border-radius: 4px 0 0 4px; max-width: 870px; -webkit-box-shadow: 0 0 50px rgba(0, 0, 0, 0.25); -moz-box-shadow: 0 0 50px rgba(0, 0, 0, 0.25); box-shadow: 0 0 50px rgba(0, 0, 0, 0.25); }
+
+#content header h1 { font-size: 40px; color: #da5a47; }
+
+#content header:after { display: block; margin: 0 -24px; content: '.'; font-size: 0; height: 4px; background-image: -webkit-radial-gradient(65% 100% at 50% 0, #ebedef, white); background-image: -moz-radial-gradient(65% 100% at 50% 0, #ebedef, white); background-image: -ms-radial-gradient(65% 100% at 50% 0, #ebedef, white); background-image: -o-radial-gradient(65% 100% at 50% 0, #ebedef, white); background-image: radial-gradient(65% 100% at 50% 0, #ebedef, white); }

@@ -2,28 +2,43 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Class LocalizationService
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- *
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.services
+ * @since     1.0
  */
 class LocalizationService extends BaseApplicationComponent
 {
-	private $_appLocales;
-	private $_siteLocales;
-	private $_localeData;
+	// Properties
+	// =========================================================================
 
 	/**
-	 * Returns of all known locales.
+	 * @var
+	 */
+	private $_appLocales;
+
+	/**
+	 * @var
+	 */
+	private $_siteLocales;
+
+	/**
+	 * @var
+	 */
+	private $_localeData;
+
+	// Public Methods
+	// =========================================================================
+
+	/**
+	 * Returns an array of all known locales. The list of known locales is based on whatever files exist in
+	 * craft/app/framework/i18n/data/.
 	 *
-	 * @return array
+	 * @return array An array of LocaleModel objects.
 	 */
 	public function getAllLocales()
 	{
@@ -39,9 +54,10 @@ class LocalizationService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns a list of language ids from the languages directory that Craft is translated into.
+	 * Returns an array of locales that Craft is translated into. The list of locales is based on whatever files exist
+	 * in craft/app/translations/.
 	 *
-	 * @return mixed
+	 * @return array An array of {@link LocaleModel} objects.
 	 */
 	public function getAppLocales()
 	{
@@ -69,9 +85,10 @@ class LocalizationService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns an array of the locale IDs which Craft has been translated into.
+	 * Returns an array of the locale IDs which Craft has been translated into. The list of locales is based on whatever
+	 * files exist in craft/app/translations/.
 	 *
-	 * @return array
+	 * @return array An array of locale IDs.
 	 */
 	public function getAppLocaleIds()
 	{
@@ -87,9 +104,10 @@ class LocalizationService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns the locales that the site is translated for.
+	 * Returns an array of the site locales. The list of locales is based on whatever was defined in Settings > Locales
+	 * in the control panel.
 	 *
-	 * @return array
+	 * @return array An array of {@link LocaleModel} objects.
 	 */
 	public function getSiteLocales()
 	{
@@ -122,9 +140,10 @@ class LocalizationService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns the site's primary locale.
+	 * Returns the site's primary locale. The primary locale is whatever is listed first in Settings > Locales in the
+	 * control panel.
 	 *
-	 * @return LocaleModel
+	 * @return LocaleModel A {@link LocaleModel} object representing the primary locale.
 	 */
 	public function getPrimarySiteLocale()
 	{
@@ -133,9 +152,10 @@ class LocalizationService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns the site's primary locale ID.
+	 * Returns the site's primary locale ID. The primary locale is whatever is listed first in Settings > Locales in the
+	 * control panel.
 	 *
-	 * @return string
+	 * @return string The primary locale ID.
 	 */
 	public function getPrimarySiteLocaleId()
 	{
@@ -143,9 +163,10 @@ class LocalizationService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns an array of the site locale IDs.
+	 * Returns an array of the site locale IDs. The list of locales is based on whatever was defined in Settings > Locales
+	 * in the control panel.
 	 *
-	 * @return array
+	 * @return array An array of locale IDs.
 	 */
 	public function getSiteLocaleIds()
 	{
@@ -210,6 +231,7 @@ class LocalizationService extends BaseApplicationComponent
 	 * Returns a locale by its ID.
 	 *
 	 * @param string $localeId
+	 *
 	 * @return LocaleModel
 	 */
 	public function getLocaleById($localeId)
@@ -221,6 +243,7 @@ class LocalizationService extends BaseApplicationComponent
 	 * Adds a new site locale.
 	 *
 	 * @param string $localeId
+	 *
 	 * @return bool
 	 */
 	public function addSiteLocale($localeId)
@@ -252,7 +275,7 @@ class LocalizationService extends BaseApplicationComponent
 				craft()->db->createCommand()->insertAll('categorygroups_i18n', array('groupId', 'locale', 'urlFormat', 'nestedUrlFormat'), $newCategoryLocales);
 			}
 
-			// Resave all of the localizable elements
+			// Re-save all of the localizable elements
 			if (!craft()->tasks->areTasksPending('ResaveAllElements'))
 			{
 				craft()->tasks->createTask('ResaveAllElements', null, array(
@@ -268,6 +291,7 @@ class LocalizationService extends BaseApplicationComponent
 	 * Reorders the site's locales.
 	 *
 	 * @param array $localeIds
+	 *
 	 * @return bool
 	 */
 	public function reorderSiteLocales($localeIds)
@@ -308,8 +332,8 @@ class LocalizationService extends BaseApplicationComponent
 
 				if ($elementIds)
 				{
-					// To be sure we don't hit any unique constraint MySQL errors,
-					// first make sure there are no rows for these elements that don't currently use the old primary locale
+					// To be sure we don't hit any unique constraint MySQL errors, first make sure there are no rows for
+					// these elements that don't currently use the old primary locale
 					$deleteConditions = array('and', array('in', 'elementId', $elementIds), 'locale != :locale');
 					$deleteParams = array(':locale' => $oldPrimaryLocaleId);
 
@@ -333,6 +357,7 @@ class LocalizationService extends BaseApplicationComponent
 	 * Deletes a site locale.
 	 *
 	 * @param string $localeId
+	 *
 	 * @return bool
 	 */
 	public function deleteSiteLocale($localeId)
@@ -344,7 +369,8 @@ class LocalizationService extends BaseApplicationComponent
 	/**
 	 * Returns the localization data for a given locale.
 	 *
-	 * @param $localeId
+	 * @param string $localeId
+	 *
 	 * @return LocaleData|null
 	 */
 	public function getLocaleData($localeId = null)

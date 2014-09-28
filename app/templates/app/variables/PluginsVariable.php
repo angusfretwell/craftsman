@@ -2,25 +2,26 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Plugin functions.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Plugin functions
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.variables
+ * @since     1.0
  */
 class PluginsVariable
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Returns a plugin by its class handle.
 	 *
 	 * @param string $class
 	 * @param bool   $enabledOnly
+	 *
 	 * @return PluginVariable|null
 	 */
 	public function getPlugin($class, $enabledOnly = true)
@@ -37,6 +38,7 @@ class PluginsVariable
 	 * Returns all plugins.
 	 *
 	 * @param bool $enabledOnly
+	 *
 	 * @return array
 	 */
 	public function getPlugins($enabledOnly = true)

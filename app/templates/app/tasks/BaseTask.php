@@ -2,28 +2,32 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Task base class.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Task base class
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.tasks
+ * @since     2.0
  */
 abstract class BaseTask extends BaseSavableComponentType implements ITask
 {
+	// Properties
+	// =========================================================================
+
 	/**
-	 * @access protected
-	 * @var string The type of component this is
+	 * The type of component, e.g. "Plugin", "Widget", "FieldType", etc. Defined by the component type's base class.
+	 *
+	 * @var string
 	 */
 	protected $componentType = 'Task';
 
+	// Public Methods
+	// =========================================================================
+
 	/**
-	 * Returns the default description for this task.
+	 * @inheritDoc ITask::getDescription()
 	 *
 	 * @return string
 	 */
@@ -33,7 +37,7 @@ abstract class BaseTask extends BaseSavableComponentType implements ITask
 	}
 
 	/**
-	 * Returns the total number of steps for this task.
+	 * @inheritDoc ITask::getTotalSteps()
 	 *
 	 * @return int
 	 */
@@ -43,9 +47,10 @@ abstract class BaseTask extends BaseSavableComponentType implements ITask
 	}
 
 	/**
-	 * Runs a task step.
+	 * @inheritDoc ITask::runStep()
 	 *
 	 * @param int $step
+	 *
 	 * @return bool
 	 */
 	public function runStep($step)
@@ -53,18 +58,22 @@ abstract class BaseTask extends BaseSavableComponentType implements ITask
 		return true;
 	}
 
+	// Protected Methods
+	// =========================================================================
+
 	/**
 	 * Creates and runs a subtask.
 	 *
-	 * @access protected
-	 * @param             $taskClassName
+	 * @param string      $taskClassName
 	 * @param string|null $taskDescription
 	 * @param array|null  $settings
+	 *
 	 * @return bool
 	 */
 	protected function runSubTask($taskClassName, $taskDescription = null, $settings = null)
 	{
-		$task = craft()->tasks->createTask($taskClassName, $taskDescription, $settings, $this->model->id);
+		$task
+			= craft()->tasks->createTask($taskClassName, $taskDescription, $settings, $this->model->id);
 		return craft()->tasks->runTask($task);
 	}
 }

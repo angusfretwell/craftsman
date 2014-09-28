@@ -116,61 +116,16 @@ class PHPUnit_Util_Test
      */
     public static function getLinesToBeCovered($className, $methodName)
     {
-        $codeToCoverList = array();
+        $annotations = self::parseTestMethodAnnotations(
+            $className,
+            $methodName
+        );
 
-        $class = new ReflectionClass($className);
-
-        try {
-            $method = new ReflectionMethod($className, $methodName);
-        } catch (ReflectionException $e) {
-            return array();
-        }
-
-        $docComment = self::getDocCommentsOfTestClassAndTestMethodAndTemplateMethods($class, $method);
-
-        if (strpos($docComment, '@coversNothing') !== false) {
+        if (isset($annotations['class']['coversNothing']) || isset($annotations['method']['coversNothing'])) {
             return false;
         }
 
-        $classShortcut = preg_match_all(
-          '(@coversDefaultClass\s+(?P<coveredClass>[^\s]++)\s*$)m',
-          $class->getDocComment(),
-          $matches
-        );
-
-        if ($classShortcut) {
-            if ($classShortcut > 1) {
-                throw new PHPUnit_Framework_CodeCoverageException(
-                  sprintf(
-                    'More than one @coversClass annotation in class or interface "%s".',
-                    $className
-                  )
-                );
-            }
-
-            $classShortcut = $matches['coveredClass'][0];
-        }
-
-        $match = preg_match_all(
-          '(@covers\s+(?P<coveredElement>[^\s()]++)[\s()]*$)m',
-          $docComment,
-          $matches
-        );
-
-        if ($match) {
-            foreach ($matches['coveredElement'] as $coveredElement) {
-                if ($classShortcut && strncmp($coveredElement, '::', 2) === 0) {
-                    $coveredElement = $classShortcut . $coveredElement;
-                }
-
-                $codeToCoverList = array_merge(
-                  $codeToCoverList,
-                  self::resolveElementToReflectionObjects($coveredElement)
-                );
-            }
-        }
-
-        return self::resolveReflectionObjectsToLines($codeToCoverList);
+        return self::getLinesToBeCoveredOrUsed($className, $methodName, 'covers');
     }
 
     /**
@@ -183,31 +138,66 @@ class PHPUnit_Util_Test
      */
     public static function getLinesToBeUsed($className, $methodName)
     {
+        return self::getLinesToBeCoveredOrUsed($className, $methodName, 'uses');
+    }
+
+    /**
+     * @param  string $className
+     * @param  string $methodName
+     * @param  string $mode
+     * @return array
+     * @throws PHPUnit_Framework_CodeCoverageException
+     * @since  Method available since Release 4.2.0
+     */
+    private static function getLinesToBeCoveredOrUsed($className, $methodName, $mode)
+    {
         $annotations = self::parseTestMethodAnnotations(
-          $className, $methodName
+            $className,
+            $methodName
         );
 
-        $uses = array();
+        $classShortcut = null;
 
-        if (isset($annotations['class']['uses'])) {
-            $uses = $annotations['class']['uses'];
+        if (!empty($annotations['class'][$mode . 'DefaultClass'])) {
+            if (count($annotations['class'][$mode . 'DefaultClass']) > 1) {
+                throw new PHPUnit_Framework_CodeCoverageException(
+                    sprintf(
+                        'More than one @%sClass annotation in class or interface "%s".',
+                        $mode,
+                        $className
+                    )
+                );
+            }
+
+            $classShortcut = $annotations['class'][$mode . 'DefaultClass'][0];
         }
 
-        if (isset($annotations['method']['uses'])) {
-            $uses = array_merge($uses, $annotations['method']['uses']);
+        $list = array();
+
+        if (isset($annotations['class'][$mode])) {
+            $list = $annotations['class'][$mode];
         }
 
-        $uses          = array_unique($uses);
-        $codeToUseList = array();
+        if (isset($annotations['method'][$mode])) {
+            $list = array_merge($list, $annotations['method'][$mode]);
+        }
 
-        foreach (array_unique($uses) as $element) {
-            $codeToUseList = array_merge(
-              $codeToUseList,
-              self::resolveElementToReflectionObjects($element)
+        $codeList = array();
+
+        foreach (array_unique($list) as $element) {
+            if ($classShortcut && strncmp($element, '::', 2) === 0) {
+                $element = $classShortcut . $element;
+            }
+
+            $element = preg_replace('/[\s()]+$/', '', $element);
+
+            $codeList = array_merge(
+                $codeList,
+                self::resolveElementToReflectionObjects($element)
             );
         }
 
-        return self::resolveReflectionObjectsToLines($codeToUseList);
+        return self::resolveReflectionObjectsToLines($codeList);
     }
 
     /**
@@ -228,8 +218,8 @@ class PHPUnit_Util_Test
 
         if ($count = preg_match_all(self::REGEX_REQUIRES_OS, $docComment, $matches)) {
             $requires['OS'] = sprintf(
-              '/%s/i',
-              addcslashes($matches['value'][$count - 1], '/')
+                '/%s/i',
+                addcslashes($matches['value'][$count - 1], '/')
             );
         }
         if ($count = preg_match_all(self::REGEX_REQUIRES_VERSION, $docComment, $matches)) {
@@ -270,7 +260,8 @@ class PHPUnit_Util_Test
 
         if (preg_match(self::REGEX_EXPECTED_EXCEPTION, $docComment, $matches)) {
             $annotations = self::parseTestMethodAnnotations(
-              $className, $methodName
+                $className,
+                $methodName
             );
 
             $class   = $matches[1];
@@ -364,7 +355,7 @@ class PHPUnit_Util_Test
 
             $dataProviderClass  = new ReflectionClass($dataProviderClassName);
             $dataProviderMethod = $dataProviderClass->getMethod(
-              $dataProviderMethodName
+                $dataProviderMethodName
             );
 
             if ($dataProviderMethod->isStatic()) {
@@ -388,10 +379,10 @@ class PHPUnit_Util_Test
             foreach ($data as $key => $value) {
                 if (!is_array($value)) {
                     throw new PHPUnit_Framework_Exception(
-                      sprintf(
-                        'Data set %s is invalid.',
-                        is_int($key) ? '#' . $key : '"' . $key . '"'
-                      )
+                        sprintf(
+                            'Data set %s is invalid.',
+                            is_int($key) ? '#' . $key : '"' . $key . '"'
+                        )
                     );
                 }
             }
@@ -464,10 +455,14 @@ class PHPUnit_Util_Test
     {
         return array(
           'backupGlobals' => self::getBooleanAnnotationSetting(
-            $className, $methodName, 'backupGlobals'
+              $className,
+              $methodName,
+              'backupGlobals'
           ),
           'backupStaticAttributes' => self::getBooleanAnnotationSetting(
-            $className, $methodName, 'backupStaticAttributes'
+              $className,
+              $methodName,
+              'backupStaticAttributes'
           )
         );
     }
@@ -483,7 +478,8 @@ class PHPUnit_Util_Test
     public static function getDependencies($className, $methodName)
     {
         $annotations = self::parseTestMethodAnnotations(
-          $className, $methodName
+            $className,
+            $methodName
         );
 
         $dependencies = array();
@@ -494,7 +490,8 @@ class PHPUnit_Util_Test
 
         if (isset($annotations['method']['depends'])) {
             $dependencies = array_merge(
-              $dependencies, $annotations['method']['depends']
+                $dependencies,
+                $annotations['method']['depends']
             );
         }
 
@@ -512,7 +509,9 @@ class PHPUnit_Util_Test
     public static function getErrorHandlerSettings($className, $methodName)
     {
         return self::getBooleanAnnotationSetting(
-          $className, $methodName, 'errorHandler'
+            $className,
+            $methodName,
+            'errorHandler'
         );
     }
 
@@ -527,7 +526,8 @@ class PHPUnit_Util_Test
     public static function getGroups($className, $methodName = '')
     {
         $annotations = self::parseTestMethodAnnotations(
-          $className, $methodName
+            $className,
+            $methodName
         );
 
         $groups = array();
@@ -604,7 +604,8 @@ class PHPUnit_Util_Test
     public static function getTickets($className, $methodName)
     {
         $annotations = self::parseTestMethodAnnotations(
-          $className, $methodName
+            $className,
+            $methodName
         );
 
         $tickets = array();
@@ -631,7 +632,8 @@ class PHPUnit_Util_Test
     public static function getProcessIsolationSettings($className, $methodName)
     {
         $annotations = self::parseTestMethodAnnotations(
-          $className, $methodName
+            $className,
+            $methodName
         );
 
         if (isset($annotations['class']['runTestsInSeparateProcesses']) ||
@@ -653,7 +655,9 @@ class PHPUnit_Util_Test
     public static function getPreserveGlobalStateSettings($className, $methodName)
     {
         return self::getBooleanAnnotationSetting(
-          $className, $methodName, 'preserveGlobalState'
+            $className,
+            $methodName,
+            'preserveGlobalState'
         );
     }
 
@@ -726,7 +730,8 @@ class PHPUnit_Util_Test
     private static function getBooleanAnnotationSetting($className, $methodName, $settingName)
     {
         $annotations = self::parseTestMethodAnnotations(
-          $className, $methodName
+            $className,
+            $methodName
         );
 
         $result = null;
@@ -770,11 +775,11 @@ class PHPUnit_Util_Test
                     if (!class_exists($className) &&
                         !interface_exists($className)) {
                         throw new PHPUnit_Framework_InvalidCoversTargetException(
-                          sprintf(
-                            'Trying to @cover or @use not existing class or ' .
-                            'interface "%s".',
-                            $className
-                          )
+                            sprintf(
+                                'Trying to @cover or @use not existing class or ' .
+                                'interface "%s".',
+                                $className
+                            )
                         );
                     }
 
@@ -804,7 +809,7 @@ class PHPUnit_Util_Test
                 foreach ($classes as $className) {
                     if ($className == '' && function_exists($methodName)) {
                         $codeToCoverList[] = new ReflectionFunction(
-                          $methodName
+                            $methodName
                         );
                     } else {
                         if (!((class_exists($className) ||
@@ -812,16 +817,17 @@ class PHPUnit_Util_Test
                                trait_exists($className)) &&
                               method_exists($className, $methodName))) {
                             throw new PHPUnit_Framework_InvalidCoversTargetException(
-                              sprintf(
-                                'Trying to @cover or @use not existing method "%s::%s".',
-                                $className,
-                                $methodName
-                              )
+                                sprintf(
+                                    'Trying to @cover or @use not existing method "%s::%s".',
+                                    $className,
+                                    $methodName
+                                )
                             );
                         }
 
                         $codeToCoverList[] = new ReflectionMethod(
-                          $className, $methodName
+                            $className,
+                            $methodName
                         );
                     }
                 }
@@ -830,10 +836,7 @@ class PHPUnit_Util_Test
             $extended = false;
 
             if (strpos($element, '<extended>') !== false) {
-                $element = str_replace(
-                  '<extended>', '', $element
-                );
-
+                $element  = str_replace('<extended>', '', $element);
                 $extended = true;
             }
 
@@ -841,9 +844,9 @@ class PHPUnit_Util_Test
 
             if ($extended) {
                 $classes = array_merge(
-                  $classes,
-                  class_implements($element),
-                  class_parents($element)
+                    $classes,
+                    class_implements($element),
+                    class_parents($element)
                 );
             }
 
@@ -852,11 +855,11 @@ class PHPUnit_Util_Test
                     !interface_exists($className) &&
                     !trait_exists($className)) {
                     throw new PHPUnit_Framework_InvalidCoversTargetException(
-                      sprintf(
-                        'Trying to @cover or @use not existing class or ' .
-                        'interface "%s".',
-                        $className
-                      )
+                        sprintf(
+                            'Trying to @cover or @use not existing class or ' .
+                            'interface "%s".',
+                            $className
+                        )
                     );
                 }
 
@@ -883,36 +886,14 @@ class PHPUnit_Util_Test
             }
 
             $result[$filename] = array_unique(
-              array_merge(
-                $result[$filename],
-                range(
-                  $reflector->getStartLine(), $reflector->getEndLine()
+                array_merge(
+                    $result[$filename],
+                    range($reflector->getStartLine(), $reflector->getEndLine())
                 )
-              )
             );
         }
 
         return $result;
-    }
-
-    /**
-     * @param  ReflectionClass $class
-     * @param  ReflectionMethod $method
-     * @return string
-     */
-    private static function getDocCommentsOfTestClassAndTestMethodAndTemplateMethods(ReflectionClass $class, ReflectionMethod $method)
-    {
-        $buffer = substr($class->getDocComment(),  3, -2) . PHP_EOL .
-                  substr($method->getDocComment(), 3, -2);
-
-        foreach (self::$templateMethods as $templateMethod) {
-            if ($class->hasMethod($templateMethod)) {
-                $_method = $class->getMethod($templateMethod);
-                $buffer .= PHP_EOL . substr($_method->getDocComment(), 3, -2);
-            }
-        }
-
-        return $buffer;
     }
 
     /**

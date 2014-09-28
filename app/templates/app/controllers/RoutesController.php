@@ -2,22 +2,39 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * The RoutesController class is a controller that handles various route related tasks such as saving, deleting and
+ * re-ordering routes in the control panel.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * Note that all actions in the controller require an authenticated Craft session via {@link BaseController::allowAnonymous}.
+ *
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Handles route actions.
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.controllers
+ * @since     1.0
  */
 class RoutesController extends BaseController
 {
+	// Public Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc BaseController::init()
+	 *
+	 * @throws HttpException
+	 * @return null
+	 */
+	public function init()
+	{
+		// All route actions require an admin
+		craft()->userSession->requireAdmin();
+	}
+
 	/**
 	 * Saves a new or existing route.
+	 *
+	 * @return null
 	 */
 	public function actionSaveRoute()
 	{
@@ -52,6 +69,8 @@ class RoutesController extends BaseController
 
 	/**
 	 * Deletes a route.
+	 *
+	 * @return null
 	 */
 	public function actionDeleteRoute()
 	{
@@ -65,6 +84,8 @@ class RoutesController extends BaseController
 
 	/**
 	 * Updates the route order.
+	 *
+	 * @return null
 	 */
 	public function actionUpdateRouteOrder()
 	{

@@ -14,7 +14,7 @@
  *
  * @category   Mockery
  * @package    Mockery
- * @copyright  Copyright (c) 2010 Pádraic Brady (http://blog.astrumfutura.com)
+ * @copyright  Copyright (c) 2010-2014 Pádraic Brady (http://blog.astrumfutura.com)
  * @license    http://github.com/padraic/mockery/blob/master/LICENSE New BSD License
  */
 
@@ -39,13 +39,19 @@ interface MockInterface
      * @return \Mockery\Expectation
      */
     public function shouldReceive();
+    
+    /**
+     * Allows additional methods to be mocked that do not explicitly exist on mocked class
+     * @param String $method name of the method to be mocked
+     */
+    public function shouldAllowMockingMethod($method);
 
     /**
      * Set mock to ignore unexpected methods and return Undefined class
-     *
+     * @param mixed $returnValue the default return value for calls to missing functions on this mock 
      * @return Mock
      */
-    public function shouldIgnoreMissing();
+    public function shouldIgnoreMissing($returnValue = null);
 
     /**
      * Set mock to defer unexpected methods to it's parent if possible

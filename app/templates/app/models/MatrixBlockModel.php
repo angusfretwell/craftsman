@@ -2,42 +2,35 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Matrix block model class.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Matrix block model class
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.models
+ * @since     1.3
  */
 class MatrixBlockModel extends BaseElementModel
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var string
+	 */
 	protected $elementType = ElementType::MatrixBlock;
+
+	/**
+	 * @var
+	 */
 	private $_owner;
 
-	/**
-	 * @access protected
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array_merge(parent::defineAttributes(), array(
-			'fieldId'     => AttributeType::Number,
-			'ownerId'     => AttributeType::Number,
-			'ownerLocale' => AttributeType::Locale,
-			'typeId'      => AttributeType::Number,
-			'sortOrder'   => AttributeType::Number,
-
-			'collapsed'   => AttributeType::Bool,
-		));
-	}
+	// Public Methods
+	// =========================================================================
 
 	/**
-	 * Returns the field layout used by this element.
+	 * @inheritDoc BaseElementModel::getFieldLayout()
 	 *
 	 * @return FieldLayoutModel|null
 	 */
@@ -52,14 +45,14 @@ class MatrixBlockModel extends BaseElementModel
 	}
 
 	/**
-	 * Returns the locale IDs this element is available in.
+	 * @inheritDoc BaseElementModel::getLocales()
 	 *
 	 * @return array
 	 */
 	public function getLocales()
 	{
-		// If the Matrix field is translatable, than each individual block is tied to a single locale, and thus aren't translatable.
-		// Otherwise all blocks belong to all locales, and their content is translatable.
+		// If the Matrix field is translatable, than each individual block is tied to a single locale, and thus aren't
+		// translatable. Otherwise all blocks belong to all locales, and their content is translatable.
 
 		if ($this->ownerLocale)
 		{
@@ -142,7 +135,7 @@ class MatrixBlockModel extends BaseElementModel
 	}
 
 	/**
-	 * Returns the name of the table this element's content is stored in.
+	 * @inheritDoc BaseElementModel::getContentTable()
 	 *
 	 * @return string
 	 */
@@ -152,7 +145,7 @@ class MatrixBlockModel extends BaseElementModel
 	}
 
 	/**
-	 * Returns the field column prefix this element's content uses.
+	 * @inheritDoc BaseElementModel::getFieldColumnPrefix()
 	 *
 	 * @return string
 	 */
@@ -164,7 +157,6 @@ class MatrixBlockModel extends BaseElementModel
 	/**
 	 * Returns the field context this element's content uses.
 	 *
-	 * @access protected
 	 * @return string
 	 */
 	public function getFieldContext()
@@ -172,10 +164,33 @@ class MatrixBlockModel extends BaseElementModel
 		return 'matrixBlockType:'.$this->typeId;
 	}
 
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc BaseModel::defineAttributes()
+	 *
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array_merge(parent::defineAttributes(), array(
+			'fieldId'     => AttributeType::Number,
+			'ownerId'     => AttributeType::Number,
+			'ownerLocale' => AttributeType::Locale,
+			'typeId'      => AttributeType::Number,
+			'sortOrder'   => AttributeType::Number,
+
+			'collapsed'   => AttributeType::Bool,
+		));
+	}
+
+	// Private Methods
+	// =========================================================================
+
 	/**
 	 * Returns the Matrix field.
 	 *
-	 * @access private
 	 * @return FieldModel
 	 */
 	private function _getField()

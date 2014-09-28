@@ -2,7 +2,7 @@
 /* RTL stuff */
 #deprecationnotice { text-align: center; }
 
-#deprecationnotice:before { color: #8e98a4; }
+#deprecationnotice:before { color: #8f98a3; }
 body.ltr #deprecationnotice:before { margin-right: 5px; }
 body.rtl #deprecationnotice:before { margin-left: 5px; }
 

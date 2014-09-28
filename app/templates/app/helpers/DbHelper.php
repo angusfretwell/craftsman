@@ -2,24 +2,23 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Class DbHelper
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- *
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.helpers
+ * @since     1.0
  */
 class DbHelper
 {
+	// Properties
+	// =========================================================================
+
 	/**
-	 * Default column configs
+	 * The default column configs.
 	 *
-	 * @static
 	 * @var array
 	 */
 	public static $columnTypeDefaults = array(
@@ -35,22 +34,27 @@ class DbHelper
 	);
 
 	/**
-	 * Numeric column types
+	 * Numeric column types.
 	 *
-	 * @access private
-	 * @static
 	 * @var array
 	 */
 	private static $_numericColumnTypes = array(ColumnType::TinyInt, ColumnType::SmallInt, ColumnType::MediumInt, ColumnType::Int, ColumnType::BigInt, ColumnType::Decimal);
 
 	/**
-	 * Textual column types
+	 * Textual column types.
 	 *
-	 * @access private
-	 * @static
 	 * @var array
 	 */
 	private static $_textualColumnTypes = array(ColumnType::Char, ColumnType::Varchar, ColumnType::TinyText, ColumnType::Text, ColumnType::MediumText, ColumnType::LongText);
+
+	/**
+	 * @var array
+	 */
+	private static $_operators = array('not ', '!=', '<=', '>=', '<', '>', '=');
+
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Normalizes a column's config.
 	 *
@@ -60,10 +64,10 @@ class DbHelper
 	 * 2. array(ColumnType::TypeName [, 'other' => 'settings' ... ] )
 	 * 3. array('column' => ColumnType::TypeName [, 'other' => 'settings' ... ] )
 	 *
-	 * This function normalizes on the 3rd, merges in the default config settings for the column type,
-	 * and renames 'maxLength' to 'length'
+	 * This function normalizes on the 3rd, merges in the default config settings for the column type, and renames 'maxLength' to 'length'.
 	 *
 	 * @param string|array $config
+	 *
 	 * @return array
 	 */
 	public static function normalizeAttributeConfig($config)
@@ -113,14 +117,20 @@ class DbHelper
 	}
 
 	/**
-	 * Generates the column definition SQL for a column
+	 * Generates the column definition SQL for a column.
 	 *
 	 * @param array $config
+	 *
 	 * @return string
-	 * @static
 	 */
 	public static function generateColumnDefinition($config)
 	{
+		// Don't do anything to PKs.
+		if ($config === ColumnType::PK)
+		{
+			return $config;
+		}
+
 		$config = static::normalizeAttributeConfig($config);
 
 		// Start the column definition
@@ -242,125 +252,86 @@ class DbHelper
 	/**
 	 * Prepares a table name for Yii to add its table prefix
 	 *
-	 * @static
 	 * @param mixed $table The table name or an array of table names
+	 *
+	 * @deprecated Deprecated in Craft 2.2. Use {@link DbCommand::addTablePrefix() craft()->db->addTablePrefix()} instead.
 	 * @return mixed The modified table name(s)
 	 */
 	public static function addTablePrefix($table)
 	{
-		if (is_array($table))
-		{
-			foreach ($table as $key => $t)
-			{
-				$table[$key] = static::addTablePrefix($t);
-			}
-		}
-		else
-		{
-			$table = preg_replace('/^\w+/', craft()->db->tablePrefix.'\0', $table);
-		}
-
-		return $table;
+		// TODO: Add deprecation log in 3.0
+		return craft()->db->addTablePrefix($table);
 	}
 
 	/**
 	 * Returns a foreign key name based on the table and column names.
 	 *
-	 * @param string $table
+	 * @param string       $table
 	 * @param string|array $columns
+	 *
+	 * @deprecated Deprecated in Craft 2.2. Use {@link DbCommand::getForeignKeyName() craft()->db->getForeignKeyName()} instead.
 	 * @return string
 	 */
 	public static function getForeignKeyName($table, $columns)
 	{
-		$columns = ArrayHelper::stringToArray($columns);
-		$name = craft()->db->tablePrefix.$table.'_'.implode('_', $columns).'_fk';
-		return static::normalizeDbObjectName($name);
+		// TODO: Add deprecation log in 3.0
+		return craft()->db->getForeignKeyName($table, $columns);
 	}
 
 	/**
 	 * Returns an index name based on the table, column names, and whether it should be unique.
 	 *
-	 * @param string $table
+	 * @param string       $table
 	 * @param string|array $columns
-	 * @param bool $unique
+	 * @param bool         $unique
+	 *
+	 * @deprecated Deprecated in Craft 2.2. Use {@link DbCommand::getIndexName() craft()->db->getIndexName()} instead.
 	 * @return string
 	 */
 	public static function getIndexName($table, $columns, $unique = false)
 	{
-		$columns = ArrayHelper::stringToArray($columns);
-		$name = craft()->db->tablePrefix.$table.'_'.implode('_', $columns).($unique ? '_unq' : '').'_idx';
-		return static::normalizeDbObjectName($name);
+		// TODO: Add deprecation log in 3.0
+		return craft()->db->getIndexName($table, $columns, $unique);
+
 	}
 
 	/**
 	 * Returns a primary key name based on the table and column names.
 	 *
-	 * @param string $table
+	 * @param string       $table
 	 * @param string|array $columns
-	 * @param bool $unique
+	 *
+	 * @deprecated Deprecated in Craft 2.2. Use {@link DbCommand::getPrimaryKeyName() craft()->db->getPrimaryKeyName()} instead.
 	 * @return string
 	 */
 	public static function getPrimaryKeyName($table, $columns)
 	{
-		$columns = ArrayHelper::stringToArray($columns);
-		$name = craft()->db->tablePrefix.$table.'_'.implode('_', $columns).'_pk';
-		return static::normalizeDbObjectName($name);
+		// TODO: Add deprecation log in 3.0
+		return craft()->db->getPrimaryKeyName($table, $columns);
 	}
 
 	/**
 	 * Ensures that an object name is within the schema's limit.
 	 *
-	 * @static
 	 * @param string $name
+	 *
+	 * @deprecated Deprecated in Craft 2.2. Use {@link DbCommand::trimObjectName() craft()->db->trimObjectName()} instead.
 	 * @return string
 	 */
 	public static function normalizeDbObjectName($name)
 	{
-		// TODO: MySQL specific
-		// MySQL indexes can't be more than 64 characters (see http://dev.mysql.com/doc/refman/5.0/en/identifiers.html)
-		$maxLength = 64;
-
-		$name = trim($name, '_');
-		$nameLength = mb_strlen($name);
-
-		if ($nameLength > $maxLength)
-		{
-			$parts = array_filter(explode('_', $name));
-			$totalParts = count($parts);
-			$totalLetters = $nameLength - ($totalParts-1);
-			$maxLetters = $maxLength - ($totalParts-1);
-
-			// Consecutive underscores could have put this name over the top
-			if ($totalLetters > $maxLetters)
-			{
-				foreach ($parts as $i => $part)
-				{
-					$newLength = round($maxLetters * mb_strlen($part) / $totalLetters);
-					$parts[$i] = mb_substr($part, 0, $newLength);
-				}
-			}
-
-			$name = implode('_', $parts);
-
-			// Just to be safe
-			if (mb_strlen($name) > $maxLength)
-			{
-				$name = mb_substr($name, 0, $maxLength);
-			}
-		}
-
-		return $name;
+		// TODO: Add deprecation log in 3.0
+		return craft()->db->trimObjectName($name);
 	}
 
 	/**
-	 * @static
 	 * @return array
 	 */
 	public static function getAuditColumnConfig()
 	{
 		return array(
-			'dateCreated' => array('column' => ColumnType::DateTime,  'required' => true),
-			'dateUpdated' => array('column' => ColumnType::DateTime,  'required' => true),
+			'dateCreated' => array('column' => ColumnType::DateTime, 'required' => true),
+			'dateUpdated' => array('column' => ColumnType::DateTime, 'required' => true),
 			'uid'         => array('column' => ColumnType::Char, 'length' => 36, 'required' => true, 'default' => 0)
 		);
 	}
@@ -368,9 +339,10 @@ class DbHelper
 	/**
 	 * Parses a service param value to a DbCommand where condition.
 	 *
-	 * @param string $key
+	 * @param string       $key
 	 * @param string|array $values
-	 * @param array &$params
+	 * @param array        &$params
+	 *
 	 * @return mixed
 	 */
 	public static function parseParam($key, $values, &$params)
@@ -390,7 +362,7 @@ class DbHelper
 			return '';
 		}
 
-		$firstVal = StringHelper::toLowerCase($values[0]);
+		$firstVal = StringHelper::toLowerCase(ArrayHelper::getFirstValue($values));
 
 		if ($firstVal == 'and' || $firstVal == 'or')
 		{
@@ -455,9 +427,10 @@ class DbHelper
 	/**
 	 * Normalizes date params and then sends them off to parseParam().
 	 *
-	 * @param string $key
+	 * @param string                $key
 	 * @param string|array|DateTime $values
-	 * @param array &$params
+	 * @param array                 &$params
+	 *
 	 * @return mixed
 	 */
 	public static function parseDateParam($key, $values, &$params)
@@ -499,17 +472,14 @@ class DbHelper
 		return static::parseParam($key, $normalizedValues, $params);
 	}
 
-	/**
-	 * @access private
-	 * @static
-	 */
-	private static $_operators = array('not ', '!=', '<=', '>=', '<', '>', '=');
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Extracts the operator from a DB param and returns it.
 	 *
-	 * @access private
 	 * @param string &$value
+	 *
 	 * @return string
 	 */
 	private static function _parseParamOperator(&$value)
@@ -517,7 +487,7 @@ class DbHelper
 		foreach (static::$_operators as $testOperator)
 		{
 			// Does the value start with this operator?
-			$operatorLength = mb_strlen($testOperator);
+			$operatorLength = strlen($testOperator);
 
 			if (strncmp(StringHelper::toLowerCase($value), $testOperator, $operatorLength) == 0)
 			{

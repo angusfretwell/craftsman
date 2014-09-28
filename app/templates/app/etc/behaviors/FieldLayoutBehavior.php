@@ -2,25 +2,39 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Field layout behavior.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Field layout behavior
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.etc.behaviors
+ * @since     1.2
  */
 class FieldLayoutBehavior extends BaseBehavior
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var
+	 */
 	private $_fieldLayout;
+
+	/**
+	 * @var
+	 */
 	private $_elementType;
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Constructor
+	 *
+	 * @param $elementType
+	 *
+	 * @return \Craft\FieldLayoutBehavior
 	 */
 	public function __construct($elementType)
 	{
@@ -55,6 +69,8 @@ class FieldLayoutBehavior extends BaseBehavior
 	 * Sets the owner's field layout.
 	 *
 	 * @param FieldLayoutModel $fieldLayout
+	 *
+	 * @return null
 	 */
 	public function setFieldLayout(FieldLayoutModel $fieldLayout)
 	{

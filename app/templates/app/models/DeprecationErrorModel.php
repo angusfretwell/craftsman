@@ -2,41 +2,19 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Deprecation log model.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Deprecation log model
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.models
+ * @since     2.0
  */
 class DeprecationErrorModel extends BaseModel
 {
-	/**
-	 * @access protected
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'id'             => AttributeType::Number,
-			'key'            => AttributeType::String,
-			'fingerprint'    => AttributeType::String,
-			'lastOccurrence' => AttributeType::DateTime,
-			'file'           => AttributeType::String,
-			'line'           => AttributeType::Number,
-			'class'          => AttributeType::String,
-			'method'         => AttributeType::String,
-			'template'       => AttributeType::String,
-			'templateLine'   => AttributeType::Number,
-			'message'        => AttributeType::String,
-			'traces'         => AttributeType::Mixed,
-		);
-	}
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns a simple indication of the origin of the deprecation error.
@@ -66,5 +44,31 @@ class DeprecationErrorModel extends BaseModel
 		}
 
 		return $file.($line ? " ({$line})" : '');
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc BaseModel::defineAttributes()
+	 *
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'id'             => AttributeType::Number,
+			'key'            => AttributeType::String,
+			'fingerprint'    => AttributeType::String,
+			'lastOccurrence' => AttributeType::DateTime,
+			'file'           => AttributeType::String,
+			'line'           => AttributeType::Number,
+			'class'          => AttributeType::String,
+			'method'         => AttributeType::String,
+			'template'       => AttributeType::String,
+			'templateLine'   => AttributeType::Number,
+			'message'        => AttributeType::String,
+			'traces'         => AttributeType::Mixed,
+		);
 	}
 }

@@ -2,23 +2,23 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Folders parameters.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Folders parameters
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.models
+ * @since     1.0
  */
 class FolderCriteriaModel extends BaseModel
 {
+	// Protected Methods
+	// =========================================================================
 
 	/**
-	 * @access protected
+	 * @inheritDoc BaseModel::defineAttributes()
+	 *
 	 * @return array
 	 */
 	protected function defineAttributes()

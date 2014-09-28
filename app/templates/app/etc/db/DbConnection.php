@@ -2,98 +2,50 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Class DbConnection
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- *
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.etc.db
+ * @since     1.0
  */
 class DbConnection extends \CDbConnection
 {
-	/**
-	 *
-	 */
-	public function init()
-	{
-		try
-		{
-			$this->connectionString = $this->_processConnectionString();
-			$this->emulatePrepare   = true;
-			$this->username         = craft()->config->get('user', ConfigFile::Db);
-			$this->password         = craft()->config->get('password', ConfigFile::Db);
-			$this->charset          = craft()->config->get('charset', ConfigFile::Db);
-			$this->tablePrefix      = $this->getNormalizedTablePrefix();
-
-			parent::init();
-		}
-		// Most likely missing PDO in general or the specific database PDO driver.
-		catch(\CDbException $e)
-		{
-			Craft::log($e->getMessage(), LogLevel::Error);
-			$missingPdo = false;
-
-			// TODO: Multi-db driver check.
-			if (!extension_loaded('pdo'))
-			{
-				$missingPdo = true;
-				$messages[] = Craft::t('Craft requires the PDO extension to operate.');
-			}
-
-			if (!extension_loaded('pdo_mysql'))
-			{
-				$missingPdo = true;
-				$messages[] = Craft::t('Craft requires the PDO_MYSQL driver to operate.');
-			}
-
-			if (!$missingPdo)
-			{
-				Craft::log($e->getMessage(), LogLevel::Error);
-				$messages[] = Craft::t('Craft can’t connect to the database with the credentials in craft/config/db.php.');
-			}
-		}
-		catch (\Exception $e)
-		{
-			Craft::log($e->getMessage(), LogLevel::Error);
-			$messages[] = Craft::t('Craft can’t connect to the database with the credentials in craft/config/db.php.');
-		}
-
-		if (!empty($messages))
-		{
-			throw new DbConnectException(Craft::t('{errors}', array('errors' => implode('<br />', $messages))));
-		}
-
-		craft()->setIsDbConnectionValid(true);
-
-		// Now that we've validated the config and connection, set extra db logging if devMode is enabled.
-		if (craft()->config->get('devMode'))
-		{
-			$this->enableProfiling = true;
-			$this->enableParamLogging = true;
-		}
-	}
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @param null $query
+	 *
 	 * @return DbCommand
 	 */
 	public function createCommand($query = null)
 	{
 		$this->setActive(true);
+
 		return new DbCommand($this, $query);
 	}
 
 	/**
-	 * @return bool|string
+	 * Performs a database backup.
+	 *
+	 * @param array|null $ignoreDataTables If set to an empty array, a full database backup will be performed. If set
+	 *                                     to an array or database table names, they will get merged with the default
+	 *                                     list of table names whose data is to be ignored during a database backup.
+	 *
+	 * @return bool|string The file path to the database backup, or false if something went wrong.
 	 */
-	public function backup()
+	public function backup($ignoreDataTables = null)
 	{
 		$backup = new DbBackup();
+
+		if ($ignoreDataTables !== null)
+		{
+			$backup->setIgnoreDataTables($ignoreDataTables);
+		}
+
 		if (($backupFile = $backup->run()) !== false)
 		{
 			return $backupFile;
@@ -104,6 +56,7 @@ class DbConnection extends \CDbConnection
 
 	/**
 	 * @param $name
+	 *
 	 * @return string
 	 */
 	public function quoteDatabaseName($name)
@@ -114,8 +67,9 @@ class DbConnection extends \CDbConnection
 	/**
 	 * Returns whether a table exists.
 	 *
-	 * @param string $table
-	 * @param bool $refresh
+	 * @param string    $table
+	 * @param bool|null $refresh
+	 *
 	 * @return bool
 	 */
 	public function tableExists($table, $refresh = null)
@@ -126,16 +80,18 @@ class DbConnection extends \CDbConnection
 			$this->getSchema()->refresh();
 		}
 
-		$table = DbHelper::addTablePrefix($table);
+		$table = $this->addTablePrefix($table);
+
 		return in_array($table, $this->getSchema()->getTableNames());
 	}
 
 	/**
 	 * Checks if a column exists in a table.
 	 *
-	 * @param string $table
-	 * @param string $column
-	 * @param bool $refresh
+	 * @param string    $table
+	 * @param string    $column
+	 * @param bool|null $refresh
+	 *
 	 * @return bool
 	 */
 	public function columnExists($table, $column, $refresh = null)
@@ -160,20 +116,13 @@ class DbConnection extends \CDbConnection
 	}
 
 	/**
-	 * @return bool
-	 */
-	public function isDbConnectionValid()
-	{
-		return $this->_isDbConnectionValid;
-	}
-
-	/**
 	 * @return string
 	 */
 	public function getNormalizedTablePrefix()
 	{
 		// Table prefixes cannot be longer than 5 characters
 		$tablePrefix = rtrim(craft()->config->get('tablePrefix', ConfigFile::Db), '_');
+
 		if ($tablePrefix)
 		{
 			if (strlen($tablePrefix) > 5)
@@ -193,20 +142,124 @@ class DbConnection extends \CDbConnection
 	}
 
 	/**
-	 * Returns the correct connection string depending on whether a unixSocket is specific or not in the db config.
+	 * Adds the table prefix to the passed-in table name(s).
 	 *
-	 * @return string
+	 * @param string|array $table The table name or an array of table names
+	 *
+	 * @return string|array The modified table name(s)
 	 */
-	private function _processConnectionString()
+	public function addTablePrefix($table)
 	{
-		$unixSocket = craft()->config->get('unixSocket', ConfigFile::Db);
-		if (!empty($unixSocket))
+		if (is_array($table))
 		{
-			return strtolower('mysql:unix_socket='.$unixSocket.';dbname=').craft()->config->get('database', ConfigFile::Db).';';
+			foreach ($table as $key => $t)
+			{
+				$table[$key] = $this->addTablePrefix($t);
+			}
 		}
 		else
 		{
-			return strtolower('mysql:host='.craft()->config->get('server', ConfigFile::Db).';dbname=').craft()->config->get('database', ConfigFile::Db).strtolower(';port='.craft()->config->get('port', ConfigFile::Db).';');
+			$table = preg_replace('/^\w+/', $this->tablePrefix.'\0', $table);
 		}
+
+		return $table;
+	}
+
+	/**
+	 * Returns a foreign key name based on the table and column names.
+	 *
+	 * @param string       $table
+	 * @param string|array $columns
+	 *
+	 * @return string
+	 */
+	public function getForeignKeyName($table, $columns)
+	{
+		$columns = ArrayHelper::stringToArray($columns);
+		$name = $this->tablePrefix.$table.'_'.implode('_', $columns).'_fk';
+
+		return $this->trimObjectName($name);
+	}
+
+	/**
+	 * Returns an index name based on the table, column names, and whether
+	 * it should be unique.
+	 *
+	 * @param string       $table
+	 * @param string|array $columns
+	 * @param bool         $unique
+	 *
+	 * @return string
+	 */
+	public function getIndexName($table, $columns, $unique = false)
+	{
+		$columns = ArrayHelper::stringToArray($columns);
+		$name = $this->tablePrefix.$table.'_'.implode('_', $columns).($unique ? '_unq' : '').'_idx';
+
+		return $this->trimObjectName($name);
+	}
+
+	/**
+	 * Returns a primary key name based on the table and column names.
+	 *
+	 * @param string       $table
+	 * @param string|array $columns
+	 *
+	 * @return string
+	 */
+	public function getPrimaryKeyName($table, $columns)
+	{
+		$columns = ArrayHelper::stringToArray($columns);
+		$name = $this->tablePrefix.$table.'_'.implode('_', $columns).'_pk';
+
+		return $this->trimObjectName($name);
+	}
+
+	/**
+	 * Ensures that an object name is within the schema's limit.
+	 *
+	 * @param string $name
+	 * @return string
+	 */
+	public function trimObjectName($name)
+	{
+		$schema = $this->getSchema();
+
+		// TODO: Remember to set this on any other supported databases in the future
+		if (!isset($schema->maxObjectNameLength))
+		{
+			return $name;
+		}
+
+		$name = trim($name, '_');
+		$nameLength = mb_strlen($name);
+
+		if ($nameLength > $schema->maxObjectNameLength)
+		{
+			$parts = array_filter(explode('_', $name));
+			$totalParts = count($parts);
+			$totalLetters = $nameLength - ($totalParts-1);
+			$maxLetters = $schema->maxObjectNameLength - ($totalParts-1);
+
+			// Consecutive underscores could have put this name over the top
+			if ($totalLetters > $maxLetters)
+			{
+				foreach ($parts as $i => $part)
+				{
+					$newLength = round($maxLetters * mb_strlen($part) / $totalLetters);
+					$parts[$i] = mb_substr($part, 0, $newLength);
+				}
+			}
+
+			$name = implode('_', $parts);
+
+			// Just to be safe
+			if (mb_strlen($name) > $schema->maxObjectNameLength)
+			{
+				$name = mb_substr($name, 0, $schema->maxObjectNameLength);
+			}
+		}
+
+		return $name;
 	}
 }

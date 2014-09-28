@@ -1,29 +1,36 @@
 <?php
 namespace Craft;
 
-/**
- * Craft by Pixel & Tonic
- *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
- * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
 craft()->requireEdition(Craft::Client);
 
 /**
+ * Class EmailMessagesService
  *
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.services
+ * @since     1.0
  */
 class EmailMessagesService extends BaseApplicationComponent
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var
+	 */
 	private $_messageKeysAndSourceLocales;
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns all of the system email messages.
 	 *
 	 * @param string|null $localeId
+	 *
 	 * @return array
 	 */
 	public function getAllMessages($localeId = null)
@@ -78,6 +85,7 @@ class EmailMessagesService extends BaseApplicationComponent
 	 *
 	 * @param string $key
 	 * @param string|null $localeId
+	 *
 	 * @return RebrandEmailModel
 	 */
 	public function getMessage($key, $localeId = null)
@@ -103,6 +111,7 @@ class EmailMessagesService extends BaseApplicationComponent
 	 * Saves the localized content for a system email message.
 	 *
 	 * @param RebrandEmailModel $message
+	 *
 	 * @return bool
 	 */
 	public function saveMessage(RebrandEmailModel $message)
@@ -123,10 +132,12 @@ class EmailMessagesService extends BaseApplicationComponent
 		}
 	}
 
+	// Private Methods
+	// =========================================================================
+
 	/**
 	 * Returns all email message keys.
 	 *
-	 * @access private
 	 * @return array
 	 */
 	private function _getAllMessageKeys()
@@ -139,8 +150,8 @@ class EmailMessagesService extends BaseApplicationComponent
 	/**
 	 * Returns the source locale for a message by its key.
 	 *
-	 * @access private
 	 * @param string $key
+	 *
 	 * @return string|null
 	 */
 	private function _getMessageSourceLocaleByKey($key)
@@ -156,7 +167,7 @@ class EmailMessagesService extends BaseApplicationComponent
 	/**
 	 * Sets all of the email message keys and source locales.
 	 *
-	 * @access private
+	 * @return null
 	 */
 	private function _setAllMessageKeysAndLocales()
 	{
@@ -187,10 +198,11 @@ class EmailMessagesService extends BaseApplicationComponent
 	/**
 	 * Translates an email message string.
 	 *
-	 * @access private
 	 * @param string $key
 	 * @param string $part
 	 * @param string $localeId
+	 *
+	 * @return null|string
 	 */
 	private function _translateMessageString($key, $part, $localeId)
 	{
@@ -215,9 +227,9 @@ class EmailMessagesService extends BaseApplicationComponent
 	/**
 	 * Gets a message record by its key.
 	 *
-	 * @access private
-	 * @param string $key
+	 * @param string      $key
 	 * @param string|null $localeId
+	 *
 	 * @return EmailMessageRecord
 	 */
 	private function _getMessageRecord($key, $localeId = null)

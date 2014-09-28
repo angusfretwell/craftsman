@@ -1,7 +1,8 @@
 /*
  Copyright (c) 2014, Pixel & Tonic, Inc.
  @license   http://buildwithcraft.com/license Craft License Agreement
- @link      http://buildwithcraft.com
+ @see       http://buildwithcraft.com
+ @package   craft.app.resources
 */
 (function(a){var s=a(".s3-key-id"),t=a(".s3-secret-key");$s3BucketSelect=a(".s3-bucket-select > select");$s3RefreshBucketsBtn=a(".s3-refresh-buckets");$s3RefreshBucketsSpinner=$s3RefreshBucketsBtn.parent().next().children();$s3UrlPrefixInput=a(".s3-url-prefix");$s3BucketLocationInput=a(".s3-bucket-location");refreshingS3Buckets=!1;$s3RefreshBucketsBtn.click(function(){if(!$s3RefreshBucketsBtn.hasClass("disabled")){$s3RefreshBucketsBtn.addClass("disabled");$s3RefreshBucketsSpinner.removeClass("hidden");
 var a={keyId:s.val(),secret:t.val()};Craft.postActionRequest("assetSources/getS3Buckets",a,function(b,a){$s3RefreshBucketsBtn.removeClass("disabled");$s3RefreshBucketsSpinner.addClass("hidden");if("success"==a)if(b.error)alert(b.error);else if(0<b.length){var d=$s3BucketSelect.val(),e=!1;refreshingS3Buckets=!0;$s3BucketSelect.prop("disabled",!1).empty();for(var c=0;c<b.length;c++)b[c].bucket==d&&(e=!0),$s3BucketSelect.append('<option value="'+b[c].bucket+'" data-url-prefix="'+b[c].url_prefix+'" data-location="'+

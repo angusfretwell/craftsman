@@ -2,27 +2,32 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Class AppHelper
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- *
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.helpers
+ * @since     1.0
  */
 class AppHelper
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var null
+	 */
 	private static $_isPhpDevServer = null;
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns whether Craft is running on the dev server bundled with PHP 5.4+
 	 *
-	 * @static
-	 * @return bool
+\	 * @return bool
 	 */
 	public static function isPhpDevServer()
 	{
@@ -55,6 +60,7 @@ class AppHelper
 	 * Returns the name of the given Craft edition.
 	 *
 	 * @param int $edition
+	 *
 	 * @return string
 	 */
 	public static function getEditionName($edition)
@@ -80,10 +86,44 @@ class AppHelper
 	 * Returns whether an edition is valid.
 	 *
 	 * @param mixed $edition
+	 *
 	 * @return bool
 	 */
 	public static function isValidEdition($edition)
 	{
 		return (is_numeric($edition) && in_array($edition, static::getEditions()));
+	}
+
+	/**
+	 * Return a byte value from a size string formatted the way PHP likes it (for example - 64M).
+	 *
+	 * @param string $value
+	 *
+	 * @return int
+	 */
+	public static function getByteValueFromPhpSizeString($value)
+	{
+		$matches = array();
+
+		// See if we can recognize that.
+		if (!preg_match('/[0-9]+(K|M|G|T)/i', $value, $matches))
+		{
+			return (int) $value;
+		}
+
+		// Multiply! Falling through here is intentional.
+		switch (strtolower($matches[1]))
+		{
+			case 't':
+				$value *= 1024;
+			case 'g':
+				$value *= 1024;
+			case 'm':
+				$value *= 1024;
+			case 'k':
+				$value *= 1024;
+		}
+
+		return $value;
 	}
 }

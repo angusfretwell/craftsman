@@ -2,23 +2,25 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Will validate that the given attribute is a valid site locale ID.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Will validate that the given attribute is a valid site locale ID.
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.validators
+ * @since     1.0
  */
 class LocaleValidator extends \CValidator
 {
+	// Protected Methods
+	// =========================================================================
+
 	/**
 	 * @param $object
 	 * @param $attribute
+	 *
+	 * @return null
 	 */
 	protected function validateAttribute($object, $attribute)
 	{

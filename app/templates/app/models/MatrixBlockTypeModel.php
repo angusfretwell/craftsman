@@ -2,30 +2,39 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Matrix block type model class.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Matrix block type model class
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.models
+ * @since     1.3
  */
 class MatrixBlockTypeModel extends BaseModel
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var bool
+	 */
 	public $hasFieldErrors = false;
 
+	/**
+	 * @var
+	 */
 	private $_fields;
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Use the block type handle as the string representation.
 	 *
 	 * @return string
 	 */
-	function __toString()
+	public function __toString()
 	{
 		return $this->handle;
 	}
@@ -37,22 +46,6 @@ class MatrixBlockTypeModel extends BaseModel
 	{
 		return array(
 			'fieldLayout' => new FieldLayoutBehavior(ElementType::MatrixBlock),
-		);
-	}
-
-	/**
-	 * @access protected
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'id'            => AttributeType::Number,
-			'fieldId'       => AttributeType::Number,
-			'fieldLayoutId' => AttributeType::String,
-			'name'          => AttributeType::String,
-			'handle'        => AttributeType::String,
-			'sortOrder'     => AttributeType::Number,
 		);
 	}
 
@@ -90,13 +83,35 @@ class MatrixBlockTypeModel extends BaseModel
 		return $this->_fields;
 	}
 
-	/*
+	/**
 	 * Sets the fields associated with this block type.
 	 *
 	 * @param array $fields
+	 *
+	 * @return null
 	 */
 	public function setFields($fields)
 	{
 		$this->_fields = $fields;
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc BaseModel::defineAttributes()
+	 *
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'id'            => AttributeType::Number,
+			'fieldId'       => AttributeType::Number,
+			'fieldLayoutId' => AttributeType::String,
+			'name'          => AttributeType::String,
+			'handle'        => AttributeType::String,
+			'sortOrder'     => AttributeType::Number,
+		);
 	}
 }

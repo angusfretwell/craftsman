@@ -60,12 +60,14 @@
 
 
 {% set content %}
-	<form method="post" accept-charset="UTF-8" data-saveshortcut="1">
+	<form method="post" accept-charset="UTF-8" data-saveshortcut>
 		<input type="hidden" name="action" value="fields/saveField">
 		<input type="hidden" name="redirect" value="settings/fields/{groupId}">
 		{% if fieldId is defined %}
 			<input type="hidden" name="fieldId" value="{{ fieldId }}">
 		{% endif %}
+
+		{{ getCsrfInput() }}
 
 		{% set groupOptions = [] %}
 		{% for group in groups %}
@@ -128,7 +130,8 @@
 
 		{{ forms.selectField({
 			label: "Field Type"|t,
-			instructions: "What type of field is this?"|t ~ (fieldId is defined ? '<br><span class="error">'~"Careful—changing this may result in data loss."|t~'</span>' : ''),
+			instructions: "What type of field is this?"|t,
+			warning: (fieldId is defined ? "Changing this may result in data loss."|t),
 			id: 'type',
 			name: 'type',
 			options: fieldTypes,

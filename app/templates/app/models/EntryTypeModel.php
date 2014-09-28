@@ -2,32 +2,69 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Entry type model class.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Entry type model class
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.models
+ * @since     1.2
  */
 class EntryTypeModel extends BaseModel
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Use the handle as the string representation.
 	 *
 	 * @return string
 	 */
-	function __toString()
+	public function __toString()
 	{
 		return $this->handle;
 	}
 
 	/**
-	 * @access protected
+	 * @return array
+	 */
+	public function behaviors()
+	{
+		return array(
+			'fieldLayout' => new FieldLayoutBehavior(ElementType::Entry),
+		);
+	}
+
+	/**
+	 * @inheritDoc BaseElementModel::getCpEditUrl()
+	 *
+	 * @return string
+	 */
+	public function getCpEditUrl()
+	{
+		return UrlHelper::getCpUrl('settings/sections/'.$this->sectionId.'/entrytypes/'.$this->id);
+	}
+
+	/**
+	 * Returns the entry type’s section.
+	 *
+	 * @return SectionModel|null
+	 */
+	public function getSection()
+	{
+		if ($this->sectionId)
+		{
+			return craft()->sections->getSectionById($this->sectionId);
+		}
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc BaseModel::defineAttributes()
+	 *
 	 * @return array
 	 */
 	protected function defineAttributes()
@@ -42,25 +79,5 @@ class EntryTypeModel extends BaseModel
 			'titleLabel'    => array(AttributeType::String, 'default' => Craft::t('Title')),
 			'titleFormat'   => AttributeType::String,
 		);
-	}
-
-	/**
-	 * @return array
-	 */
-	public function behaviors()
-	{
-		return array(
-			'fieldLayout' => new FieldLayoutBehavior(ElementType::Entry),
-		);
-	}
-
-	/**
-	 * Returns the entry type's CP edit URL.
-	 *
-	 * @return string
-	 */
-	public function getCpEditUrl()
-	{
-		return UrlHelper::getCpUrl('settings/sections/'.$this->sectionId.'/entrytypes/'.$this->id);
 	}
 }

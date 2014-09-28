@@ -1,38 +1,29 @@
 <?php
 namespace Craft;
 
-/**
- * Craft by Pixel & Tonic
- *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
- * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
 craft()->requireEdition(Craft::Client);
 
 /**
+ * Class BaseEntryRevisionModel
  *
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.models
+ * @since     1.3
  */
 class BaseEntryRevisionModel extends EntryModel
 {
-	/**
-	 * @access protected
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array_merge(parent::defineAttributes(), array(
-			'creatorId' => AttributeType::Number,
-		));
-	}
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Sets the revision content.
 	 *
 	 * @param array $content
+	 *
+	 * @return null
 	 */
 	public function setContentFromRevision($content)
 	{
@@ -61,5 +52,37 @@ class BaseEntryRevisionModel extends EntryModel
 	public function getCreator()
 	{
 		return craft()->users->getUserById($this->creatorId);
+	}
+
+	/**
+	 * Returns the element's full URL.
+	 *
+	 * @return string
+	 */
+	public function getUrl()
+	{
+		if ($this->uri === null)
+		{
+			ElementHelper::setUniqueUri($this);
+		}
+
+		return parent::getUrl();
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc BaseModel::defineAttributes()
+	 *
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array_merge(parent::defineAttributes(), array(
+			'creatorId'   => AttributeType::Number,
+			'dateUpdated' => AttributeType::DateTime,
+			'dateCreated' => AttributeType::DateTime,
+		));
 	}
 }

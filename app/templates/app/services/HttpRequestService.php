@@ -2,45 +2,124 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * HttpRequestService provides APIs for getting information about the current HTTP request.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * An instance of HttpRequestService is globally accessible in Craft via {@link WebApp::request `craft()->request`}.
+ *
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- *
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.services
+ * @since     1.0
  */
 class HttpRequestService extends \CHttpRequest
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var
+	 */
 	private $_path;
+
+	/**
+	 * @var
+	 */
 	private $_segments;
+
+	/**
+	 * @var int
+	 */
 	private $_pageNum = 1;
 
+	/**
+	 * @var bool
+	 */
 	private $_isCpRequest = false;
+
+	/**
+	 * @var bool
+	 */
 	private $_isResourceRequest = false;
+
+	/**
+	 * @var bool
+	 */
 	private $_isActionRequest = false;
 
+	/**
+	 * @var bool
+	 */
 	private $_checkedRequestType = false;
+
+	/**
+	 * @var
+	 */
 	private $_actionSegments;
+
+	/**
+	 * @var
+	 */
 	private $_isMobileBrowser;
+
+	/**
+	 * @var
+	 */
 	private $_isMobileOrTabletBrowser;
+
+	/**
+	 * @var
+	 */
 	private $_mimeType;
+
+	/**
+	 * @var
+	 */
 	private $_browserLanguages;
+
+	/**
+	 * @var
+	 */
 	private $_ipAddress;
 
 	/**
-	 * Init
+	 * @var
+	 */
+	private $_cookies;
+
+	// Public Methods
+	// =========================================================================
+
+	/**
+	 * Initializes the application component.
+	 *
+	 * @return null
 	 */
 	public function init()
 	{
+		// Is CSRF protection enabled?
+		if (craft()->config->get('enableCsrfProtection') === true)
+		{
+			$this->enableCsrfValidation = true;
+
+			// Grab the token name.
+			$this->csrfTokenName = craft()->config->get('csrfTokenName');
+		}
+
+		// Now initialize Yii's CHttpRequest.
 		parent::init();
 
-		// Get the normalized path.
-		$path = $this->getNormalizedPath();
+		// There is no path.
+		if (craft()->isConsole())
+		{
+			$path = '';
+		}
+		else
+		{
+			// Get the normalized path.
+			$path = $this->getNormalizedPath();
+		}
 
 		// Get the path segments
 		$this->_segments = array_filter(explode('/', $path));
@@ -57,12 +136,12 @@ class HttpRequestService extends \CHttpRequest
 		// Is this a paginated request?
 		if ($this->_segments)
 		{
-			// Match against the entire path string as opposed to just the last segment
-			// so that we can support "/page/2"-style pagination URLs
+			// Match against the entire path string as opposed to just the last segment so that we can support
+			// "/page/2"-style pagination URLs
 			$path = implode('/', $this->_segments);
-			$pageTrigger = str_replace('/', '\/', craft()->config->get('pageTrigger'));
+			$pageTrigger = preg_quote(craft()->config->get('pageTrigger'), '/');
 
-			if (preg_match("/(.*)\b{$pageTrigger}(\d+)$/", $path, $match))
+			if (preg_match("/^(?:(.*)\/)?{$pageTrigger}(\d+)$/", $path, $match))
 			{
 				// Capture the page num
 				$this->_pageNum = (int) $match[2];
@@ -80,7 +159,7 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * Returns the script name used to access Craft.
+	 * Returns the script name used to access Craft (e.g. “index.php”).
 	 *
 	 * @return string
 	 */
@@ -91,9 +170,13 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * Returns the request's path, without the CP trigger segment if there is one.
+	 * Returns the request’s Craft path.
 	 *
-	 * @return string
+	 * Note that the path will not include the [CP trigger](http://buildwithcraft.com/docs/config-settings#cpTrigger)
+	 * if it’s a CP request, or the [page trigger](http://buildwithcraft.com/docs/config-settings#pageTrigger) or page
+	 * number if it’s a paginated request.
+	 *
+	 * @return string The Craft path.
 	 */
 	public function getPath()
 	{
@@ -101,9 +184,13 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * Returns an array of the path segments, without the CP trigger segment if there is one.
+	 * Returns an array of the Craft path’s segments.
 	 *
-	 * @return array
+	 * Note that the segments will not include the [CP trigger](http://buildwithcraft.com/docs/config-settings#cpTrigger)
+	 * if it’s a CP request, or the [page trigger](http://buildwithcraft.com/docs/config-settings#pageTrigger) or page
+	 * number if it’s a paginated request.
+	 *
+	 * @return array The Craft path’s segments.
 	 */
 	public function getSegments()
 	{
@@ -111,10 +198,11 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * Returns a specific URI segment, or null if the segment doesn't exist.
+	 * Returns a specific segment from the Craft path.
 	 *
-	 * @param int $num
-	 * @return string|null
+	 * @param int $num Which segment to return (1-indexed).
+	 *
+	 * @return string|null The matching segment, or `null` if there wasn’t one.
 	 */
 	public function getSegment($num)
 	{
@@ -134,9 +222,9 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * Returns the page number if this is a paginated request.
+	 * Returns the current page number.
 	 *
-	 * @return int
+	 * @return int The page number.
 	 */
 	public function getPageNum()
 	{
@@ -144,9 +232,25 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * Returns whether this is a CP request.
+	 * Returns the request’s token, if there is one.
 	 *
-	 * @return bool
+	 * @return string|null The request’s token, or `null` if there isn’t one.
+	 */
+	public function getToken()
+	{
+		return $this->getQuery(craft()->config->get('tokenParam'));
+	}
+
+	/**
+	 * Returns whether the current request should be routed to the Control Panel.
+	 *
+	 * The result depends on whether the first segment in the URI matches the
+	 * [CP trigger](http://buildwithcraft.com/docs/config-settings#cpTrigger).
+	 *
+	 * Note that even if this function returns `true`, the request will not necessarily route to the Control Panel.
+	 * It could instead route to a resource, for example.
+	 *
+	 * @return bool Whether the current request should be routed to the Control Panel.
 	 */
 	public function isCpRequest()
 	{
@@ -154,9 +258,11 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * Returns whether this is a site request.
+	 * Returns whether the current request should be routed to the front-end site.
 	 *
-	 * @return bool
+	 * The result will always just be the opposite of whatever {@link isCpRequest()} returns.
+	 *
+	 * @return bool Whether the current request should be routed to the front-end site.
 	 */
 	public function isSiteRequest()
 	{
@@ -164,9 +270,12 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * Returns whether this is a resource request.
+	 * Returns whether the current request should be routed to a resource.
 	 *
-	 * @return bool
+	 * The result depends on whether the first segment in the Craft path matches the
+	 * [resource trigger](http://buildwithcraft.com/docs/config-settings#resourceTrigger).
+	 *
+	 * @return bool Whether the current request should be routed to a resource.
 	 */
 	public function isResourceRequest()
 	{
@@ -175,9 +284,17 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * Returns whether this is an action request.
+	 * Returns whether the current request should be routed to a specific controller action before normal request
+	 * routing takes over.
 	 *
-	 * @return bool
+	 * There are several ways that this method could return `true`:
+	 *
+	 * - If the first segment in the Craft path matches the
+	 *   [action trigger](http://buildwithcraft.com/docs/config-settings#actionTrigger)
+	 * - If there is an 'action' param in either the POST data or query string
+	 * - If the Craft path matches the Login path, the Logout path, or the Set Password path
+	 *
+	 * @return bool Whether the current request should be routed to a controller action.
 	 */
 	public function isActionRequest()
 	{
@@ -186,9 +303,9 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * Returns an array of the action path segments for action requests.
+	 * Returns an array of the action path segments, if this is an {@link isActionRequest() action request}.
 	 *
-	 * @return array|null
+	 * @return array|null The action path segments, or `null` if this isn’t an action request.
 	 */
 	public function getActionSegments()
 	{
@@ -199,7 +316,7 @@ class HttpRequestService extends \CHttpRequest
 	/**
 	 * Returns whether this is a Live Preview request.
 	 *
-	 * @return bool
+	 * @return bool Whether this is a Live Preview request.
 	 */
 	public function isLivePreview()
 	{
@@ -212,27 +329,47 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * @return mixed
+	 * Returns the MIME type that is going to be included in the response via the Content-Type header.
+	 *
+	 * @return string
+	 * @deprecated Deprecated in 2.2. Use {@link HeaderHelper::getMimeType()} instead.
 	 */
 	public function getMimeType()
 	{
-		if (!$this->_mimeType)
-		{
-			$extension = IOHelper::getExtension($this->getPath(), 'html');
-			$this->_mimeType = IOHelper::getMimeTypeByExtension('.'.$extension);
-		}
-
-		return $this->_mimeType;
+		// TODO: Call the deprecator here in Craft 3.0
+		return HeaderHelper::getMimeType();
 	}
 
 	/**
-	 * Returns the named GET parameter value, or the entire GET array if no name is specified.
-	 * If $name is specified and the GET parameter does not exist, $defaultValue will be returned.
-	 * $name can also represent a nested param using dot syntax, e.g. getQuery('fields.body')
+	 * Returns a query string parameter, or all of them.
 	 *
-	 * @param string|null $name
-	 * @param mixed       $defaultValue
-	 * @return mixed
+	 * If $name is specified, then the corresponding query string parameter will be returned if it exists, or
+	 * $defaultValue will be returned if it doesn’t.
+	 *
+	 * ```php
+	 * $foo = craft()->request->getQuery('foo'); // Returns $_GET['foo'], if it exists
+	 * ```
+	 *
+	 * $name can also represent a nested parameter using a dot-delimited string.
+	 *
+	 * ```php
+	 * $bar = craft()->request->getQuery('foo.bar'); // Returns $_GET['foo']['bar'], if it exists
+	 * ```
+	 *
+	 * If $name is omitted, the entire $_GET array will be returned instead:
+	 *
+	 * ```php
+	 * $allTheQueryParams = craft()->request->getQuery(); // Returns $_GET
+	 * ```
+	 *
+	 * All values will be converted to UTF-8, regardless of the original character encoding.
+	 *
+	 * @param string|null $name         The dot-delimited name of the query string param to be fetched, if any.
+	 * @param mixed       $defaultValue The fallback value to be returned if no param exists by the given $name.
+	 *                                  Defaults to `null`.
+	 *
+	 * @return mixed The value of the corresponding query string param if a single param was requested, or $defaultValue
+	 *               if that value didn’t exist, or the entire $_GET array if no single param was requested.
 	 */
 	public function getQuery($name = null, $defaultValue = null)
 	{
@@ -240,11 +377,25 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * Returns the named GET parameter value, or throws an exception if it's not set
+	 * Returns a query string parameter, or bails on the request with a 400 error if that parameter doesn’t exist.
 	 *
-	 * @param $name
+	 * ```php
+	 * $foo = craft()->request->getRequiredQuery('foo'); // Returns $_GET['foo']
+	 * ```
+	 *
+	 * $name can also represent a nested parameter using a dot-delimited string.
+	 *
+	 * ```php
+	 * $bar = craft()->request->getRequiredQuery('foo.bar'); // Returns $_GET['foo']['bar']
+	 * ```
+	 *
+	 * The returned value will be converted to UTF-8, regardless of the original character encoding.
+	 *
+	 * @param string $name The dot-delimited name of the query string param to be fetched.
+	 *
 	 * @throws HttpException
-	 * @return mixed
+	 *
+	 * @return mixed The value of the corresponding query string param.
 	 */
 	public function getRequiredQuery($name)
 	{
@@ -261,13 +412,35 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * Returns the named POST parameter value, or the entire POST array if no name is specified.
-	 * If $name is specified and the POST parameter does not exist, $defaultValue will be returned.
-	 * $name can also represent a nested param using dot syntax, e.g. getPost('fields.body')
+	 * Returns a POST parameter, or all of them.
 	 *
-	 * @param string|null $name
-	 * @param mixed       $defaultValue
-	 * @return mixed
+	 * If $name is specified, then the corresponding POST parameter will be returned if it exists, or
+	 * $defaultValue will be returned if it doesn’t.
+	 *
+	 * ```php
+	 * $foo = craft()->request->getPost('foo'); // Returns $_POST['foo'], if it exists
+	 * ```
+	 *
+	 * $name can also represent a nested parameter using a dot-delimited string.
+	 *
+	 * ```php
+	 * $bar = craft()->request->getPost('foo.bar'); // Returns $_POST['foo']['bar'], if it exists
+	 * ```
+	 *
+	 * If $name is omitted, the entire $_POST array will be returned instead:
+	 *
+	 * ```php
+	 * $allThePostParams = craft()->request->getPost(); // Returns $_POST
+	 * ```
+	 *
+	 * All values will be converted to UTF-8, regardless of the original character encoding.
+	 *
+	 * @param string|null $name         The dot-delimited name of the POST param to be fetched, if any.
+	 * @param mixed       $defaultValue The fallback value to be returned if no param exists by the given $name.
+	 *                                  Defaults to `null`.
+	 *
+	 * @return mixed The value of the corresponding POST param if a single param was requested, or $defaultValue
+	 *               if that value didn’t exist, or the entire $_POST array if no single param was requested.
 	 */
 	public function getPost($name = null, $defaultValue = null)
 	{
@@ -275,11 +448,25 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * Returns the named GET or POST parameter value, or throws an exception if it's not set
+	 * Returns a POST parameter, or bails on the request with a 400 error if that parameter doesn’t exist.
 	 *
-	 * @param $name
+	 * ```php
+	 * $foo = craft()->request->getRequiredPost('foo'); // Returns $_POST['foo']
+	 * ```
+	 *
+	 * $name can also represent a nested parameter using a dot-delimited string.
+	 *
+	 * ```php
+	 * $bar = craft()->request->getRequiredPost('foo.bar'); // Returns $_POST['foo']['bar']
+	 * ```
+	 *
+	 * The returned value will be converted to UTF-8, regardless of the original character encoding.
+	 *
+	 * @param string $name The dot-delimited name of the POST param to be fetched.
+	 *
 	 * @throws HttpException
-	 * @return mixed
+	 *
+	 * @return mixed The value of the corresponding POST param.
 	 */
 	public function getRequiredPost($name)
 	{
@@ -296,11 +483,29 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * Checks for a value in GET and POST.
+	 * Returns a parameter from either the query string or POST data.
 	 *
-	 * @param string $name
-	 * @param null   $defaultValue
-	 * @return mixed|null
+	 * This method will first search for the given paramater in the query string, calling {@link getQuery()} internally,
+	 * and if that doesn’t come back with a value, it will call {@link getPost()}. If that doesn’t come back with a
+	 * value either, $defaultValue will be returned.
+	 *
+	 * ```php
+	 * $foo = craft()->request->getParam('foo'); // Returns $_GET['foo'] or $_POST['foo'], if either exist
+	 * ```
+	 *
+	 * $name can also represent a nested parameter using a dot-delimited string.
+	 *
+	 * ```php
+	 * $bar = craft()->request->getParam('foo.bar'); // Returns $_GET['foo']['bar'] or $_POST['foo']['bar'], if either exist
+	 * ```
+	 *
+	 * All values will be converted to UTF-8, regardless of the original character encoding.
+	 *
+	 * @param string $name         The dot-delimited name of the param to be fetched.
+	 * @param mixed  $defaultValue The fallback value to be returned if no param exists by the given $name.
+	 *                             Defaults to `null`.
+	 *
+	 * @return mixed The value of the corresponding param, or $defaultValue if that value didn’t exist.
 	 */
 	public function getParam($name, $defaultValue = null)
 	{
@@ -317,11 +522,28 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * Returns the named GET or POST parameter value, or throws an exception if it's not set
+	 * Returns a parameter from either the query string or POST data, or bails on the request with a 400 error if that
+	 * parameter doesn’t exist anywhere.
 	 *
-	 * @param $name
+	 * This method will first search for the given paramater in the query string, calling {@link getQuery()} internally,
+	 * and if that doesn’t come back with a value, it will call {@link getPost()}.
+	 *
+	 * ```php
+	 * $foo = craft()->request->getRequiredParam('foo'); // Returns $_GET['foo'] or $_POST['foo']
+	 * ```
+	 *
+	 * $name can also represent a nested parameter using a dot-delimited string.
+	 *
+	 * ```php
+	 * $bar = craft()->request->getParam('foo.bar'); // Returns $_GET['foo']['bar'] or $_POST['foo']['bar'], if either exist
+	 * ```
+	 *
+	 * All values will be converted to UTF-8, regardless of the original character encoding.
+	 *
+	 * @param string $name The dot-delimited name of the param to be fetched.
+	 *
 	 * @throws HttpException
-	 * @return mixed
+	 * @return mixed The value of the corresponding param, or $defaultValue if that value didn’t exist.
 	 */
 	public function getRequiredParam($name)
 	{
@@ -339,12 +561,12 @@ class HttpRequestService extends \CHttpRequest
 
 	/**
 	 * Returns whether the request is coming from a mobile browser.
-	 * Detection script courtesy of http://detectmobilebrowsers.com
 	 *
-	 * Last updated: 2013-02-04
+	 * The detection script is provided by http://detectmobilebrowsers.com. It was last updated on 2013-02-04.
 	 *
-	 * @param bool $detectTablets
-	 * @return bool
+	 * @param bool $detectTablets Whether tablets should be considered “modile”.
+	 *
+	 * @return bool Whether the request is coming from a mobile browser.
 	 */
 	public function isMobileBrowser($detectTablets = false)
 	{
@@ -352,62 +574,73 @@ class HttpRequestService extends \CHttpRequest
 
 		if (!isset($this->$key))
 		{
-			$useragent = $_SERVER['HTTP_USER_AGENT'];
-
-			$this->$key = (
-				preg_match(
-					'/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino'.($detectTablets ? '|android|ipad|playbook|silk' : '').'/i',$useragent
-				) ||
-				preg_match(
-					'/1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i', mb_substr($useragent, 0, 4))
-			);
+			if ($this->userAgent)
+			{
+				$this->$key = (
+					preg_match(
+						'/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino'.($detectTablets ? '|android|ipad|playbook|silk' : '').'/i',$this->userAgent
+					) ||
+					preg_match(
+						'/1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i', mb_substr($this->userAgent, 0, 4))
+				);
+			}
+			else
+			{
+				$this->$key = false;
+			}
 		}
 
 		return $this->$key;
 	}
 
 	/**
-	 * Returns the user preferred languages sorted by preference.
-	 * The returned language IDs will be canonicalized using {@link LocaleData::getCanonicalID}.
-	 * This method returns false if the user does not have language preferences.
+	 * Returns a list of languages the user has selected in their browser’s settings, canonicalized using
+	 * {@link LocaleData::getCanonicalID}.
 	 *
-	 * @return array the user preferred languages.
+	 * Internally, this method checks the Accept-Language header that should have accompanied the request.
+	 * If that header was not present, the method will return `false`.
+	 *
+	 * @return array|false The preferred languages, or `false` if Craft is unable to determine them.
 	 */
 	public function getBrowserLanguages()
 	{
-		if ($this->_browserLanguages === null)
+		if (!isset($this->_browserLanguages))
 		{
-			if (isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) && ($n = preg_match_all('/([\w\-_]+)\s*(;\s*q\s*=\s*(\d*\.\d*))?/', $_SERVER['HTTP_ACCEPT_LANGUAGE'], $matches)) > 0)
-			{
-				$languages = array();
+			$this->_browserLanguages = array();
 
-				for ($i = 0; $i < $n; ++$i)
+			if (isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) && preg_match_all('/([\w\-_]+)\s*(?:;\s*q\s*=\s*(\d*\.\d*))?/', $_SERVER['HTTP_ACCEPT_LANGUAGE'], $matches, PREG_SET_ORDER))
+			{
+				$weights = array();
+
+				foreach ($matches as $match)
 				{
-					$languages[$matches[1][$i]] = empty($matches[3][$i]) ? 1.0 : floatval($matches[3][$i]);
+					$this->_browserLanguages[] = LocaleData::getCanonicalID($match[1]);
+					$weights[] = !empty($match[2]) ? floatval($match[2]) : 1;
 				}
 
-				// Sort by it's weight.
-				arsort($languages);
-
-				foreach ($languages as $language => $pref)
-				{
-					$this->_browserLanguages[] = LocaleData::getCanonicalID($language);
-				}
-			}
-
-			if ($this->_browserLanguages === null)
-			{
-				return false;
+				// Sort the languages by their weight
+				array_multisort($weights, SORT_NUMERIC, SORT_DESC, $this->_browserLanguages);
 			}
 		}
 
-		return $this->_browserLanguages;
+		if ($this->_browserLanguages)
+		{
+			return $this->_browserLanguages;
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	/**
-	 * Returns the host name, without http(s)://
+	 * Returns the host name, without “http://” or “https://”.
 	 *
-	 * @return string
+	 * Internally, this method will first check the Host header that should have accompanied the request, which browsers
+	 * will set depending on the host name they are requesting. If that header does not exist, the method will fall back
+	 * on the SERVER_NAME server environment variable.
+	 *
+	 * @return string The host name.
 	 */
 	public function getHostName()
 	{
@@ -424,20 +657,24 @@ class HttpRequestService extends \CHttpRequest
 	/**
 	 * Sends a file to the user.
 	 *
-	 * We're overriding this from \CHttpRequest so we can have more control over the headers.
+	 * We’re overriding this from {@link \CHttpRequest::sendFile()} so we can have more control over the headers.
 	 *
-	 * @param string     $path
-	 * @param string     $content
-	 * @param array|null $options
-	 * @param bool|null  $terminate
+	 * @param string     $path      The path to the file on the server.
+	 * @param string     $content   The contents of the file.
+	 * @param array|null $options   An array of optional options. Possible keys include 'forceDownload', 'mimeType',
+	 *                              and 'cache'.
+	 * @param bool|null  $terminate Whether the requset should be terminated after the file has been sent.
+	 *                              Defaults to `true`.
+	 *
 	 * @throws HttpException
+	 * @return null
 	 */
 	public function sendFile($path, $content, $options = array(), $terminate = true)
 	{
 		$fileName = IOHelper::getFileName($path, true);
 
-		// Clear the output buffer to prevent corrupt downloads.
-		// Need to check the OB status first, or else some PHP versions will throw an E_NOTICE since we have a custom error handler
+		// Clear the output buffer to prevent corrupt downloads. Need to check the OB status first, or else some PHP
+		// versions will throw an E_NOTICE since we have a custom error handler
 		// (http://pear.php.net/bugs/bug.php?id=9670)
 		if (ob_get_length() !== false)
 		{
@@ -445,7 +682,9 @@ class HttpRequestService extends \CHttpRequest
 		}
 
 		// Default to disposition to 'download'
-		if (!isset($options['forceDownload']) || $options['forceDownload'])
+		$forceDownload = !isset($options['forceDownload']) || $options['forceDownload'];
+
+		if ($forceDownload)
 		{
 			HeaderHelper::setDownload($fileName);
 		}
@@ -494,9 +733,9 @@ class HttpRequestService extends \CHttpRequest
 				}
 			}
 
-			/* Check the range and make sure it's treated according to the specs.
-			 * http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html
-			 */
+			// Check the range and make sure it's treated according to the specs.
+			// http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html
+
 			// End bytes can not be larger than $end.
 			$contentEnd = ($contentEnd > $fileSize) ? $fileSize - 1 : $contentEnd;
 
@@ -517,7 +756,8 @@ class HttpRequestService extends \CHttpRequest
 			HeaderHelper::setHeader('HTTP/1.1 200 OK');
 		}
 
-		$length = $contentEnd - $contentStart + 1; // Calculate new content length
+		// Calculate new content length
+		$length = $contentEnd - $contentStart + 1;
 
 		if (!empty($options['cache']))
 		{
@@ -530,7 +770,19 @@ class HttpRequestService extends \CHttpRequest
 		}
 		else
 		{
-			HeaderHelper::setNoCache();
+			if (!$forceDownload)
+			{
+				HeaderHelper::setNoCache();
+			}
+			else
+			{
+				// Fixes a bug in IE 6, 7 and 8 when trying to force download a file over SSL:
+				// https://stackoverflow.com/questions/1218925/php-script-to-download-file-not-working-in-ie
+				HeaderHelper::setHeader(array(
+					'Pragma' => '',
+					'Cache-Control' => ''
+				));
+			}
 		}
 
 		if (!ob_get_length())
@@ -547,8 +799,8 @@ class HttpRequestService extends \CHttpRequest
 
 		if ($terminate)
 		{
-			// clean up the application first because the file downloading could take long time
-			// which may cause timeout of some resources (such as DB connection)
+			// Clean up the application first because the file downloading could take long time which may cause timeout
+			// of some resources (such as DB connection)
 			ob_start();
 			Craft::app()->end(0, false);
 			ob_end_clean();
@@ -563,10 +815,11 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * Returns a cookie, if it's set.
+	 * Returns a cookie by its name.
 	 *
-	 * @param string $name
-	 * @return \CHttpCookie|null
+	 * @param string $name The cookie name.
+	 *
+	 * @return HttpCookie|null The cookie, or `null` if it didn’t exist.
 	 */
 	public function getCookie($name)
 	{
@@ -577,9 +830,30 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * Deletes a cookie.
+	 * Returns the cookie collection. The result can be used like an associative array. Adding {@link HttpCookie} objects
+	 * to the collection will send the cookies to the client; and removing the objects from the collection will delete
+	 * those cookies on the client.
 	 *
-	 * @param $name
+	 * @return CookieCollection The cookie collection.
+	 */
+	public function getCookies()
+	{
+		if ($this->_cookies !== null)
+		{
+			return $this->_cookies;
+		}
+		else
+		{
+			return $this->_cookies = new CookieCollection($this);
+		}
+	}
+
+	/**
+	 * Deletes a cookie by its name.
+	 *
+	 * @param $name The cookie name.
+	 *
+	 * @return null
 	 */
 	public function deleteCookie($name)
 	{
@@ -589,11 +863,23 @@ class HttpRequestService extends \CHttpRequest
 		}
 	}
 
+	/**
+	 * Returns whether this is a GET request.
+	 *
+	 * @return bool Whether this is a GET request.
+	 */
+	public function getIsGetRequest()
+	{
+		return ($this->getRequestType() == 'GET');
+	}
+
 	// Rename getIsX() => isX() functions for consistency
-	//  - We realize that these methods could be called as if they're properties (using CComponent's magic getter)
-	//    but we're trying to resist the temptation of magic methods for the sake of code obviousness.
+	//  - We realize that these methods could be called as if they're properties (using CComponent's magic getter) but
+    //    we're trying to resist the temptation of magic methods for the sake of code obviousness.
 
 	/**
+	 * Alias of {@link getIsSecureConnection()}.
+	 *
 	 * @return bool
 	 */
 	public function isSecureConnection()
@@ -602,6 +888,8 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
+	 * Alias of {@link getIsPostRequest()}.
+	 *
 	 * @return bool
 	 */
 	public function isPostRequest()
@@ -610,6 +898,8 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
+	 * Alias of {@link getIsDeleteRequest()}.
+	 *
 	 * @return bool
 	 */
 	public function isDeleteRequest()
@@ -618,6 +908,8 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
+	 * Alias of {@link getIsDeleteViaPostRequest()}.
+	 *
 	 * @return bool
 	 */
 	public function isDeleteViaPostRequest()
@@ -626,6 +918,16 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
+	 * Alias of {@link getIsGetRequest()}.
+	 */
+	public function isGetRequest()
+	{
+		return $this->getIsGetRequest();
+	}
+
+	/**
+	 * Alias of {@link getIsPutRequest()}.
+	 *
 	 * @return bool
 	 */
 	public function isPutRequest()
@@ -634,6 +936,8 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
+	 * Alias of {@link getIsPutViaPostRequest()}.
+	 *
 	 * @return bool
 	 */
 	public function isPutViaPostRequest()
@@ -642,6 +946,8 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
+	 * Alias of {@link getIsAjaxRequest()}.
+	 *
 	 * @return bool
 	 */
 	public function isAjaxRequest()
@@ -650,6 +956,8 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
+	 * Alias of {@link getIsFlashRequest()}.
+	 *
 	 * @return bool
 	 */
 	public function isFlashRequest()
@@ -658,6 +966,8 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
+	 * Alias of {@link getIpAddress()}.
+	 *
 	 * @return string
 	 */
 	public function getUserHostAddress()
@@ -666,11 +976,13 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * Retrieves the best guess of the client's actual IP address taking into account numerous HTTP proxy headers due to variations
-	 * in how different ISPs handle IP addresses in headers between hops.
+	 * Retrieves the best guess of the client’s actual IP address taking into account numerous HTTP proxy headers due to
+	 * variations in how different ISPs handle IP addresses in headers between hops.
 	 *
-	 * Considering any of these server vars besides REMOTE_ADDR can be spoofed, this method should not be used when you need a trusted
-	 * source of information for you IP address... use $_SERVER['REMOTE_ADDR'] instead.
+	 * Considering any of these server vars besides REMOTE_ADDR can be spoofed, this method should not be used when you
+	 * need a trusted source for the IP address. Use `$_SERVER['REMOTE_ADDR']` instead.
+	 *
+	 * @return string The IP address.
 	 */
 	public function getIpAddress()
 	{
@@ -678,17 +990,17 @@ class HttpRequestService extends \CHttpRequest
 		{
 			$ipMatch = false;
 
-			// check for shared internet/ISP IP
+			// Check for shared internet/ISP IP
 			if (!empty($_SERVER['HTTP_CLIENT_IP']) && $this->_validateIp($_SERVER['HTTP_CLIENT_IP']))
 			{
 				$ipMatch = $_SERVER['HTTP_CLIENT_IP'];
 			}
 			else
 			{
-				// check for IPs passing through proxies
+				// Check for IPs passing through proxies
 				if (!empty($_SERVER['HTTP_X_FORWARDED_FOR']))
 				{
-					// check if multiple ips exist in var
+					// Check if multiple IPs exist in var
 					$ipList = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
 
 					foreach ($ipList as $ip)
@@ -743,10 +1055,13 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * Wrapper for Yii's decodePathInfo, plus we clean up path separators.
+	 * Decodes the path info.
 	 *
-	 * @param string $pathInfo
-	 * @return string
+	 * Replacement for Yii's {@link \CHttpRequest::decodePathInfo()}.
+	 *
+	 * @param string $pathInfo Encoded path info.
+	 *
+	 * @return string Decoded path info.
 	 */
 	public function decodePathInfo($pathInfo)
 	{
@@ -761,9 +1076,9 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * Returns the part of the querystring minus any p= parameter regardless of whether PATH_INFO is enabled or not.
+	 * Returns the request’s query string, without the p= parameter.
 	 *
-	 * @return string
+	 * @return string The query string.
 	 */
 	public function getQueryStringWithoutPath()
 	{
@@ -790,7 +1105,9 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * @return string
+	 * Returns the path Craft should use to route this request, including the [CP trigger](http://buildwithcraft.com/docs/config-settings#cpTrigger) if it is in there.
+	 *
+	 * @return string The path.
 	 */
 	public function getNormalizedPath()
 	{
@@ -811,20 +1128,40 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * Ends the current HTTP request, without ending script execution.
+	 * Closes the current HTTP connection with the browser, without ending PHP script execution.
 	 *
 	 * @param string|null $content
+	 *
 	 * @see http://stackoverflow.com/a/141026
+	 * @throws Exception An exception will be thrown if content has already been output.
+	 * @return null
 	 */
 	public function close($content = '')
 	{
+		// Make sure nothing has been output yet
+		if (headers_sent())
+		{
+			throw new Exception(Craft::t('HttpRequestService::close() cannot be called after content has been output.'));
+		}
+
 		// Prevent the script from ending when the browser closes the connection
 		ignore_user_abort(true);
 
-		// Discard any current OB content
-		if (ob_get_length() !== false)
+		// Prepend any current OB content
+		while (ob_get_length() !== false)
 		{
-			ob_end_clean();
+			// If ob_start() didn't have the PHP_OUTPUT_HANDLER_CLEANABLE flag, ob_get_clean() will cause a PHP notice
+			// and return false.
+			$obContent = @ob_get_clean();
+
+			if ($obContent !== false)
+			{
+				$content = $obContent . $content;
+			}
+			else
+			{
+				break;
+			}
 		}
 
 		// Send the content
@@ -833,19 +1170,55 @@ class HttpRequestService extends \CHttpRequest
 		$size = ob_get_length();
 
 		// Tell the browser to close the connection
-		header('Connection: close');
-		header('Content-Length: '.$size);
+		HeaderHelper::setHeader(array(
+			'Connection'     => 'close',
+			'Content-Length' => $size
+		));
 
 		// Output the content, flush it to the browser, and close out the session
 		ob_end_flush();
 		flush();
-		session_write_close();
+
+		// Borrowed from CHttpSession->close() because session_write_close can cause PHP notices in some situations.
+		if (session_id() !== '')
+		{
+			@session_write_close();
+		}
 	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * Creates a cookie with a randomly generated CSRF token. Initial values specified in {@link csrfCookie} will be
+	 * applied to the generated cookie.
+	 *
+	 * @return HttpCookie the generated cookie
+	 */
+	protected function createCsrfCookie()
+	{
+		$cookie = new HttpCookie($this->csrfTokenName, sha1(uniqid(mt_rand(), true)));
+
+		if (is_array($this->csrfCookie))
+		{
+			foreach ($this->csrfCookie as $name => $value)
+			{
+				$cookie->$name = $value;
+			}
+		}
+
+		// Set to HTTP only
+		$cookie->httpOnly = true;
+
+		return $cookie;
+	}
+
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns the query string path.
 	 *
-	 * @access private
 	 * @return string
 	 */
 	private function _getQueryStringPath()
@@ -857,7 +1230,7 @@ class HttpRequestService extends \CHttpRequest
 	/**
 	 * Checks to see if this is an action or resource request.
 	 *
-	 * @access private
+	 * @return null
 	 */
 	private function _checkRequestType()
 	{
@@ -866,54 +1239,66 @@ class HttpRequestService extends \CHttpRequest
 			return;
 		}
 
-		$resourceTrigger = craft()->config->getResourceTrigger();
-		$actionTrigger = craft()->config->get('actionTrigger');
-		$frontEndLoginPath = trim(craft()->config->getLocalized('loginPath'), '/');
-		$frontEndLogoutPath = trim(craft()->config->getLocalized('logoutPath'), '/');
-		$frontEndSetPasswordPath = trim(craft()->config->getLocalized('setPasswordPath'), '/');
-		$cpLoginPath = craft()->config->getCpLoginPath();
-		$cpLogoutPath = craft()->config->getCpLogoutPath();
-		$cpSetPasswordPath = craft()->config->getCpSetPasswordPath();
-
-		$firstSegment = $this->getSegment(1);
-
-		// If the first path segment is the resource trigger word, it's a resource request.
-		if ($firstSegment === $resourceTrigger)
+		// If there's a token in the query string, then that should take precedence over everything else
+		if (!$this->getQuery(craft()->config->get('tokenParam')))
 		{
-			$this->_isResourceRequest = true;
-		}
+			$firstSegment = $this->getSegment(1);
 
-		// If the first path segment is the action trigger word, or the logout trigger word (special case), it's an action request
-		else if ($firstSegment === $actionTrigger || (in_array($this->_path, array($frontEndLoginPath, $cpLoginPath, $frontEndSetPasswordPath, $cpSetPasswordPath, $frontEndLogoutPath, $cpLogoutPath)) && !$this->getParam('action')))
-		{
-			$this->_isActionRequest = true;
-
-			if (in_array($this->_path, array($cpLoginPath, $frontEndLoginPath)))
+			// Is this a resource request?
+			if ($firstSegment == craft()->config->getResourceTrigger())
 			{
-				$this->_actionSegments = array('users', 'login');
-			}
-			else if (in_array($this->_path, array($frontEndSetPasswordPath, $cpSetPasswordPath)))
-			{
-				$this->_actionSegments = array('users', 'setpassword');
-			}
-			else if (in_array($this->_path, array($frontEndLogoutPath, $cpLogoutPath)))
-			{
-				$this->_actionSegments = array('users', 'logout');
+				$this->_isResourceRequest = true;
 			}
 			else
 			{
-				$this->_actionSegments = array_slice($this->_segments, 1);
+				// Is this an action request?
+				if ($this->_isCpRequest)
+				{
+					$loginPath       = craft()->config->getCpLoginPath();
+					$logoutPath      = craft()->config->getCpLogoutPath();
+					$setPasswordPath = craft()->config->getCpSetPasswordPath();
+				}
+				else
+				{
+					$loginPath       = trim(craft()->config->getLocalized('loginPath'), '/');
+					$logoutPath      = trim(craft()->config->getLocalized('logoutPath'), '/');
+					$setPasswordPath = trim(craft()->config->getLocalized('setPasswordPath'), '/');
+				}
+
+				if (
+					($specialPath = in_array($this->_path, array($loginPath, $logoutPath, $setPasswordPath))) ||
+					($triggerMatch = ($firstSegment == craft()->config->get('actionTrigger') && count($this->_segments) > 1)) ||
+					($actionParam = $this->getParam('action')) !== null
+				)
+				{
+					$this->_isActionRequest = true;
+
+					if ($specialPath)
+					{
+						if ($this->_path == $loginPath)
+						{
+							$this->_actionSegments = array('users', 'login');
+						}
+						else if ($this->_path == $logoutPath)
+						{
+							$this->_actionSegments = array('users', 'logout');
+						}
+						else
+						{
+							$this->_actionSegments = array('users', 'setpassword');
+						}
+					}
+					else if ($triggerMatch)
+					{
+						$this->_actionSegments = array_slice($this->_segments, 1);
+					}
+					else
+					{
+						$actionParam = $this->decodePathInfo($actionParam);
+						$this->_actionSegments = array_filter(explode('/', $actionParam));
+					}
+				}
 			}
-		}
-
-		// If there's a non-empty 'action' param (either in the query string or post data), it's an action request
-		else if (($action = $this->getParam('action')) !== null)
-		{
-			$this->_isActionRequest = true;
-
-			// Sanitize
-			$action = $this->decodePathInfo($action);
-			$this->_actionSegments = array_filter(explode('/', $action));
 		}
 
 		$this->_checkedRequestType = true;
@@ -922,10 +1307,10 @@ class HttpRequestService extends \CHttpRequest
 	/**
 	 * Returns a param value from GET or POST data.
 	 *
-	 * @access private
 	 * @param string|null $name
 	 * @param mixed       $defaultValue
 	 * @param array       $data
+	 *
 	 * @return mixed
 	 */
 	private function _getParam($name, $defaultValue, $data)
@@ -967,7 +1352,8 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * @param $things
+	 * @param array|string $things
+	 *
 	 * @return mixed
 	 */
 	private function _utf8AllTheThings($things)
@@ -995,7 +1381,8 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * @param $ip
+	 * @param string $ip
+	 *
 	 * @return bool
 	 */
 	private function _validateIp($ip)

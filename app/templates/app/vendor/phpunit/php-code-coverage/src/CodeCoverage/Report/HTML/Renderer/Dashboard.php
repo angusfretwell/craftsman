@@ -83,8 +83,7 @@ class PHP_CodeCoverage_Report_HTML_Renderer_Dashboard extends PHP_CodeCoverage_R
                 'complexity_class'              => $complexity['class'],
                 'complexity_method'             => $complexity['method'],
                 'class_coverage_distribution'   => $coverageDistribution['class'],
-                'method_coverage_distribution'  => $coverageDistribution['method'],
-                'backlink'                      => basename(str_replace('.dashboard', '', $file))
+                'method_coverage_distribution'  => $coverageDistribution['method']
             )
         );
 
@@ -239,7 +238,7 @@ class PHP_CodeCoverage_Report_HTML_Renderer_Dashboard extends PHP_CodeCoverage_R
 
         foreach ($leastTestedClasses as $className => $coverage) {
             $result['class'] .= sprintf(
-                '       <tr><td><a href="%s">%s</a></td><td><div align="right">%d%%</div></td></tr>' . "\n",
+                '       <tr><td><a href="%s">%s</a></td><td class="text-right">%d%%</td></tr>' . "\n",
                 $classes[$className]['link'],
                 $className,
                 $coverage
@@ -250,9 +249,10 @@ class PHP_CodeCoverage_Report_HTML_Renderer_Dashboard extends PHP_CodeCoverage_R
             list($class, $method) = explode('::', $methodName);
 
             $result['method'] .= sprintf(
-                '       <tr><td><a href="%s">%s</a></td><td><div align="right">%d%%</div></td></tr>' . "\n",
+                '       <tr><td><a href="%s"><abbr title="%s">%s</a></a></td><td class="text-right">%d%%</td></tr>' . "\n",
                 $classes[$class]['methods'][$method]['link'],
                 $methodName,
+                $method,
                 $coverage
             );
         }
@@ -297,7 +297,7 @@ class PHP_CodeCoverage_Report_HTML_Renderer_Dashboard extends PHP_CodeCoverage_R
 
         foreach ($classRisks as $className => $crap) {
             $result['class'] .= sprintf(
-                '       <tr><td><a href="%s">%s</a></td><td><div align="right">%d</div></td></tr>' . "\n",
+                '       <tr><td><a href="%s">%s</a></td><td class="text-right">%d</td></tr>' . "\n",
                 $classes[$className]['link'],
                 $className,
                 $crap
@@ -308,9 +308,10 @@ class PHP_CodeCoverage_Report_HTML_Renderer_Dashboard extends PHP_CodeCoverage_R
             list($class, $method) = explode('::', $methodName);
 
             $result['method'] .= sprintf(
-                '       <tr><td><a href="%s">%s</a></td><td><div align="right">%d</div></td></tr>' . "\n",
+                '       <tr><td><a href="%s"><abbr title="%s">%s</abbr></a></td><td class="text-right">%d</td></tr>' . "\n",
                 $classes[$class]['methods'][$method]['link'],
                 $methodName,
+                $method,
                 $crap
             );
         }
@@ -321,9 +322,8 @@ class PHP_CodeCoverage_Report_HTML_Renderer_Dashboard extends PHP_CodeCoverage_R
     protected function getActiveBreadcrumb(PHP_CodeCoverage_Report_Node $node)
     {
         return sprintf(
-            '        <li><a href="%s.html">%s</a></li>' . "\n" .
+            '        <li><a href="index.html">%s</a></li>' . "\n" .
             '        <li class="active">(Dashboard)</li>' . "\n",
-            $node->getId(),
             $node->getName()
         );
     }

@@ -2,24 +2,25 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Class Header_TokenParser
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- *
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.etc.templating.twigextensions
+ * @since     1.3
  */
 class Header_TokenParser extends \Twig_TokenParser
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Parses {% requireLogin %} tags.
 	 *
 	 * @param \Twig_Token $token
+	 *
 	 * @return RequireLogin_Node
 	 */
 	public function parse(\Twig_Token $token)

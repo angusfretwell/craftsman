@@ -2,21 +2,23 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Element record class.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Element record class
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.records
+ * @since     1.0
  */
 class ElementRecord extends BaseRecord
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
+	 * @inheritDoc BaseRecord::getTableName()
+	 *
 	 * @return string
 	 */
 	public function getTableName()
@@ -25,19 +27,8 @@ class ElementRecord extends BaseRecord
 	}
 
 	/**
-	 * @access protected
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'type'     => array(AttributeType::ClassName, 'required' => true),
-			'enabled'  => array(AttributeType::Bool, 'default' => true),
-			'archived' => array(AttributeType::Bool, 'default' => false),
-		);
-	}
-
-	/**
+	 * @inheritDoc BaseRecord::defineIndexes()
+	 *
 	 * @return array
 	 */
 	public function defineIndexes()
@@ -46,6 +37,23 @@ class ElementRecord extends BaseRecord
 			array('columns' => array('type')),
 			array('columns' => array('enabled')),
 			array('columns' => array('archived')),
+		);
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc BaseRecord::defineAttributes()
+	 *
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'type'     => array(AttributeType::ClassName, 'required' => true),
+			'enabled'  => array(AttributeType::Bool, 'default' => true),
+			'archived' => array(AttributeType::Bool, 'default' => false),
 		);
 	}
 }

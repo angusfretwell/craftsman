@@ -1,7 +1,8 @@
 /*
  Copyright (c) 2014, Pixel & Tonic, Inc.
  @license   http://buildwithcraft.com/license Craft License Agreement
- @link      http://buildwithcraft.com
+ @see       http://buildwithcraft.com
+ @package   craft.app.resources
 */
 (function(b){var e=Garnish.Base.extend({$groups:null,$selectedGroup:null,init:function(){this.$groups=b("#groups");this.$selectedGroup=this.$groups.find("a.sel:first");this.addListener(b("#newgroupbtn"),"activate","addNewGroup");var a=b("#groupsettingsbtn");a.length&&(a.data("menubtn").settings.onOptionSelect=b.proxy(function(a){switch(b(a).data("action")){case "rename":this.renameSelectedGroup();break;case "delete":this.deleteSelectedGroup()}},this))},addNewGroup:function(){var a=this.promptForGroupName("");
 a&&Craft.postActionRequest("fields/saveGroup",{name:a},b.proxy(function(a,d){if("success"==d)if(a.success)location.href=Craft.getUrl("settings/fields/"+a.group.id);else if(a.errors){var b=this.flattenErrors(a.errors);alert(Craft.t("Could not create the group:")+"\n\n"+b.join("\n"))}else Craft.cp.displayError()},this))},renameSelectedGroup:function(){var a=this.$selectedGroup.text(),c=this.promptForGroupName(a);c&&c!=a&&(a={id:this.$selectedGroup.data("id"),name:c},Craft.postActionRequest("fields/saveGroup",

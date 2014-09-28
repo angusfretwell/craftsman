@@ -2,22 +2,24 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Class FileLogRoute
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- *
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.etc.logging
+ * @since     1.0
  */
 class FileLogRoute extends \CFileLogRoute
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
+	 * Initializes the log route.  This method is invoked after the log route is created by the route manager.
 	 *
+	 * @return null
 	 */
 	public function init()
 	{
@@ -29,10 +31,15 @@ class FileLogRoute extends \CFileLogRoute
 		parent::init();
 	}
 
+	// Protected Methods
+	// =========================================================================
+
 	/**
 	 * Saves log messages in files.
 	 *
-	 * @param array $logs list of log messages
+	 * @param array $logs The list of log messages
+	 *
+	 * @return null
 	 */
 	protected function processLogs($logs)
 	{
@@ -65,7 +72,25 @@ class FileLogRoute extends \CFileLogRoute
 
 			$logFile = IOHelper::normalizePathSeparators($this->getLogPath().'/'.$this->getLogFile());
 
-			$lock = craft()->config->get('useLockWhenWritingToFile') === true;
+			// Check the config setting first.  Is it set to true?
+			if (craft()->config->get('useWriteFileLock') === true)
+			{
+				$lock = true;
+			}
+			// Is it set to false?
+			else if (craft()->config->get('useWriteFileLock') === false)
+			{
+				$lock = false;
+			}
+			// Config setting it set to 'auto', so check cache.
+			else if (craft()->cache->get('useWriteFileLock') === 'yes')
+			{
+				$lock = true;
+			}
+			else
+			{
+				$lock = false;
+			}
 
 			$fp = @fopen($logFile, 'a');
 
@@ -111,13 +136,13 @@ class FileLogRoute extends \CFileLogRoute
 	/**
 	 * Formats a log message given different fields.
 	 *
-	 * @param  string  $message  The message content
-	 * @param  integer $level    The message level
-	 * @param  string  $category The message category
-	 * @param  integer $time     The message timestamp
-	 * @param  bool    $force    Whether the message was forced or not
+	 * @param string $message  The message content.
+	 * @param int    $level    The message level.
+	 * @param string $category The message category.
+	 * @param int    $time     The message timestamp.
+	 * @param  bool  $force    Whether the message was forced or not.
 	 *
-	 * @return string            formatted message
+	 * @return string The formatted message.
 	 */
 	protected function formatLogMessageWithForce($message, $level, $category, $time, $force)
 	{

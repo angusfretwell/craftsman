@@ -1,6 +1,9 @@
 <?php
 class Framework_MockObject_GeneratorTest extends PHPUnit_Framework_TestCase
 {
+    /**
+     * @var PHPUnit_Framework_MockObject_Generator
+     */
     protected $generator;
 
     protected function setUp()
@@ -28,7 +31,7 @@ class Framework_MockObject_GeneratorTest extends PHPUnit_Framework_TestCase
 
     /**
      * @covers PHPUnit_Framework_MockObject_Generator::getMock
-     * @expectedException PHPUnit_Framework_Exception
+     * @expectedException PHPUnit_Framework_MockObject_RuntimeException
      * @expectedExceptionMessage duplicates: "foo, foo"
      */
     public function testGetMockGeneratorFails()
@@ -95,7 +98,7 @@ class Framework_MockObject_GeneratorTest extends PHPUnit_Framework_TestCase
 
     /**
      * @covers PHPUnit_Framework_MockObject_Generator::getMockForAbstractClass
-     * @expectedException PHPUnit_Framework_Exception
+     * @expectedException PHPUnit_Framework_MockObject_RuntimeException
      */
     public function testGetMockForAbstractClassAnstractClassDoesNotExist()
     {
@@ -131,17 +134,6 @@ class Framework_MockObject_GeneratorTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @dataProvider getMockForTraitExpectsInvalidArgumentExceptionDataprovider
-     * @covers PHPUnit_Framework_MockObject_Generator::getMockForTrait
-     * @requires PHP 5.4.0
-     * @expectedException PHPUnit_Framework_Exception
-     */
-    public function testGetMockForTraitExpectingInvalidArgumentException($traitName, $mockClassName)
-    {
-        $mock = $this->generator->getMockForTrait($traitName, array(), $mockClassName);
-    }
-
-    /**
      * @covers   PHPUnit_Framework_MockObject_Generator::getMockForTrait
      * @requires PHP 5.4.0
      */
@@ -152,15 +144,33 @@ class Framework_MockObject_GeneratorTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * Dataprovider for test "testGetMockForTraitExpectingInvalidArgumentException"
+     * @requires PHP 5.4.0
      */
-    public static function getMockForTraitExpectsInvalidArgumentExceptionDataprovider()
+    public function testGetMockForSingletonWithReflectionSuccess()
     {
-        return array(
-            'traitName not a string' => array(array(), ''),
-            'mockClassName not a string' => array('AbstractTrait', new StdClass),
-            'trait does not exist' => array('AbstractTraitDoesNotExist', 'TraitTest')
-        );
+        // Probably, this should be moved to tests/autoload.php
+        require_once __DIR__ . '/_fixture/SingletonClass.php';
+
+        $mock = $this->generator->getMock('SingletonClass', array('doSomething'), array(), '', false);
+        $this->assertInstanceOf('SingletonClass', $mock);
+    }
+
+    /**
+     * Same as "testGetMockForSingletonWithReflectionSuccess", but we expect
+     * warning for PHP < 5.4.0 since PHPUnit will try to execute private __wakeup
+     * on unserialize
+     */
+    public function testGetMockForSingletonWithUnserializeFail()
+    {
+        if (version_compare(PHP_VERSION, '5.4.0', '>=')) {
+            $this->markTestSkipped('Only for PHP < 5.4.0');
+        }
+
+        $this->setExpectedException('PHPUnit_Framework_Error_Warning');
+
+        // Probably, this should be moved to tests/autoload.php
+        require_once __DIR__ . '/_fixture/SingletonClass.php';
+
+        $mock = $this->generator->getMock('SingletonClass', array('doSomething'), array(), '', false);
     }
 }
-

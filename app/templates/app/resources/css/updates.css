@@ -22,17 +22,15 @@ body.rtl #main .buttons { float: left; }
 body.ltr #main .critical { margin-left: 5px; }
 body.rtl #main .critical { margin-right: 5px; }
 
-body.ltr #main ul li { padding: 3px 0 3px 25px; }
-body.rtl #main ul li { padding: 3px 25px 3px 0; }
+#main .release { direction: ltr; }
 
-#main ul li:before { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -moz-font-feature-settings: "liga=1, dlig=1"; -moz-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; -webkit-font-smoothing: subpixel-antialiased; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; font-size: 16px; }
-body.ltr #main ul li:before { float: left; }
-body.rtl #main ul li:before { float: right; }
-body.ltr #main ul li:before { margin: 1px 0 1px -23px; }
-body.rtl #main ul li:before { margin: 1px -23px 1px 0; }
+/* Keep this LTR since the actual release notes are only LTR */
+#main .release ul li { padding: 3px 0 3px 25px; }
 
-#main ul li.added:before { content: 'wand'; color: #5286d9; }
+#main .release ul li:before { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -moz-font-feature-settings: "liga=1, dlig=1"; -moz-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; float: left; margin: 1px 0 1px -23px; font-size: 16px; }
 
-#main ul li.improved:before { content: 'brush'; }
+#main .release ul li.added:before { content: 'wand'; color: #5286d9; }
 
-#main ul li.fixed:before { content: 'screwdriver'; color: #da5a47; }
+#main .release ul li.improved:before { content: 'brush'; }
+
+#main .release ul li.fixed:before { content: 'screwdriver'; color: #da5a47; }

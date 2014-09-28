@@ -2,42 +2,78 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Class UrlManager
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- *
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.etc.web
+ * @since     1.0
  */
 class UrlManager extends \CUrlManager
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var
+	 */
 	public $cpRoutes;
+
+	/**
+	 * @var
+	 */
 	public $pathParam;
 
 	/**
-	 * @var array List of variables to pass to the routed controller action's $variables argument. Set via setRouteVariables().
-	 * @access private
+	 * List of variables to pass to the routed controller action's $variables argument. Set via setRouteVariables().
+	 *
+	 * @var array
 	 */
 	private $_routeVariables;
 
+	/**
+	 * @var
+	 */
 	private $_routeAction;
+
+	/**
+	 * @var
+	 */
 	private $_routeParams;
+
+	/**
+	 * @var
+	 */
 	private $_matchedElement;
+
+	/**
+	 * @var
+	 */
 	private $_matchedElementRoute;
 
 	/**
-	 *
+	 * @var
+	 */
+	private $_regexTokens;
+
+	/**
+	 * @var
+	 */
+	private $_regexTokenPatterns;
+
+	// Public Methods
+	// =========================================================================
+
+	/**
+	 * @return null
 	 */
 	public function init()
 	{
 		parent::init();
 
-		// set this to false so extra query string parameters don't get the path treatment
+		// Set this to false so extra query string parameters don't get the path treatment
 		$this->appendParams = false;
 
 		// makes more sense to set in HttpRequest
@@ -57,6 +93,8 @@ class UrlManager extends \CUrlManager
 	 * Sets variables to be passed to the routed controllers action's $variables argument.
 	 *
 	 * @param array $variables
+	 *
+	 * @return null
 	 */
 	public function setRouteVariables($variables)
 	{
@@ -64,40 +102,56 @@ class UrlManager extends \CUrlManager
 	}
 
 	/**
-	 * Determines which controller/action to route the request to.
-	 * Routing candidates include actual template paths, elements with URIs, and registered URL routes.
+	 * Determines which controller/action to route the request to. Routing candidates include actual template paths,
+	 * elements with URIs, and registered URL routes.
 	 *
 	 * @param HttpRequestService $request
-	 * @return string The controller/action path.
+	 *
 	 * @throws HttpException Throws a 404 in the event that we can't figure out where to route the request.
+	 * @return string The controller/action path.
 	 */
-	public function parseUrl(HttpRequestService $request)
+	public function parseUrl($request)
 	{
 		$this->_routeAction = null;
 		$this->_routeParams = array(
 			'variables' => array()
 		);
 
-		$path = $request->getPath();
+		// Is there a token in the URL?
+		$token = craft()->request->getToken();
 
-		// Is this an element request?
-		$matchedElementRoute = $this->_getMatchedElementRoute($path);
-
-		if ($matchedElementRoute)
+		if ($token)
 		{
-			$this->_setRoute($matchedElementRoute);
+			$tokenRoute = craft()->tokens->getTokenRoute($token);
+
+			if ($tokenRoute)
+			{
+				$this->_setRoute($tokenRoute);
+			}
 		}
 		else
 		{
-			// Does it look like they're trying to access a public template path?
-			if ($this->_isPublicTemplatePath())
-			{
-				// Default to that, then
-				$this->_setRoute($path);
-			}
+			$path = $request->getPath();
 
-			// Finally see if there's a URL route that matches
-			$this->_setRoute($this->_getMatchedUrlRoute($path));
+			// Is this an element request?
+			$matchedElementRoute = $this->_getMatchedElementRoute($path);
+
+			if ($matchedElementRoute)
+			{
+				$this->_setRoute($matchedElementRoute);
+			}
+			else
+			{
+				// Does it look like they're trying to access a public template path?
+				if ($this->_isPublicTemplatePath())
+				{
+					// Default to that, then
+					$this->_setRoute($path);
+				}
+
+				// Finally see if there's a URL route that matches
+				$this->_setRoute($this->_getMatchedUrlRoute($path));
+			}
 		}
 
 		// Did we come up with something?
@@ -147,11 +201,15 @@ class UrlManager extends \CUrlManager
 		return $this->_matchedElement;
 	}
 
+	// Private Methods
+	// =========================================================================
+
 	/**
 	 * Sets the route.
 	 *
-	 * @access private
 	 * @param mixed $route
+	 *
+	 * @return null
 	 */
 	private function _setRoute($route)
 	{
@@ -174,8 +232,8 @@ class UrlManager extends \CUrlManager
 	/**
 	 * Normalizes a route.
 	 *
-	 * @access private
 	 * @param mixed $route
+	 *
 	 * @return array
 	 */
 	private function _normalizeRoute($route)
@@ -204,8 +262,8 @@ class UrlManager extends \CUrlManager
 	/**
 	 * Attempts to match a path with an element in the database.
 	 *
-	 * @access private
 	 * @param string $path
+	 *
 	 * @return mixed
 	 */
 	private function _getMatchedElementRoute($path)
@@ -239,8 +297,8 @@ class UrlManager extends \CUrlManager
 	/**
 	 * Attempts to match a path with the registered URL routes.
 	 *
-	 * @access private
 	 * @param string $path
+	 *
 	 * @return mixed
 	 */
 	private function _getMatchedUrlRoute($path)
@@ -263,16 +321,7 @@ class UrlManager extends \CUrlManager
 				return $route;
 			}
 
-			// As a last ditch to match routes, check to see if any plugins have routes registered that will match.
-			$pluginCpRoutes = craft()->plugins->call('registerCpRoutes');
-
-			foreach ($pluginCpRoutes as $pluginRoutes)
-			{
-				if (($route = $this->_matchUrlRoutes($path, $pluginRoutes)) !== false)
-				{
-					return $route;
-				}
-			}
+			$pluginHook = 'registerCpRoutes';
 		}
 		else
 		{
@@ -290,6 +339,19 @@ class UrlManager extends \CUrlManager
 			{
 				return $route;
 			}
+
+			$pluginHook = 'registerSiteRoutes';
+		}
+
+		// Maybe a plugin has a registered route that matches?
+		$allPluginRoutes = craft()->plugins->call($pluginHook);
+
+		foreach ($allPluginRoutes as $pluginRoutes)
+		{
+			if (($route = $this->_matchUrlRoutes($path, $pluginRoutes)) !== false)
+			{
+				return $route;
+			}
 		}
 
 		return false;
@@ -298,24 +360,24 @@ class UrlManager extends \CUrlManager
 	/**
 	 * Attempts to match a path with a set of given URL routes.
 	 *
-	 * @access private
 	 * @param string $path
-	 * @param array $routes
+	 * @param array  $routes
+	 *
 	 * @return mixed
 	 */
 	private function _matchUrlRoutes($path, $routes)
 	{
 		foreach ($routes as $pattern => $route)
 		{
-			// Escape any unescaped forward slashes
-			// Dumb ol' PHP is having trouble with this one when you use single quotes and don't escape the backslashes.
+			// Escape any unescaped forward slashes. Dumb ol' PHP is having trouble with this one when you use single
+			// quotes and don't escape the backslashes.
 			$regexPattern = preg_replace("/(?<!\\\\)\\//", '\/', $pattern);
 
-			// Parse {handle} tokens
-			$regexPattern = str_replace('{handle}', '[a-zA-Z][a-zA-Z0-9_]*', $regexPattern);
+			// Parse tokens
+			$regexPattern = $this->_parseRegexTokens($regexPattern);
 
 			// Does it match?
-			if (preg_match('/^'.$regexPattern.'$/', $path, $match))
+			if (preg_match('/^'.$regexPattern.'$/u', $path, $match))
 			{
 				// Normalize the route
 				$route = $this->_normalizeRoute($route);
@@ -345,9 +407,41 @@ class UrlManager extends \CUrlManager
 	}
 
 	/**
+	 * Parses any tokens in a given regex pattern.
+	 *
+	 * @param string $pattern
+	 *
+	 * @return string
+	 */
+	private function _parseRegexTokens($pattern)
+	{
+		if (!isset($this->_regexTokens))
+		{
+			$this->_regexTokens = array(
+				'{handle}',
+				'{slug}',
+			);
+
+			$slugChars = array('.', '_', '-');
+			$slugWordSeparator = craft()->config->get('slugWordSeparator');
+
+			if ($slugWordSeparator != '/' && !in_array($slugWordSeparator, $slugChars))
+			{
+				$slugChars[] = $slugWordSeparator;
+			}
+
+			$this->_regexTokenPatterns = array(
+				'(?:[a-zA-Z][a-zA-Z0-9_]*)',
+				'(?:[\p{L}\p{N}'.preg_quote(implode($slugChars), '/').']+)',
+			);
+		}
+
+		return str_replace($this->_regexTokens, $this->_regexTokenPatterns, $pattern);
+	}
+
+	/**
 	 * Returns whether the current path is "public" (no segments that start with the privateTemplateTrigger).
 	 *
-	 * @access private
 	 * @return bool
 	 */
 	private function _isPublicTemplatePath()

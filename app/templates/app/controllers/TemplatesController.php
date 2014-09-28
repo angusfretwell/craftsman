@@ -2,81 +2,108 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * The TemplatesController class is a controller that handles various template rendering related tasks for both the
+ * control panel and front-end of a Craft site.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * Note that all actions in the controller are open to do not require an authenticated Craft session in order to execute.
+ *
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- *
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.controllers
+ * @since     1.0
  */
 class TemplatesController extends BaseController
 {
-	// Any permissions not covered in actionRender() should be handled by the templates
+	// Properties
+	// =========================================================================
+
+	/**
+	 * If set to false, you are required to be logged in to execute any of the given controller's actions.
+	 *
+	 * If set to true, anonymous access is allowed for all of the given controller's actions.
+	 *
+	 * If the value is an array of action names, then you must be logged in for any action method except for the ones in
+	 * the array list.
+	 *
+	 * If you have a controller that where the majority of action methods will be anonymous, but you only want require
+	 * login on a few, it's best to use {@link UserSessionService::requireLogin() craft()->userSession->requireLogin()}
+	 * in the individual methods.
+	 *
+	 * @var bool
+	 */
 	public $allowAnonymous = true;
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Renders a template.
+	 *
+	 * @param       $template
+	 * @param array $variables
+	 *
+	 * @throws HttpException
+	 * @return null
 	 */
 	public function actionRender($template, array $variables = array())
 	{
-		$this->_render($template, $variables);
+		// Does that template exist?
+		if (craft()->templates->doesTemplateExist($template))
+		{
+			$this->renderTemplate($template, $variables);
+		}
+		else
+		{
+			throw new HttpException(404);
+		}
 	}
 
 	/**
 	 * Shows the 'offline' template.
+	 *
+	 * @return null
 	 */
 	public function actionOffline()
 	{
 		// If this is a site request, make sure the offline template exists
-		if (craft()->request->isSiteRequest())
+		if (craft()->request->isSiteRequest() && !craft()->templates->doesTemplateExist('offline'))
 		{
-			if (!IOHelper::fileExists(craft()->path->getSiteTemplatesPath().'offline.html'))
-			{
-				// Set PathService to use the CP templates path instead
-				craft()->path->setTemplatesPath(craft()->path->getCpTemplatesPath());
-			}
+			// Set PathService to use the CP templates path instead
+			craft()->path->setTemplatesPath(craft()->path->getCpTemplatesPath());
 		}
 
 		// Output the offline template
-		$this->_render('offline');
+		$this->renderTemplate('offline');
 	}
 
 	/**
 	 * Renders the Manual Update notification template.
+	 *
+	 * @return null
 	 */
 	public function actionManualUpdateNotification()
 	{
-		$this->_render('_special/dbupdate');
+		$this->renderTemplate('_special/dbupdate');
 	}
 
 	/**
 	 * Renders the Manual Update template.
+	 *
+	 * @return null
 	 */
 	public function actionManualUpdate()
 	{
-		$this->_render('updates/_go', array(
+		$this->renderTemplate('updates/_go', array(
 			'handle' => craft()->request->getSegment(2)
 		));
 	}
 
 	/**
-	 * Renders the Breakpoint Update notification template.
+	 * @throws Exception
+	 * @return null
 	 */
-	public function actionBreakpointUpdateNotification()
-	{
-		$this->_render('_special/breakpointupdate', array(
-			'minBuild'      => CRAFT_MIN_BUILD_REQUIRED,
-			'minBuildURL'   => CRAFT_MIN_BUILD_URL,
-			'targetVersion' => CRAFT_VERSION,
-			'targetBuild'   => CRAFT_BUILD
-		));
-	}
-
 	public function actionRequirementsCheck()
 	{
 		// Run the requirements checker
@@ -102,7 +129,7 @@ class TemplatesController extends BaseController
 			}
 			else
 			{
-				$this->_render('_special/cantrun', array('reqCheck' => $reqCheck));
+				$this->renderTemplate('_special/cantrun', array('reqCheck' => $reqCheck));
 				craft()->end();
 			}
 
@@ -117,6 +144,9 @@ class TemplatesController extends BaseController
 
 	/**
 	 * Renders an error template.
+	 *
+	 * @throws \Exception
+	 * @return null
 	 */
 	public function actionRenderError()
 	{
@@ -130,6 +160,10 @@ class TemplatesController extends BaseController
 			if (craft()->templates->doesTemplateExist($prefix.$code))
 			{
 				$template = $prefix.$code;
+			}
+			else if ($code == 503 && craft()->templates->doesTemplateExist($prefix.'offline'))
+			{
+				$template = $prefix.'offline';
 			}
 			else if (craft()->templates->doesTemplateExist($prefix.'error'))
 			{
@@ -165,34 +199,6 @@ class TemplatesController extends BaseController
 			{
 				// Just output the error message
 				echo $e->getMessage();
-			}
-		}
-	}
-
-	/**
-	 * Renders a template, sets the mime type header, etc..
-	 *
-	 * @access private
-	 * @param string     $template
-	 * @param array|null $variables
-	 * @throws HttpException
-	 * @throws TemplateLoaderException|\Exception
-	 */
-	private function _render($template, $variables = array())
-	{
-		try
-		{
-			$this->renderTemplate($template, $variables);
-		}
-		catch (TemplateLoaderException $e)
-		{
-			if ($e->template == $template)
-			{
-				throw new HttpException(404);
-			}
-			else
-			{
-				throw $e;
 			}
 		}
 	}

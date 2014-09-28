@@ -2,31 +2,39 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * The SystemSettingsController class is a controller that handles various control panel settings related tasks such as
+ * displaying, saving and testing Craft settings in the control panel.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * Note that all actions in this controller require administrator access in order to execute.
+ *
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Handles settings from the control panel.
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.controllers
+ * @since     1.0
  */
 class SystemSettingsController extends BaseController
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
-	 * Init
+	 * @inheritDoc BaseController::init()
+	 *
+	 * @throws HttpException
+	 * @return null
 	 */
 	public function init()
 	{
-		// All System Settings actions require an admin
+		// All system setting actions require an admin
 		craft()->userSession->requireAdmin();
 	}
 
 	/**
 	 * Shows the settings index.
+	 *
+	 * @return null
 	 */
 	public function actionSettingsIndex()
 	{
@@ -42,13 +50,15 @@ class SystemSettingsController extends BaseController
 
 		$variables['tools'] = ToolVariable::populateVariables($tools);
 
-		$this->renderTemplate('settings/index', $variables);
+		$this->renderTemplate('settings/_index', $variables);
 	}
 
 	/**
 	 * Shows the general settings form.
 	 *
 	 * @param array $variables
+	 *
+	 * @return null
 	 */
 	public function actionGeneralSettings(array $variables = array())
 	{
@@ -57,8 +67,7 @@ class SystemSettingsController extends BaseController
 			$variables['info'] = craft()->getInfo();
 		}
 
-		// Assemble the timezone options array
-		// (Technique adapted from http://stackoverflow.com/a/7022536/1688568)
+		// Assemble the timezone options array (Technique adapted from http://stackoverflow.com/a/7022536/1688568)
 		$variables['timezoneOptions'] = array();
 
 		$utc = new DateTime();
@@ -99,11 +108,13 @@ class SystemSettingsController extends BaseController
 
 		array_multisort($offsets, $timezoneIds, $variables['timezoneOptions']);
 
-		$this->renderTemplate('settings/general/index', $variables);
+		$this->renderTemplate('settings/general/_index', $variables);
 	}
 
 	/**
 	 * Saves the general settings.
+	 *
+	 * @return null
 	 */
 	public function actionSaveGeneralSettings()
 	{
@@ -134,6 +145,8 @@ class SystemSettingsController extends BaseController
 
 	/**
 	 * Saves the email settings.
+	 *
+	 * @return null
 	 */
 	public function actionSaveEmailSettings()
 	{
@@ -161,6 +174,8 @@ class SystemSettingsController extends BaseController
 
 	/**
 	 * Tests the email settings.
+	 *
+	 * @return null
 	 */
 	public function actionTestEmailSettings()
 	{
@@ -192,7 +207,9 @@ class SystemSettingsController extends BaseController
 	 * Global Set edit form.
 	 *
 	 * @param array $variables
+	 *
 	 * @throws HttpException
+	 * @return null
 	 */
 	public function actionEditGlobalSet(array $variables = array())
 	{
@@ -238,10 +255,12 @@ class SystemSettingsController extends BaseController
 		$this->renderTemplate('settings/globals/_edit', $variables);
 	}
 
+	// Private Methods
+	// =========================================================================
+
 	/**
 	 * Returns the email settings from the post data.
 	 *
-	 * @access private
 	 * @return array
 	 */
 	private function _getEmailSettingsFromPost()

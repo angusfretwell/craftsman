@@ -2,22 +2,27 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * The TagsController class is a controller that handles various tag and tag group related tasks such as displaying,
+ * saving, deleting, searching and creating tags and tag groups in the control panel.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * Note that all actions in the controller require an authenticated Craft session via {@link BaseController::allowAnonymous}.
+ *
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- *
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.controllers
+ * @since     1.1
  */
 class TagsController extends BaseController
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
-	 * Tag settings index.
+	 * Called before displaying the tag settings index page.
+	 *
+	 * @return null
 	 */
 	public function actionIndex()
 	{
@@ -34,6 +39,9 @@ class TagsController extends BaseController
 	 * Edit a tag group.
 	 *
 	 * @param array $variables
+	 *
+	 * @throws HttpException
+	 * @return null
 	 */
 	public function actionEditTagGroup(array $variables = array())
 	{
@@ -79,6 +87,8 @@ class TagsController extends BaseController
 
 	/**
 	 * Save a tag group.
+	 *
+	 * @return null
 	 */
 	public function actionSaveTagGroup()
 	{
@@ -116,6 +126,8 @@ class TagsController extends BaseController
 
 	/**
 	 * Deletes a tag group.
+	 *
+	 * @return null
 	 */
 	public function actionDeleteTagGroup()
 	{
@@ -131,6 +143,8 @@ class TagsController extends BaseController
 
 	/**
 	 * Searches for tags.
+	 *
+	 * @return null
 	 */
 	public function actionSearchForTags()
 	{
@@ -193,6 +207,8 @@ class TagsController extends BaseController
 
 	/**
 	 * Creates a new tag.
+	 *
+	 * @return null
 	 */
 	public function actionCreateTag()
 	{

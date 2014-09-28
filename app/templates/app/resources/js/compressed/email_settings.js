@@ -1,7 +1,8 @@
 /*
  Copyright (c) 2014, Pixel & Tonic, Inc.
  @license   http://buildwithcraft.com/license Craft License Agreement
- @link      http://buildwithcraft.com
+ @see       http://buildwithcraft.com
+ @package   craft.app.resources
 */
 (function(a){var c=Garnish.Base.extend({$form:null,$protocolField:null,$protocolSelect:null,$hiddenFields:null,$testBtn:null,$testSpinner:null,$protocolSettingsPane:null,$protocolSettingsPaneHead:null,$protocolSettingsPaneBody:null,protocol:null,init:function(){this.$form=a("#settings-form");this.$protocolField=a("#protocol-field");this.$protocolSelect=a("#protocol");this.$hiddenFields=a("#hidden-fields");this.$testBtn=a("#test");this.$testSpinner=a("#test-spinner");this._onEmailTypeChange();this.addListener(this.$protocolSelect,
 "change","_onEmailTypeChange");this.addListener(this.$testBtn,"activate","sendTestEmail")},getField:function(b){return a("#"+c.protocolFields[this.protocol][b]+"-field")},_onEmailTypeChange:function(){if(this.protocol&&this.protocol in c.protocolFields)for(var b=0;b<c.protocolFields[this.protocol].length;b++)this.getField(b).appendTo(this.$hiddenFields);this.protocol=this.$protocolSelect.val();if(this.protocol in c.protocolFields)for(var b=this.$protocolField,a=0;a<c.protocolFields[this.protocol].length;a++){var d=

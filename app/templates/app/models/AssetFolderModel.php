@@ -2,48 +2,36 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Class AssetFolderModel
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- *
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.models
+ * @since     1.0
  */
 class AssetFolderModel extends BaseModel
 {
+	// Properties
+	// =========================================================================
+
 	/**
 	 * @var array
 	 */
 	private $_children = null;
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Use the folder name as the string representation.
 	 *
 	 * @return string
 	 */
-	function __toString()
+	public function __toString()
 	{
 		return $this->name;
-	}
-
-	/**
-	 * @access protected
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'id'       => AttributeType::Number,
-			'parentId' => AttributeType::Number,
-			'sourceId' => AttributeType::Number,
-			'name'     => AttributeType::String,
-			'path'     => AttributeType::String,
-		);
 	}
 
 	/**
@@ -86,6 +74,8 @@ class AssetFolderModel extends BaseModel
 	 * Add a child folder manually.
 	 *
 	 * @param AssetFolderModel $folder
+	 *
+	 * @return null
 	 */
 	public function addChild(AssetFolderModel $folder)
 	{
@@ -93,6 +83,63 @@ class AssetFolderModel extends BaseModel
 		{
 			$this->_children = array();
 		}
+
 		$this->_children[] = $folder;
+	}
+
+	/**
+	 * @inheritDoc BaseModel::setAttribute()
+	 *
+	 * @param string $name
+	 * @param mixed  $value
+	 *
+	 * @return bool
+	 */
+	public function setAttribute($name, $value)
+	{
+		if ($name == 'path' && !empty($value))
+		{
+			$value = rtrim($value, '/').'/';
+		}
+		return parent::setAttribute($name, $value);
+	}
+
+	/**
+	 * @inheritDoc BaseModel::getAttribute()
+	 *
+	 * @param string $name
+	 * @param bool   $flattenValue
+	 *
+	 * @return mixed
+	 */
+	public function getAttribute($name, $flattenValue = false)
+	{
+		$value = parent::getAttribute($name, $flattenValue);
+
+		if ($name == 'path' && !empty($value))
+		{
+			$value = rtrim($value, '/').'/';
+		}
+
+		return $value;
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc BaseModel::defineAttributes()
+	 *
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'id'       => AttributeType::Number,
+			'parentId' => AttributeType::Number,
+			'sourceId' => AttributeType::Number,
+			'name'     => AttributeType::String,
+			'path'     => AttributeType::String,
+		);
 	}
 }

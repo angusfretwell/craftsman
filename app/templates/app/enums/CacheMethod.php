@@ -2,20 +2,23 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * The CacheMethod class is an abstract class that defines all of the cache methods (except for template caching) that
+ * are available in Craft.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * This class is a poor man's version of an enum, since PHP does not have support for native enumerations.
+ *
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- *
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.enums
+ * @since     2.0
  */
 abstract class CacheMethod extends BaseEnum
 {
+	// Constants
+	// =========================================================================
+
 	const APC          = 'apc';
 	const Db           = 'db';
 	const EAccelerator = 'eaccelerator';

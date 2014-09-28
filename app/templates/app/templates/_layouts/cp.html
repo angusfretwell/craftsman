@@ -2,6 +2,23 @@
 
 {% includeCssResource "css/cp.css" first %}
 {%- includeTranslations
+	"week",
+	"weeks",
+	"day",
+	"days",
+	"hour",
+	"hours",
+	"minute",
+	"minutes",
+	"second",
+	"seconds",
+	"Log out now",
+	"Keep me logged in",
+	"Your session will expire in {time}.",
+	"Your session has ended.",
+	"Enter your password to log back in.",
+	"Password",
+	"Login",
 	"Pending",
 	"Failed",
 	"Failed task",
@@ -55,9 +72,9 @@
 	"Really delete folder “{folder}”?",
 	"Upload files",
 	"Select Transform",
-	"Please enter your current password.",
 	"Continue",
-	"Cancel"
+	"Cancel",
+	"Any changes will be lost if you leave this page."
 -%}
 
 
@@ -81,7 +98,7 @@
 
 	<header id="header">
 		<div class="container">
-			<ul id="header-actions" class="right">
+			<ul id="header-actions">
 				{% set task = craft.tasks.getRunningTask() %}
 				{% if task %}
 					{% includeJs 'Craft.cp.setRunningTaskInfo('~task.getInfo()|json_encode|raw~');' %}
@@ -118,14 +135,15 @@
 					</li>
 					<li>
 						<a class="settingsmenu menubtn" title="{{ 'Settings'|t }}"></a>
-						<div id="settingsmenu" class="menu padded" data-align="right">
-							<ul>
-								{% for category, items in craft.cp.settings() %}
+						<div id="settingsmenu" class="menu" data-align="right">
+							{% for category, items in craft.cp.settings() %}
+								<h6>{{ category }}</h6>
+								<ul class="padded">
 									{% for handle, item in items %}
 										<li><a href="{{ url('settings/'~handle) }}" data-icon="{{ item.icon }}">{{ item.label }}</a></li>
 									{% endfor %}
-								{% endfor %}
-							</ul>
+								</ul>
+							{% endfor %}
 						</div>
 					</li>
 				{% endif %}
@@ -221,9 +239,11 @@
 									</div>
 								{% endif %}
 
-								{% block content %}
-									{{ content is defined ? content }}
-								{% endblock %}
+								<div class="body">
+									{% block content %}
+										{{ content is defined ? content }}
+									{% endblock %}
+								</div>
 
 								{% if hasHelp %}
 									<a id="help" class="help" title="{{ 'Help'|t }}" href="{{ docsUrl }}" target="_blank"></a>

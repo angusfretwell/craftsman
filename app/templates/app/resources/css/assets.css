@@ -21,12 +21,6 @@ body.rtl .listview .assets-fileicon { margin: 0 -31px 0 0; }
 
 .assets-modal { max-height: 400px; overflow: scroll; }
 
-.assets-contextmenu { padding: 0; }
-
-.assets-contextmenu ul { padding: 5px 15px; }
-
-.assets-contextmenu ul + ul { border-top: 1px solid rgba(0, 0, 0, 0.1); }
-
 /*-- thumbs --*/
 body.ltr #main .files.thumbs ul { margin: -9px 0 0 -9px; }
 body.rtl #main .files.thumbs ul { margin: -9px -9px 0 0; }
@@ -58,15 +52,6 @@ body.rtl #main .files.thumbs ul li { margin: 1px 1px 0 0; }
 .assets-fileicon .assets-extension { position: absolute; bottom: 15px; width: 100%; text-align: center; font-size: 17px; color: #ddd; text-transform: uppercase; }
 
 .assets-tv-file.assets-tv-bigthumb .assets-fileicon .assets-extension { bottom: 26px; font-size: 34px; }
-
-/*-- Folder drag --*/
-.assets-fm-folderdrag ul { display: none; }
-
-.assets-fm-folderdrag li { background: #333f4d; height: 18px !important; }
-body.ltr .assets-fm-folderdrag li { padding: 4px 0 0 10px; }
-body.rtl .assets-fm-folderdrag li { padding: 4px 10px 0 0; }
-
-.assets-fm-folderdrag li a { color: #fff !important; }
 
 /*-- Retina -- */
 @media only screen and (-moz-min-device-pixel-ratio: 1.5), only screen and (-o-min-device-pixel-ratio: 3 / 2), only screen and (-webkit-min-device-pixel-ratio: 1.5), only screen and (min-device-pixel-ratio: 1.5), only screen and (min-resolution: 1.5dppx) { .assets-tv-file .assets-fileicon { background-image: url(../images/file_medium_2x.png); background-size: 69px 89px; }

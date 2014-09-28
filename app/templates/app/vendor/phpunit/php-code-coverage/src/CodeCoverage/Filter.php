@@ -94,10 +94,13 @@ class PHP_CodeCoverage_Filter
         'Text_Template' => 1,
         'Symfony\Component\Yaml\Yaml' => 1,
         'SebastianBergmann\Diff\Diff' => 1,
+        'SebastianBergmann\Comparator\Comparator' => 1,
         'SebastianBergmann\Environment\Runtime' => 1,
         'SebastianBergmann\Exporter\Exporter' => 1,
         'SebastianBergmann\Version' => 1,
-        'Composer\Autoload\ClassLoader' => 1
+        'Composer\Autoload\ClassLoader' => 1,
+        'Instantiator\Instantiator' => 1,
+        'LazyMap\AbstractLazyMap' => 1
     );
 
     /**
@@ -248,6 +251,8 @@ class PHP_CodeCoverage_Filter
     public function isFile($filename)
     {
         if ($filename == '-' ||
+            strpos($filename, 'vfs://') === 0 ||
+            strpos($filename, 'xdebug://debug-eval') !== false ||
             strpos($filename, 'eval()\'d code') !== false ||
             strpos($filename, 'runtime-created function') !== false ||
             strpos($filename, 'runkit created function') !== false ||
@@ -256,7 +261,7 @@ class PHP_CodeCoverage_Filter
             return false;
         }
 
-        return true;
+        return file_exists($filename);
     }
 
     /**
@@ -272,6 +277,10 @@ class PHP_CodeCoverage_Filter
      */
     public function isFiltered($filename)
     {
+        if (!$this->isFile($filename)) {
+            return true;
+        }
+
         $filename = realpath($filename);
 
         if (!empty($this->whitelistedFiles)) {

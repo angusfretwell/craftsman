@@ -2,25 +2,26 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Number formatter class.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Number formatter class
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.etc.i18n
+ * @since     1.3
  */
 class NumberFormatter extends \CNumberFormatter
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Formats a number using the decimal format defined in the locale.
 	 *
 	 * @param mixed $value
 	 * @param bool  $withGroupSymbol
+	 *
 	 * @return string
 	 */
 	public function formatDecimal($value, $withGroupSymbol = true)
@@ -72,10 +73,11 @@ class NumberFormatter extends \CNumberFormatter
 	/**
 	 * Formats a number using the currency format defined in the locale.
 	 *
-	 * @param mixed   $value
+	 * @param mixed  $value
 	 * @param string $currency
 	 * @param bool   $stripZeroCents
-	 * @return string the formatting result.
+	 *
+	 * @return string The formatted result.
 	 */
 	public function formatCurrency($value, $currency, $stripZeroCents = false)
 	{
@@ -84,7 +86,7 @@ class NumberFormatter extends \CNumberFormatter
 		if ($stripZeroCents)
 		{
 			$decimal = $this->_locale->getNumberSymbol('decimal');
-			$result = preg_replace("/{$decimal}0*$/", '', $result);
+			$result = preg_replace('/\\'.$decimal.'0*$/', '', $result);
 		}
 
 		return $result;

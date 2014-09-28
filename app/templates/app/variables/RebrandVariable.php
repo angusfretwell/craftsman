@@ -1,25 +1,35 @@
 <?php
 namespace Craft;
 
-/**
- * Craft by Pixel & Tonic
- *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
- * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
 craft()->requireEdition(Craft::Client);
 
 /**
- * Rebranding functions
+ * Rebranding functions.
+ *
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.variables
+ * @since     1.0
  */
 class RebrandVariable
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var
+	 */
 	private $_logoPath;
+
+	/**
+	 * @var
+	 */
 	private $_logoVariable;
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns whether a custom logo has been uploaded.
@@ -55,10 +65,12 @@ class RebrandVariable
 		return $this->_logoVariable;
 	}
 
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Returns the path to the logo, or false if a logo hasn't been uploaded.
 	 *
-	 * @access private
 	 * @return string
 	 */
 	private function _getLogoPath()

@@ -2,20 +2,20 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Plugin template variable.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Plugin template variable
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.variables
+ * @since     1.0
  */
 class PluginVariable extends BaseComponentTypeVariable
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Returns the plugin’s display name.
 	 *
@@ -54,6 +54,31 @@ class PluginVariable extends BaseComponentTypeVariable
 	public function getDeveloperUrl()
 	{
 		return $this->component->getDeveloperUrl();
+	}
+
+	/**
+	 * Returns the URL to the plugin's settings in the CP.
+	 *
+	 * @return string|null
+	 */
+	public function getSettingsUrl()
+	{
+		// Is this plugin managing its own settings?
+		$url = $this->component->getSettingsUrl();
+
+		if (!$url)
+		{
+			// Check to see if they're using getSettingsHtml(), etc.
+			if ($this->component->getSettingsHtml())
+			{
+				$url = 'settings/plugins/'.mb_strtolower($this->component->getClassHandle());
+			}
+		}
+
+		if ($url)
+		{
+			return UrlHelper::getCpUrl($url);
+		}
 	}
 
 	/**

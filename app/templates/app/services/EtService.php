@@ -2,26 +2,29 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Class EtService
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- *
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.services
+ * @since     1.0
  */
 class EtService extends BaseApplicationComponent
 {
+	// Constants
+	// =========================================================================
+
 	const Ping              = 'https://elliott.buildwithcraft.com/actions/elliott/app/ping';
 	const CheckForUpdates   = 'https://elliott.buildwithcraft.com/actions/elliott/app/checkForUpdates';
 	const TransferLicense   = 'https://elliott.buildwithcraft.com/actions/elliott/app/transferLicenseToCurrentDomain';
 	const GetEditionInfo    = 'https://elliott.buildwithcraft.com/actions/elliott/app/getEditionInfo';
 	const PurchaseUpgrade   = 'https://elliott.buildwithcraft.com/actions/elliott/app/purchaseUpgrade';
 	const GetUpdateFileInfo = 'https://elliott.buildwithcraft.com/actions/elliott/app/getUpdateFileInfo';
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @return EtModel|null
@@ -37,6 +40,7 @@ class EtService extends BaseApplicationComponent
 	 * Checks if any new updates are available.
 	 *
 	 * @param $updateInfo
+	 *
 	 * @return EtModel|null
 	 */
 	public function checkForUpdates($updateInfo)
@@ -67,8 +71,9 @@ class EtService extends BaseApplicationComponent
 	}
 
 	/**
-	 * @param $downloadPath
-	 * @param $md5
+	 * @param string $downloadPath
+	 * @param string $md5
+	 *
 	 * @return bool
 	 */
 	public function downloadUpdate($downloadPath, $md5)
@@ -153,6 +158,7 @@ class EtService extends BaseApplicationComponent
 	 * Attempts to purchase an edition upgrade.
 	 *
 	 * @param UpgradePurchaseModel $model
+	 *
 	 * @return bool
 	 */
 	public function purchaseUpgrade(UpgradePurchaseModel $model)
@@ -222,7 +228,8 @@ class EtService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns the domain that the installed license key is licensed for, null if it's not set yet, or false if it's unknown.
+	 * Returns the domain that the installed license key is licensed for, null if it's not set yet, or false if it's
+	 * unknown.
 	 *
 	 * @return string|null|false
 	 */
@@ -234,7 +241,8 @@ class EtService extends BaseApplicationComponent
 	/**
 	 * Creates a new EtModel with provided JSON, and returns it if it's valid.
 	 *
-	 * @param $attributes
+	 * @param array $attributes
+	 *
 	 * @return EtModel|null
 	 */
 	public function decodeEtModel($attributes)
@@ -247,7 +255,8 @@ class EtService extends BaseApplicationComponent
 			{
 				$etModel = new EtModel($attributes);
 
-				// Make sure it's valid. (At a minumum, localBuild and localVersion should be set.)
+				// Make sure it's valid. (At a minimum, localBuild and localVersion
+				// should be set.)
 				if ($etModel->validate())
 				{
 					return $etModel;

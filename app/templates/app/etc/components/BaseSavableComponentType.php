@@ -2,33 +2,37 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Base savable component class.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Base savable component class
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.etc.components
+ * @since     1.0
  */
 abstract class BaseSavableComponentType extends BaseComponentType implements ISavableComponentType
 {
+	// Properties
+	// =========================================================================
+
 	/**
-	 * @var BaseModel The model instance associated with the current component instance.
+	 * The model instance associated with the current component instance.
+	 *
+	 * @var BaseModel
 	 */
 	public $model;
 
 	/**
-	 * @access private
-	 * @var BaseModel The model representing the current component instance's settings.
+	 * @var
 	 */
 	private $_settings;
 
+	// Public Methods
+	// =========================================================================
+
 	/**
-	 * Gets the settings.
+	 * @inheritDoc ISavableComponentType::getSettings()
 	 *
 	 * @return BaseModel
 	 */
@@ -43,9 +47,11 @@ abstract class BaseSavableComponentType extends BaseComponentType implements ISa
 	}
 
 	/**
-	 * Sets the setting values.
+	 * @inheritDoc ISavableComponentType::setSettings()
 	 *
 	 * @param array|BaseModel $values
+	 *
+	 * @return null
 	 */
 	public function setSettings($values)
 	{
@@ -63,7 +69,7 @@ abstract class BaseSavableComponentType extends BaseComponentType implements ISa
 	}
 
 	/**
-	 * Returns the component's settings HTML.
+	 * @inheritDoc ISavableComponentType::getSettingsHtml()
 	 *
 	 * @return string|null
 	 */
@@ -73,9 +79,10 @@ abstract class BaseSavableComponentType extends BaseComponentType implements ISa
 	}
 
 	/**
-	 * Preps the settings before they're saved to the database.
+	 * @inheritDoc ISavableComponentType::prepSettings()
 	 *
 	 * @param array $settings
+	 *
 	 * @return array
 	 */
 	public function prepSettings($settings)
@@ -83,10 +90,12 @@ abstract class BaseSavableComponentType extends BaseComponentType implements ISa
 		return $settings;
 	}
 
+	// Protected Methods
+	// =========================================================================
+
 	/**
 	 * Returns the settings model.
 	 *
-	 * @access protected
 	 * @return BaseModel
 	 */
 	protected function getSettingsModel()
@@ -97,7 +106,6 @@ abstract class BaseSavableComponentType extends BaseComponentType implements ISa
 	/**
 	 * Defines the settings.
 	 *
-	 * @access protected
 	 * @return array
 	 */
 	protected function defineSettings()

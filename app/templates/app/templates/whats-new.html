@@ -1,25 +1,34 @@
 {% extends "_layouts/cp" %}
-{% set title = "What’s new in Craft 2" %}
+{% set title = "What’s new in Craft 2.2" %}
 {% includeCssResource "css/whats-new.css" %}
 
 {% block pageHeader %}{% endblock %}
 
+{% set url = 'http://buildwithcraft.com/updates/2.2' %}
+
 {% set content %}
-	<h1>Categorically awesome.</h1>
-	<p>Craft 2 packs <a href="http://buildwithcraft.com/updates#build2524"><strong>250</strong> new features and improvements</a>. Whether you’re a content author, web designer, or plugin developer, there’s a lot you’re going to love.</p>
+	<header>
+		<h1>{{ title }}</h1>
+		<p>With <a href="http://buildwithcraft.com/updates/2.2">140 new features and improvements</a>, Craft 2.2 is the biggest little release yet.<br>
+			And this one’s all about the details.</p>
+	</header>
 
-	<img src="{{ resourceUrl('images/whats-new/categories.png') }}" alt="Categories index">
-	<h1>Categories</h1>
-	<p>You can now manage taxonomies in Craft with <a href="http://buildwithcraft.com/docs/categories">categories</a>, and set up <a href="http://buildwithcraft.com/docs/categories-fields">Categories fields</a> to relate your entries and other elements to them.</p>
+	<h1>Position Select Fields</h1>
+	<p><a href="http://buildwithcraft.com/docs/position-select-fields">Position Select</a> is a new field type that was written with Matrix in mind. It gives you a simple new way to define block positions when you’re using Matrix to create long-form articles.</p>
+	<img src="{{ resourceUrl('images/whats-new/position-select-field.png') }}" alt="A Matrix field with a Position Select sub-field.">
 
-	<img src="{{ resourceUrl('images/whats-new/upgrade-modal.png') }}" alt="Craft’s edition upgrade modal">
-	<h1>New Pricing</h1>
-	<p>We’ve split Craft into <a href="http://buildwithcraft.com/pricing">three editions</a> – Personal, Client, and Pro – and we’re selling them at price points that make Craft more affordable than ever. Best of all, any sites that have ever purchased a package in Craft 1.x have been upgraded to Pro for free!</p>
+	<h1>Logout Warnings</h1>
+	<p>The Control Panel now warns you when you’re about to be logged out, giving you the chance to extend your session with the click of a button, and get back to your writing.</p>
+	<p>If you do get logged out, Craft will give you a dialog where you can quickly enter your password to be logged back in, without losing any work.</p>
+	<img src="{{ resourceUrl('images/whats-new/logout-warning.png') }}" alt="A logout warning in the Control Panel.">
 
-	<img src="{{ resourceUrl('images/whats-new/cp-arabic.png') }}" alt="Craft’s Control Panel translated into Arabic">
-	<h1>Redesigned Control Panel with RTL Support</h1>
-	<p>We’ve redesigned the Control Panel, giving it a wider max width, a new layout system that offers more modularity and responsiveness, full RTL language support, and countless subtle improvements</p>
+	<h1>Single Titles and Statuses</h1>
+	<p>Your Singles now have the same “Show the Title field?”, “Title Field Label”, and “Title Format” settings that your Channel and Structure sections have, and you can also toggle the status of your singles.</p>
+	<img src="{{ resourceUrl('images/whats-new/single-edit-page.png') }}" alt="A single’s Edit page.">
 
-	<h1>So Much More!</h1>
-	<p>Craft 2 packs support for eight new caching methods, partial template caching, background tasks, and tons of improvements to literally every corner of the system. To read the full list, check out the <a href="http://buildwithcraft.com/updates#build2524">release notes</a>.</p>
+	<h1>Security Improvements</h1>
+	<p>Craft now supports <a href="http://buildwithcraft.com/help/csrf-protection">CSRF Protection</a>, and <a href="http://buildwithcraft.com/docs/rich-text-fields">Rich Text</a> fields have a new “Purify HTML?” setting, which will run their values through HTML Purifier before getting saved to the database, removing any potentially malicious code.</p>
+
+	<h1>Lots more!</h1>
+	<p>Craft 2.2 is packed full of other new features, improvements, APIs, and even a few bug fixes. Check out the <a href="http://buildwithcraft.com/updates/2.2">release notes</a> for a complete list!</p>
 {% endset %}

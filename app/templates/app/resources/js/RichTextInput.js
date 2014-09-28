@@ -1,11 +1,9 @@
 /**
- * Craft by Pixel & Tonic
- *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.resources
  */
 
 (function($){
@@ -34,6 +32,25 @@ Craft.RichTextInput = Garnish.Base.extend(
 		this.redactorConfig.lang = redactorLang;
 		this.redactorConfig.direction = Craft.orientation;
 
+		var that = this,
+			originalInitCallback = redactorConfig.initCallback;
+
+		this.redactorConfig.initCallback = function(ev, data)
+		{
+			that.redactor = this;
+			that.onRedactorInit();
+
+			// Did the config have its own callback?
+			if ($.isFunction(originalInitCallback))
+			{
+				return originalInitCallback.call(this, ev, data);
+			}
+			else
+			{
+				return data;
+			}
+		};
+
 		// Initialize Redactor
 		this.$textarea = $('#'+this.id);
 
@@ -58,7 +75,10 @@ Craft.RichTextInput = Garnish.Base.extend(
 	{
 		this.$textarea.redactor(this.redactorConfig);
 		this.redactor = this.$textarea.data('redactor');
+	},
 
+	onRedactorInit: function()
+	{
 		this.replaceRedactorButton('image', Craft.t('Insert image'), null,
 		{
 			from_web:
@@ -69,10 +89,10 @@ Craft.RichTextInput = Garnish.Base.extend(
 			from_assets:
 			{
 				title: Craft.t('Choose image'),
-				callback: function()
+				callback: $.proxy(function()
 				{
-					this.selectionSave();
-	                var editor = this;
+					this.redactor.selectionSave();
+					var editor = this.redactor;
 					if (typeof this.assetSelectionModal == 'undefined')
 					{
 						this.assetSelectionModal = Craft.createElementSelectorModal('Asset', {
@@ -83,7 +103,7 @@ Craft.RichTextInput = Garnish.Base.extend(
 							{
 								if (assets.length)
 								{
-	                                editor.selectionRestore();
+									editor.selectionRestore();
 									for (var i = 0; i < assets.length; i++)
 									{
 										var asset = assets[i],
@@ -97,7 +117,7 @@ Craft.RichTextInput = Garnish.Base.extend(
 										editor.insertNode($('<img src="'+url+'" />')[0]);
 										editor.sync();
 									}
-									this.observeImages();
+									editor.observeImages();
 									editor.dropdownHideAll();
 								}
 							}, this),
@@ -109,7 +129,7 @@ Craft.RichTextInput = Garnish.Base.extend(
 					{
 						this.assetSelectionModal.show();
 					}
-				}
+				}, this)
 			}
 		});
 
@@ -118,11 +138,11 @@ Craft.RichTextInput = Garnish.Base.extend(
 			link_entry:
 			{
 				title: Craft.t('Link to an entry'),
-				callback: function()
+				callback: $.proxy(function()
 				{
-					this.selectionSave();
+					this.redactor.selectionSave();
 
-	                var editor = this;
+					var editor = this.redactor;
 					if (typeof this.entrySelectionModal == 'undefined')
 					{
 						this.entrySelectionModal = Craft.createElementSelectorModal('Entry', {
@@ -133,33 +153,33 @@ Craft.RichTextInput = Garnish.Base.extend(
 							{
 								if (entries.length)
 								{
-	                                editor.selectionRestore();
-	                                var entry     = entries[0],
-	                                	url       = entry.url+'#entry:'+entry.id,
-	                                	selection = editor.getSelectionText(),
-	                                	title = selection.length > 0 ? selection : entry.label;
-	                                editor.insertNode($('<a href="'+url+'">'+title+'</a>')[0]);
-	                                editor.sync();
-	                            }
-	                            editor.dropdownHideAll();
+									editor.selectionRestore();
+									var entry     = entries[0],
+										url       = entry.url+'#entry:'+entry.id,
+										selection = editor.getSelectionText(),
+										title = selection.length > 0 ? selection : entry.label;
+									editor.insertNode($('<a href="'+url+'">'+title+'</a>')[0]);
+									editor.sync();
+								}
+								editor.dropdownHideAll();
 							},
-	                        closeOtherModals: false
+							closeOtherModals: false
 						});
 					}
 					else
 					{
 						this.entrySelectionModal.show();
 					}
-				}
+				}, this)
 			},
 			link_asset:
 			{
 				title: Craft.t('Link to an asset'),
-				callback: function()
+				callback: $.proxy(function()
 				{
-					this.selectionSave();
+					this.redactor.selectionSave();
 
-					var editor = this;
+					var editor = this.redactor;
 					if (typeof this.assetLinkSelectionModal == 'undefined')
 					{
 						this.assetLinkSelectionModal = Craft.createElementSelectorModal('Asset', {
@@ -187,7 +207,7 @@ Craft.RichTextInput = Garnish.Base.extend(
 					{
 						this.assetLinkSelectionModal.show();
 					}
-				}
+				}, this)
 			},
 			link:
 			{

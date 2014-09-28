@@ -134,6 +134,11 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
     protected $testCase = false;
 
     /**
+     * @var array
+     */
+    protected $foundClasses = array();
+
+    /**
      * @var PHPUnit_Runner_Filter_Factory
      */
     private $iteratorFilter = null;
@@ -188,7 +193,7 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
 
         if (!$theClass->isSubclassOf('PHPUnit_Framework_TestCase')) {
             throw new PHPUnit_Framework_Exception(
-              'Class "' . $theClass->name . '" does not extend PHPUnit_Framework_TestCase.'
+                'Class "' . $theClass->name . '" does not extend PHPUnit_Framework_TestCase.'
             );
         }
 
@@ -203,13 +208,12 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
         if ($constructor !== null &&
             !$constructor->isPublic()) {
             $this->addTest(
-              self::warning(
-                sprintf(
-                  'Class "%s" has no public constructor.',
-
-                  $theClass->getName()
+                self::warning(
+                    sprintf(
+                        'Class "%s" has no public constructor.',
+                        $theClass->getName()
+                    )
                 )
-              )
             );
 
             return;
@@ -221,13 +225,12 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
 
         if (empty($this->tests)) {
             $this->addTest(
-              self::warning(
-                sprintf(
-                  'No tests found in class "%s".',
-
-                  $theClass->getName()
+                self::warning(
+                    sprintf(
+                        'No tests found in class "%s".',
+                        $theClass->getName()
+                    )
                 )
-              )
             );
         }
 
@@ -291,7 +294,8 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
 
         if (!is_object($testClass)) {
             throw PHPUnit_Util_InvalidArgumentHelper::factory(
-              1, 'class name or object'
+                1,
+                'class name or object'
             );
         }
 
@@ -303,12 +307,12 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
             if (!$testClass->isAbstract()) {
                 if ($testClass->hasMethod(PHPUnit_Runner_BaseTestRunner::SUITE_METHODNAME)) {
                     $method = $testClass->getMethod(
-                      PHPUnit_Runner_BaseTestRunner::SUITE_METHODNAME
+                        PHPUnit_Runner_BaseTestRunner::SUITE_METHODNAME
                     );
 
                     if ($method->isStatic()) {
                         $this->addTest(
-                          $method->invoke(null, $testClass->getName())
+                            $method->invoke(null, $testClass->getName())
                         );
 
                         $suiteMethod = true;
@@ -348,23 +352,42 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
 
         if (file_exists($filename) && substr($filename, -5) == '.phpt') {
             $this->addTest(
-              new PHPUnit_Extensions_PhptTestCase($filename, $phptOptions)
+                new PHPUnit_Extensions_PhptTestCase($filename, $phptOptions)
             );
-
             return;
         }
 
+        // The given file may contain further stub classes in addition to the
+        // test class itself. Figure out the actual test class.
         $classes    = get_declared_classes();
         $filename   = PHPUnit_Util_Fileloader::checkAndLoad($filename);
-        $newClasses = array_values(array_diff(get_declared_classes(), $classes));
-        $baseName   = str_replace('.php', '', basename($filename));
+        $newClasses = array_diff(get_declared_classes(), $classes);
 
-        foreach ($newClasses as $className) {
-            if (substr($className, 0 - strlen($baseName)) == $baseName) {
+        // The diff is empty in case a parent class (with test methods) is added
+        // AFTER a child class that inherited from it. To account for that case,
+        // cumulate all discovered classes, so the parent class may be found in
+        // a later invocation.
+        if ($newClasses) {
+            // On the assumption that test classes are defined first in files,
+            // process discovered classes in approximate LIFO order, so as to
+            // avoid unnecessary reflection.
+            $this->foundClasses = array_merge($newClasses, $this->foundClasses);
+        }
+
+        // The test class's name must match the filename, either in full, or as
+        // a PEAR/PSR-0 prefixed shortname ('NameSpace_ShortName'), or as a
+        // PSR-1 local shortname ('NameSpace\ShortName'). The comparison must be
+        // anchored to prevent false-positive matches (e.g., 'OtherShortName').
+        $shortname = basename($filename, '.php');
+        $shortnameRegEx = '/(?:^|_|\\\\)' . preg_quote($shortname, '/') . '$/';
+
+        foreach ($this->foundClasses as $i => $className) {
+            if (preg_match($shortnameRegEx, $className)) {
                 $class = new ReflectionClass($className);
 
                 if ($class->getFileName() == $filename) {
                     $newClasses = array($className);
+                    unset($this->foundClasses[$i]);
                     break;
                 }
             }
@@ -376,7 +399,7 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
             if (!$class->isAbstract()) {
                 if ($class->hasMethod(PHPUnit_Runner_BaseTestRunner::SUITE_METHODNAME)) {
                     $method = $class->getMethod(
-                      PHPUnit_Runner_BaseTestRunner::SUITE_METHODNAME
+                        PHPUnit_Runner_BaseTestRunner::SUITE_METHODNAME
                     );
 
                     if ($method->isStatic()) {
@@ -403,7 +426,8 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
         if (!(is_array($filenames) ||
              (is_object($filenames) && $filenames instanceof Iterator))) {
             throw PHPUnit_Util_InvalidArgumentHelper::factory(
-              1, 'array or iterator'
+                1,
+                'array or iterator'
             );
         }
 
@@ -440,19 +464,24 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
 
         if (!$theClass->isInstantiable()) {
             return self::warning(
-              sprintf('Cannot instantiate class "%s".', $className)
+                sprintf('Cannot instantiate class "%s".', $className)
             );
         }
 
-        $backupSettings           = PHPUnit_Util_Test::getBackupSettings(
-                                      $className, $name
-                                    );
-        $preserveGlobalState      = PHPUnit_Util_Test::getPreserveGlobalStateSettings(
-                                      $className, $name
-                                    );
+        $backupSettings = PHPUnit_Util_Test::getBackupSettings(
+            $className,
+            $name
+        );
+
+        $preserveGlobalState = PHPUnit_Util_Test::getPreserveGlobalStateSettings(
+            $className,
+            $name
+        );
+
         $runTestInSeparateProcess = PHPUnit_Util_Test::getProcessIsolationSettings(
-                                      $className, $name
-                                    );
+            $className,
+            $name
+        );
 
         $constructor = $theClass->getConstructor();
 
@@ -462,19 +491,18 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
             // TestCase() or TestCase($name)
             if (count($parameters) < 2) {
                 $test = new $className;
-            }
-
-            // TestCase($name, $data)
+            } // TestCase($name, $data)
             else {
                 try {
                     $data = PHPUnit_Util_Test::getProvidedData(
-                      $className, $name
+                        $className,
+                        $name
                     );
                 } catch (Exception $e) {
                     $message = sprintf(
-                      'The data provider specified for %s::%s is invalid.',
-                      $className,
-                      $name
+                        'The data provider specified for %s::%s is invalid.',
+                        $className,
+                        $name
                     );
 
                     $_message = $e->getMessage();
@@ -489,15 +517,15 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
                 // Test method with @dataProvider.
                 if (isset($data)) {
                     $test = new PHPUnit_Framework_TestSuite_DataProvider(
-                      $className . '::' . $name
+                        $className . '::' . $name
                     );
 
                     if (empty($data)) {
                         $data = self::warning(
-                          sprintf(
-                            'No tests found in suite "%s".',
-                            $test->getName()
-                          )
+                            sprintf(
+                                'No tests found in suite "%s".',
+                                $test->getName()
+                            )
                         );
                     }
 
@@ -519,13 +547,13 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
 
                             if ($backupSettings['backupGlobals'] !== null) {
                                 $_test->setBackupGlobals(
-                                  $backupSettings['backupGlobals']
+                                    $backupSettings['backupGlobals']
                                 );
                             }
 
                             if ($backupSettings['backupStaticAttributes'] !== null) {
                                 $_test->setBackupStaticAttributes(
-                                  $backupSettings['backupStaticAttributes']
+                                    $backupSettings['backupStaticAttributes']
                                 );
                             }
 
@@ -559,7 +587,7 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
 
             if ($backupSettings['backupStaticAttributes'] !== null) {
                 $test->setBackupStaticAttributes(
-                  $backupSettings['backupStaticAttributes']
+                    $backupSettings['backupStaticAttributes']
                 );
             }
         }
@@ -638,7 +666,7 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
             $this->setUp();
 
             foreach ($hookMethods['beforeClass'] as $beforeClassMethod) {
-                if (method_exists($this->name, $beforeClassMethod)) {
+                if ($this->testCase === true && class_exists($this->name, false) && method_exists($this->name, $beforeClassMethod)) {
                     call_user_func(array($this->name, $beforeClassMethod));
                 }
             }
@@ -676,7 +704,7 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
         }
 
         foreach ($hookMethods['afterClass'] as $afterClassMethod) {
-            if (method_exists($this->name, $afterClassMethod)) {
+            if ($this->testCase === true && class_exists($this->name, false) && method_exists($this->name, $afterClassMethod)) {
                 call_user_func(array($this->name, $afterClassMethod));
             }
         }
@@ -778,8 +806,9 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
      */
     protected function addTestMethod(ReflectionClass $class, ReflectionMethod $method)
     {
-        if (!$this->isTestMethod($method))
+        if (!$this->isTestMethod($method)) {
             return;
+        }
 
         $name = $method->getName();
 
@@ -790,9 +819,9 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
                         'Test method "%s" in test class "%s" is not public.',
                         $name,
                         $class->getName()
-                        )
                     )
-                );
+                )
+            );
 
             return;
         }

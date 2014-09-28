@@ -2,37 +2,27 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Stores all of the available update info.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Stores all of the available update info.
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.models
+ * @since     1.0
  */
 class UpdateModel extends BaseModel
 {
-	/**
-	 * @access protected
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		$attributes['app']      = array(AttributeType::Mixed, 'model' => 'AppUpdateModel');
-		$attributes['plugins']  = AttributeType::Mixed;
-		$attributes['errors']   = AttributeType::Mixed;
-
-		return $attributes;
-	}
+	// Public Methods
+	// =========================================================================
 
 	/**
+	 * @inheritDoc BaseModel::setAttribute()
+	 *
 	 * @param string $name
 	 * @param mixed  $value
-	 * @return bool|void
+	 *
+	 * @return bool|null
 	 */
 	public function setAttribute($name, $value)
 	{
@@ -42,5 +32,22 @@ class UpdateModel extends BaseModel
 		}
 
 		parent::setAttribute($name, $value);
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc BaseModel::defineAttributes()
+	 *
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		$attributes['app']      = array(AttributeType::Mixed, 'model' => 'AppUpdateModel');
+		$attributes['plugins']  = AttributeType::Mixed;
+		$attributes['errors']   = AttributeType::Mixed;
+
+		return $attributes;
 	}
 }

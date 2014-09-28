@@ -2,29 +2,52 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Class SectionsService
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- *
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.services
+ * @since     1.0
  */
 class SectionsService extends BaseApplicationComponent
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var
+	 */
 	public $typeLimits;
 
+	/**
+	 * @var
+	 */
 	private $_allSectionIds;
+
+	/**
+	 * @var
+	 */
 	private $_editableSectionIds;
 
+	/**
+	 * @var
+	 */
 	private $_sectionsById;
+
+	/**
+	 * @var bool
+	 */
 	private $_fetchedAllSections = false;
 
+	/**
+	 * @var
+	 */
 	private $_entryTypesById;
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns all of the section IDs.
@@ -73,6 +96,7 @@ class SectionsService extends BaseApplicationComponent
 	 * Returns all sections.
 	 *
 	 * @param string|null $indexBy
+	 *
 	 * @return array
 	 */
 	public function getAllSections($indexBy = null)
@@ -129,6 +153,7 @@ class SectionsService extends BaseApplicationComponent
 	 * Returns all editable sections.
 	 *
 	 * @param string|null $indexBy
+	 *
 	 * @return array
 	 */
 	public function getEditableSections($indexBy = null)
@@ -177,13 +202,13 @@ class SectionsService extends BaseApplicationComponent
 	/**
 	 * Returns a section by its ID.
 	 *
-	 * @param $sectionId
+	 * @param int $sectionId
+	 *
 	 * @return SectionModel|null
 	 */
 	public function getSectionById($sectionId)
 	{
-		// If we've already fetched all sections we can save ourselves a trip to the DB
-		// for section IDs that don't exist
+		// If we've already fetched all sections we can save ourselves a trip to the DB for section IDs that don't exist
 		if (!$this->_fetchedAllSections &&
 			(!isset($this->_sectionsById) || !array_key_exists($sectionId, $this->_sectionsById))
 		)
@@ -214,6 +239,7 @@ class SectionsService extends BaseApplicationComponent
 	 * Gets a section by its handle.
 	 *
 	 * @param string $sectionHandle
+	 *
 	 * @return SectionModel|null
 	 */
 	public function getSectionByHandle($sectionHandle)
@@ -226,6 +252,7 @@ class SectionsService extends BaseApplicationComponent
 		{
 			$section = new SectionModel($result);
 			$this->_sectionsById[$section->id] = $section;
+
 			return $section;
 		}
 	}
@@ -233,19 +260,20 @@ class SectionsService extends BaseApplicationComponent
 	/**
 	 * Returns a section's locales.
 	 *
-	 * @param int $sectionId
+	 * @param int         $sectionId
 	 * @param string|null $indexBy
+	 *
 	 * @return array
 	 */
 	public function getSectionLocales($sectionId, $indexBy = null)
 	{
 		$records = craft()->db->createCommand()
-							->select('*')
-							->from('sections_i18n sections_i18n')
-							->join('locales locales', 'locales.locale = sections_i18n.locale')
-							->where('sections_i18n.sectionId = :sectionId', array(':sectionId' => $sectionId))
-							->order('locales.sortOrder')
-							->queryAll();
+			->select('*')
+			->from('sections_i18n sections_i18n')
+			->join('locales locales', 'locales.locale = sections_i18n.locale')
+			->where('sections_i18n.sectionId = :sectionId', array(':sectionId' => $sectionId))
+			->order('locales.sortOrder')
+			->queryAll();
 
 		return SectionLocaleModel::populateModels($records, $indexBy);
 	}
@@ -254,6 +282,7 @@ class SectionsService extends BaseApplicationComponent
 	 * Saves a section.
 	 *
 	 * @param SectionModel $section
+	 *
 	 * @throws \Exception
 	 * @return bool
 	 */
@@ -278,9 +307,10 @@ class SectionsService extends BaseApplicationComponent
 		}
 
 		// Shared attributes
-		$sectionRecord->name    = $section->name;
-		$sectionRecord->handle  = $section->handle;
-		$sectionRecord->type    = $section->type;
+		$sectionRecord->name             = $section->name;
+		$sectionRecord->handle           = $section->handle;
+		$sectionRecord->type             = $section->type;
+		$sectionRecord->enableVersioning = $section->enableVersioning;
 
 		if (($isNewSection || $section->type != $oldSection->type) && !$this->canHaveMore($section->type))
 		{
@@ -425,8 +455,8 @@ class SectionsService extends BaseApplicationComponent
 					}
 				}
 
-				// Might as well update our cache of the section while we have it.
-				// (It's possilbe that the URL format includes {section.handle} or something...)
+				// Might as well update our cache of the section while we have it. (It's possible that the URL format
+				//includes {section.handle} or something...)
 				$this->_sectionsById[$section->id] = $section;
 
 				// Update the sections_i18n table
@@ -474,8 +504,8 @@ class SectionsService extends BaseApplicationComponent
 
 				if (!$isNewSection)
 				{
-					// Drop any locales that are no longer being used,
-					// as well as the associated entry/element locale rows
+					// Drop any locales that are no longer being used, as well as the associated entry/element locale
+					// rows
 
 					$droppedLocaleIds = array_diff(array_keys($oldSectionLocales), array_keys($sectionLocales));
 
@@ -509,24 +539,39 @@ class SectionsService extends BaseApplicationComponent
 				if (!$entryTypeId)
 				{
 					$entryType = new EntryTypeModel();
+
 					$entryType->sectionId  = $section->id;
 					$entryType->name       = $section->name;
 					$entryType->handle     = $section->handle;
-					$entryType->titleLabel = Craft::t('Title');
+
+					if ($section->type == SectionType::Single)
+					{
+						$entryType->hasTitleField = false;
+						$entryType->titleLabel = null;
+						$entryType->titleFormat = '{section.name|raw}';
+					}
+					else
+					{
+						$entryType->hasTitleField = true;
+						$entryType->titleLabel = Craft::t('Title');
+						$entryType->titleFormat = null;
+					}
+
 					$this->saveEntryType($entryType);
 
 					$entryTypeId = $entryType->id;
 				}
 
-				// Now, regardless of whether the section type changed or not,
-				// let the section type make sure everything's cool
+				// Now, regardless of whether the section type changed or not, let the section type make sure
+				// everything's cool
 
 				switch ($section->type)
 				{
 					case SectionType::Single:
 					{
-						// In a nut, we want to make sure that there is one and only one Entry Type and Entry for this section.
-						// We also want to make sure the entry has rows in the i18n tables for each of the sections' locales.
+						// In a nut, we want to make sure that there is one and only one Entry Type and Entry for this
+						// section. We also want to make sure the entry has rows in the i18n tables
+						// for each of the sections' locales.
 
 						$singleEntryId = null;
 
@@ -621,6 +666,7 @@ class SectionsService extends BaseApplicationComponent
 						{
 							// Add all of the entries to the structure
 							$criteria = craft()->elements->getCriteria(ElementType::Entry);
+							$criteria->locale = array_shift(array_keys($oldSectionLocales));
 							$criteria->sectionId = $section->id;
 							$criteria->status = null;
 							$criteria->localeEnabled = null;
@@ -649,22 +695,13 @@ class SectionsService extends BaseApplicationComponent
 
 				if (!$isNewSection)
 				{
-					// Get all of the entry IDs in this section
 					$criteria = craft()->elements->getCriteria(ElementType::Entry);
+					$criteria->locale = array_shift(array_keys($oldSectionLocales));
 					$criteria->sectionId = $section->id;
 					$criteria->status = null;
 					$criteria->localeEnabled = null;
 					$criteria->limit = null;
-					$entryIds = $criteria->ids();
 
-					// Drop the locale rows we no longer need
-					if ($entryIds && $droppedLocaleIds)
-					{
-						craft()->db->createCommand()->delete('elements_i18n', array('and', array('in', 'elementId', $entryIds), array('in', 'locale', $droppedLocaleIds)));
-						craft()->db->createCommand()->delete('content', array('and', array('in', 'elementId', $entryIds), array('in', 'locale', $droppedLocaleIds)));
-					}
-
-					// Resave all of the entries in this section
 					craft()->tasks->createTask('ResaveElements', Craft::t('Resaving {section} entries', array('section' => $section->name)), array(
 						'elementType' => ElementType::Entry,
 						'criteria'    => $criteria->getAttributes()
@@ -698,9 +735,10 @@ class SectionsService extends BaseApplicationComponent
 	 * Deletes a section by its ID.
 	 *
 	 * @param int $sectionId
+	 *
 	 * @throws \Exception
 	 * @return bool
-	*/
+	 */
 	public function deleteSectionById($sectionId)
 	{
 		if (!$sectionId)
@@ -753,13 +791,44 @@ class SectionsService extends BaseApplicationComponent
 		}
 	}
 
+	/**
+	 * Returns whether a section's entries have URLs, and if the section's template path is valid.
+	 *
+	 * @param SectionModel $section
+	 *
+	 * @return bool
+	 */
+	public function isSectionTemplateValid(SectionModel $section)
+	{
+		if ($section->hasUrls)
+		{
+			// Set Craft to the site template path
+			$oldTemplatesPath = craft()->path->getTemplatesPath();
+			craft()->path->setTemplatesPath(craft()->path->getSiteTemplatesPath());
+
+			// Does the template exist?
+			$templateExists = craft()->templates->doesTemplateExist($section->template);
+
+			// Restore the original template path
+			craft()->path->setTemplatesPath($oldTemplatesPath);
+
+			if ($templateExists)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	// Entry types
 
 	/**
 	 * Returns a section's entry types.
 	 *
-	 * @param int $sectionId
+	 * @param int         $sectionId
 	 * @param string|null $indexBy
+	 *
 	 * @return array
 	 */
 	public function getEntryTypesBySectionId($sectionId, $indexBy = null)
@@ -775,6 +844,7 @@ class SectionsService extends BaseApplicationComponent
 	 * Returns an entry type by its ID.
 	 *
 	 * @param int $entryTypeId
+	 *
 	 * @return EntryTypeModel|null
 	 */
 	public function getEntryTypeById($entryTypeId)
@@ -800,6 +870,7 @@ class SectionsService extends BaseApplicationComponent
 	 * Returns entry types that have a given handle.
 	 *
 	 * @param int $entryTypeHandle
+	 *
 	 * @return array
 	 */
 	public function getEntryTypesByHandle($entryTypeHandle)
@@ -815,6 +886,7 @@ class SectionsService extends BaseApplicationComponent
 	 * Saves an entry type.
 	 *
 	 * @param EntryTypeModel $entryType
+	 *
 	 * @throws \Exception
 	 * @return bool
 	 */
@@ -905,6 +977,7 @@ class SectionsService extends BaseApplicationComponent
 	 * Reorders entry types.
 	 *
 	 * @param array $entryTypeIds
+	 *
 	 * @throws \Exception
 	 * @return bool
 	 */
@@ -943,9 +1016,10 @@ class SectionsService extends BaseApplicationComponent
 	 * Deletes an entry type(s) by its ID.
 	 *
 	 * @param int|array $entryTypeId
+	 *
 	 * @throws \Exception
 	 * @return bool
-	*/
+	 */
 	public function deleteEntryTypeById($entryTypeId)
 	{
 		if (!$entryTypeId)
@@ -1024,6 +1098,7 @@ class SectionsService extends BaseApplicationComponent
 	}
 
 	// General stuff
+	// ------------------------------------------------------------------------
 
 	/**
 	 * Returns whether a homepage section exists.
@@ -1048,6 +1123,7 @@ class SectionsService extends BaseApplicationComponent
 	 * Returns whether another section can be added of a given type.
 	 *
 	 * @param string $type
+	 *
 	 * @return bool
 	 */
 	public function canHaveMore($type)
@@ -1074,7 +1150,8 @@ class SectionsService extends BaseApplicationComponent
 		}
 	}
 
-	// Private methods
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns a DbCommand object prepped for retrieving sections.
@@ -1084,7 +1161,7 @@ class SectionsService extends BaseApplicationComponent
 	private function _createSectionQuery()
 	{
 		return craft()->db->createCommand()
-			->select('sections.id, sections.structureId, sections.name, sections.handle, sections.type, sections.hasUrls, sections.template, structures.maxLevels')
+			->select('sections.id, sections.structureId, sections.name, sections.handle, sections.type, sections.hasUrls, sections.template, sections.enableVersioning, structures.maxLevels')
 			->leftJoin('structures structures', 'structures.id = sections.structureId')
 			->from('sections sections')
 			->order('name');

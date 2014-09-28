@@ -60,8 +60,10 @@ require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . '_files' . DIRECTORY_SEPAR
  * @license    http://www.opensource.org/licenses/BSD-3-Clause  The BSD 3-Clause License
  * @link       http://www.phpunit.de/
  * @since      Class available since Release 2.0.0
+ * @covers     PHPUnit_Framework_TestSuite
  */
-class Framework_SuiteTest extends PHPUnit_Framework_TestCase {
+class Framework_SuiteTest extends PHPUnit_Framework_TestCase
+{
     protected $result;
 
     protected function setUp()
@@ -84,6 +86,7 @@ class Framework_SuiteTest extends PHPUnit_Framework_TestCase {
         $suite->addTest(new Framework_SuiteTest('testShadowedTests'));
         $suite->addTest(new Framework_SuiteTest('testBeforeClassAndAfterClassAnnotations'));
         $suite->addTest(new Framework_SuiteTest('testBeforeAnnotation'));
+        $suite->addTest(new Framework_SuiteTest('testDontSkipInheritedClass'));
 
         return $suite;
     }
@@ -91,7 +94,7 @@ class Framework_SuiteTest extends PHPUnit_Framework_TestCase {
     public function testAddTestSuite()
     {
         $suite = new PHPUnit_Framework_TestSuite(
-          'OneTestCase'
+            'OneTestCase'
         );
 
         $suite->run($this->result);
@@ -102,7 +105,7 @@ class Framework_SuiteTest extends PHPUnit_Framework_TestCase {
     public function testInheritedTests()
     {
         $suite = new PHPUnit_Framework_TestSuite(
-          'InheritedTestCase'
+            'InheritedTestCase'
         );
 
         $suite->run($this->result);
@@ -114,7 +117,7 @@ class Framework_SuiteTest extends PHPUnit_Framework_TestCase {
     public function testNoTestCases()
     {
         $suite = new PHPUnit_Framework_TestSuite(
-          'NoTestCases'
+            'NoTestCases'
         );
 
         $suite->run($this->result);
@@ -146,7 +149,7 @@ class Framework_SuiteTest extends PHPUnit_Framework_TestCase {
     public function testNotPublicTestCase()
     {
         $suite = new PHPUnit_Framework_TestSuite(
-          'NotPublicTestCase'
+            'NotPublicTestCase'
         );
 
         $this->assertEquals(2, count($suite));
@@ -155,7 +158,7 @@ class Framework_SuiteTest extends PHPUnit_Framework_TestCase {
     public function testNotVoidTestCase()
     {
         $suite = new PHPUnit_Framework_TestSuite(
-          'NotVoidTestCase'
+            'NotVoidTestCase'
         );
 
         $this->assertEquals(1, count($suite));
@@ -164,7 +167,7 @@ class Framework_SuiteTest extends PHPUnit_Framework_TestCase {
     public function testOneTestCase()
     {
         $suite = new PHPUnit_Framework_TestSuite(
-          'OneTestCase'
+            'OneTestCase'
         );
 
         $suite->run($this->result);
@@ -178,7 +181,7 @@ class Framework_SuiteTest extends PHPUnit_Framework_TestCase {
     public function testShadowedTests()
     {
         $suite = new PHPUnit_Framework_TestSuite(
-          'OverrideTestCase'
+            'OverrideTestCase'
         );
 
         $suite->run($this->result);
@@ -189,7 +192,7 @@ class Framework_SuiteTest extends PHPUnit_Framework_TestCase {
     public function testBeforeClassAndAfterClassAnnotations()
     {
         $suite = new PHPUnit_Framework_TestSuite(
-          'BeforeClassAndAfterClassTest'
+            'BeforeClassAndAfterClassTest'
         );
 
         BeforeClassAndAfterClassTest::resetProperties();
@@ -212,4 +215,18 @@ class Framework_SuiteTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals(2, BeforeAndAfterTest::$afterWasRun);
     }
 
+    public function testDontSkipInheritedClass()
+    {
+        $suite = new PHPUnit_Framework_TestSuite(
+            'DontSkipInheritedClass'
+        );
+
+        $dir = dirname(__DIR__) . DIRECTORY_SEPARATOR . '_files' . DIRECTORY_SEPARATOR . 'Inheritance' . DIRECTORY_SEPARATOR;
+
+        $suite->addTestFile($dir.'InheritanceA.php');
+        $suite->addTestFile($dir.'InheritanceB.php');
+        $result = $suite->run();
+        $this->assertEquals(2, count($result));
+
+    }
 }

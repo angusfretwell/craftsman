@@ -5,9 +5,9 @@
 	<h2>{{ title }}</h2>
 	<p>
 		{% if message %}
-			{{ message }}
+			{{ message|raw }}
 		{% else %}
-			{{ "Our system is currently under maintenance. Please try again later."|t }}
+			{{ "Our site is temporarily unavailable. Please try again later."|t }}
 		{% endif %}
 	</p>
 {% endblock %}

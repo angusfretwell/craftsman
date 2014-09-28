@@ -2,93 +2,61 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Class Et
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.etc.et
+ * @since     1.0
  */
-
-	/**
-	 * The `$options` parameter takes an associative array with the following
-	 * options:
-	 *
-	 * - `timeout`: How long should we wait for a response? (integer, seconds, default: 10)
-	 * - `useragent`: Useragent to send to the server (string, default: php-requests/$version)
-	 * - `follow_redirects`: Should we follow 3xx redirects? (boolean, default: true)
-	 * - `redirects`: How many times should we redirect before erroring? (integer, default: 10)
-	 * - `blocking`: Should we block processing on this request? (boolean, default: true)
-	 * - `filename`: File to stream the body to instead. (string|boolean, default: false)
-	 * - `auth`: Authentication handler or array of user/password details to use for Basic authentication (RequestsAuth|array|boolean, default: false)
-	 * - `idn`: Enable IDN parsing (boolean, default: true)
-	 * - `transport`: Custom transport. Either a class name, or a transport object. Defaults to the first working transport from {@see getTransport()} (string|RequestsTransport, default: {@see getTransport()})
-	 *
-	 */
 class Et
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var string
+	 */
 	private $_endpoint;
+
+	/**
+	 * @var int
+	 */
 	private $_timeout;
+
+	/**
+	 * @var EtModel
+	 */
 	private $_model;
+
+	/**
+	 * @var bool
+	 */
 	private $_allowRedirects = true;
+
+	/**
+	 * @var string
+	 */
 	private $_userAgent;
+
+	/**
+	 * @var string
+	 */
 	private $_destinationFileName;
 
-	/**
-	 * The maximum number of seconds to allow for an entire transfer to take place before timing out.  Set 0 to wait indefinitely.
-	 *
-	 * @return int
-	 */
-	public function getTimeout()
-	{
-		return $this->_timeout;
-	}
-
-	/**
-	 * The maximum number of seconds to wait while trying to connect. Set to 0 to wait indefinitely.
-	 *
-	 * @return int
-	 */
-	public function getConnectTimeout()
-	{
-		return $this->_connectTimeout;
-	}
-
-	/**
-	 * Whether or not to follow redirects on the request.  Defaults to true.
-	 *
-	 * @param $allowRedirects
-	 * @return void
-	 */
-	public function setAllowRedirects($allowRedirects)
-	{
-		$this->_allowRedirects = $allowRedirects;
-	}
-
-	/**
-	 * @return bool
-	 */
-	public function getAllowRedirects()
-	{
-		return $this->_allowRedirects;
-	}
-
-	/**
-	 * @param $destinationFileName
-	 * @return void
-	 */
-	public function setDestinationFileName($destinationFileName)
-	{
-		$this->_destinationFileName = $destinationFileName;
-	}
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * @param     $endpoint
 	 * @param int $timeout
 	 * @param int $connectTimeout
+	 *
+	 * @return Et
 	 */
-	function __construct($endpoint, $timeout = 30, $connectTimeout = 2)
+	public function __construct($endpoint, $timeout = 30, $connectTimeout = 2)
 	{
 		$endpoint .= craft()->config->get('endpointSuffix');
 
@@ -113,6 +81,57 @@ class Et
 	}
 
 	/**
+	 * The maximum number of seconds to allow for an entire transfer to take place before timing out.  Set 0 to wait
+	 * indefinitely.
+	 *
+	 * @return int
+	 */
+	public function getTimeout()
+	{
+		return $this->_timeout;
+	}
+
+	/**
+	 * The maximum number of seconds to wait while trying to connect. Set to 0 to wait indefinitely.
+	 *
+	 * @return int
+	 */
+	public function getConnectTimeout()
+	{
+		return $this->_connectTimeout;
+	}
+
+	/**
+	 * Whether or not to follow redirects on the request.  Defaults to true.
+	 *
+	 * @param $allowRedirects
+	 *
+	 * @return null
+	 */
+	public function setAllowRedirects($allowRedirects)
+	{
+		$this->_allowRedirects = $allowRedirects;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function getAllowRedirects()
+	{
+		return $this->_allowRedirects;
+	}
+
+	/**
+	 * @param $destinationFileName
+	 *
+	 * @return null
+	 */
+	public function setDestinationFileName($destinationFileName)
+	{
+		$this->_destinationFileName = $destinationFileName;
+	}
+
+	/**
 	 * @return EtModel
 	 */
 	public function getModel()
@@ -121,7 +140,11 @@ class Et
 	}
 
 	/**
-	 * Sets Custom Data on the EtModel.
+	 * Sets custom data on the EtModel.
+	 *
+	 * @param $data
+	 *
+	 * @return null
 	 */
 	public function setData($data)
 	{
@@ -138,7 +161,7 @@ class Et
 		{
 			$missingLicenseKey = empty($this->_model->licenseKey);
 
-			// No craft/config/license.key file and we can't even write to the config folder.  Don't even make the call home.
+			// No craft/config/license.key file and we can't write to the config folder. Don't even make the call home.
 			if ($missingLicenseKey && !$this->_isConfigFolderWritable())
 			{
 				throw new EtException('Craft needs to be able to write to your “craft/config” folder and it can’t.', 10001);
@@ -254,6 +277,9 @@ class Et
 		return null;
 	}
 
+	// Private Methods
+	// =========================================================================
+
 	/**
 	 * @return null|string
 	 */
@@ -271,6 +297,7 @@ class Et
 
 	/**
 	 * @param $key
+	 *
 	 * @return bool
 	 * @throws Exception|EtException
 	 */
@@ -305,6 +332,6 @@ class Et
 	 */
 	private function _isConfigFolderWritable()
 	{
-	 return IOHelper::isWritable(IOHelper::getFolderName(craft()->path->getLicenseKeyPath()));
+		return IOHelper::isWritable(IOHelper::getFolderName(craft()->path->getLicenseKeyPath()));
 	}
 }

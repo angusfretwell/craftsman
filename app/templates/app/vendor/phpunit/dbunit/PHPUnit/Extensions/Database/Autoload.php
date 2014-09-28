@@ -2,7 +2,7 @@
 /**
  * PHPUnit
  *
- * Copyright (c) 2002-2013, Sebastian Bergmann <sebastian@phpunit.de>.
+ * Copyright (c) 2002-2014, Sebastian Bergmann <sebastian@phpunit.de>.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@
  *
  * @package    DbUnit
  * @author     Mike Lively <m@digitalsandwich.com>
- * @copyright  2002-2010-2013 Sebastian Bergmann <sebastian@phpunit.de>
+ * @copyright  2002-2014 Sebastian Bergmann <sebastian@phpunit.de>
  * @license    http://www.opensource.org/licenses/BSD-3-Clause  The BSD 3-Clause License
  * @link       http://www.phpunit.de/
  * @since      File available since Release 1.1.0
@@ -111,6 +111,7 @@ spl_autoload_register(
             'phpunit_extensions_database_db_metadata_pgsql' => '/Extensions/Database/DB/MetaData/PgSQL.php',
             'phpunit_extensions_database_db_metadata_sqlite' => '/Extensions/Database/DB/MetaData/Sqlite.php',
             'phpunit_extensions_database_db_metadata_sqlsrv' => '/Extensions/Database/DB/MetaData/SqlSrv.php',
+            'phpunit_extensions_database_db_metadata_dblib' => '/Extensions/Database/DB/MetaData/Dblib.php',
             'phpunit_extensions_database_db_resultsettable' => '/Extensions/Database/DB/ResultSetTable.php',
             'phpunit_extensions_database_db_table' => '/Extensions/Database/DB/Table.php',
             'phpunit_extensions_database_db_tableiterator' => '/Extensions/Database/DB/TableIterator.php',

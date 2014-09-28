@@ -2,20 +2,20 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Task functions.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Task functions
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.variables
+ * @since     2.0
  */
 class TasksVariable
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Returns the currently running task.
 	 *

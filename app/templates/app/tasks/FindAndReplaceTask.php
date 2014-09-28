@@ -2,41 +2,40 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Find and Replace task.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Find and Replace task
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.tasks
+ * @since     2.0
  */
 class FindAndReplaceTask extends BaseTask
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var
+	 */
 	private $_table;
+
+	/**
+	 * @var
+	 */
 	private $_textColumns;
+
+	/**
+	 * @var
+	 */
 	private $_matrixFieldIds;
 
-	/**
-	 * Defines the settings.
-	 *
-	 * @access protected
-	 * @return array
-	 */
-	protected function defineSettings()
-	{
-		return array(
-			'find'          => AttributeType::String,
-			'replace'       => AttributeType::String,
-			'matrixFieldId' => AttributeType::String,
-		);
-	}
+	// Public Methods
+	// =========================================================================
 
 	/**
-	 * Returns the default description for this task.
+	 * @inheritDoc ITask::getDescription()
 	 *
 	 * @return string
 	 */
@@ -51,7 +50,7 @@ class FindAndReplaceTask extends BaseTask
 	}
 
 	/**
-	 * Gets the total number of steps for this task.
+	 * @inheritDoc ITask::getTotalSteps()
 	 *
 	 * @return int
 	 */
@@ -100,55 +99,86 @@ class FindAndReplaceTask extends BaseTask
 	}
 
 	/**
-	 * Runs a task step.
+	 * @inheritDoc ITask::runStep()
 	 *
 	 * @param int $step
+	 *
 	 * @return bool
 	 */
 	public function runStep($step)
 	{
 		$settings = $this->getSettings();
 
-		if (isset($this->_textColumns[$step]))
+		// If replace is null, there is invalid settings JSON in the database. Guard against it so we don't
+		// inadvertently nuke textual content in the database.
+		if ($settings->replace !== null)
 		{
-			craft()->db->createCommand()->replace($this->_table, $this->_textColumns[$step], $settings->find, $settings->replace);
-			return true;
-		}
-		else
-		{
-			$step -= count($this->_textColumns);
-
-			if (isset($this->_matrixFieldIds[$step]))
+			if (isset($this->_textColumns[$step]))
 			{
-				$field = craft()->fields->getFieldById($this->_matrixFieldIds[$step]);
-
-				if ($field)
-				{
-					return $this->runSubTask('FindAndReplace', Craft::t('Working in Matrix field “{field}”', array('field' => $field->name)), array(
-						'find'          => $settings->find,
-						'replace'       => $settings->replace,
-						'matrixFieldId' => $field->id
-					));
-				}
-				else
-				{
-					// Oh what the hell.
-					return true;
-				}
+				craft()->db->createCommand()->replace($this->_table, $this->_textColumns[$step], $settings->find, $settings->replace);
+				return true;
 			}
 			else
 			{
-				return false;
+				$step -= count($this->_textColumns);
+
+				if (isset($this->_matrixFieldIds[$step]))
+				{
+					$field = craft()->fields->getFieldById($this->_matrixFieldIds[$step]);
+
+					if ($field)
+					{
+						return $this->runSubTask('FindAndReplace', Craft::t('Working in Matrix field “{field}”', array('field' => $field->name)), array(
+							'find'          => $settings->find,
+							'replace'       => $settings->replace,
+							'matrixFieldId' => $field->id
+						));
+					}
+					else
+					{
+						// Oh what the hell.
+						return true;
+					}
+				}
+				else
+				{
+					return false;
+				}
 			}
+		}
+		else
+		{
+			Craft::log('Invalid "replace" in the Find and Replace task probably caused by invalid JSON in the database.', LogLevel::Error);
+			return false;
 		}
 	}
 
+	// Protected Methods
+	// =========================================================================
+
 	/**
-	 * Checks whether the given field is saving data into a textual column, and saves it accordingly
+	 * @inheritDoc BaseSavableComponentType::defineSettings()
 	 *
-	 * @access private
+	 * @return array
+	 */
+	protected function defineSettings()
+	{
+		return array(
+			'find'          => AttributeType::String,
+			'replace'       => AttributeType::String,
+			'matrixFieldId' => AttributeType::String,
+		);
+	}
+
+	// Private Methods
+	// =========================================================================
+
+	/**
+	 * Checks whether the given field is saving data into a textual column, and saves it accordingly.
+	 *
 	 * @param FieldModel $field
 	 * @param string     $fieldColumnPrefix
+	 *
 	 * @return bool
 	 */
 	private function _checkField(FieldModel $field, $fieldColumnPrefix)

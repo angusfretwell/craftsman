@@ -1,7 +1,8 @@
 /*
  Copyright (c) 2014, Pixel & Tonic, Inc.
  @license   http://buildwithcraft.com/license Craft License Agreement
- @link      http://buildwithcraft.com
+ @see       http://buildwithcraft.com
+ @package   craft.app.resources
 */
 (function(b){Craft.GetHelpWidget=Garnish.Base.extend({widgetId:0,loading:!1,$widget:null,$message:null,$fromEmail:null,$attachLogs:null,$attachDbBackup:null,$attachAdditionalFile:null,$sendBtn:null,$spinner:null,$error:null,$errorList:null,$iframe:null,init:function(a){this.widgetId=a;this.$widget=b("#widget"+a);this.$message=this.$widget.find(".message:first");this.$fromEmail=this.$widget.find(".fromEmail:first");this.$attachLogs=this.$widget.find(".attachLogs:first");this.$attachDbBackup=this.$widget.find(".attachDbBackup:first");
 this.$attachAdditionalFile=this.$widget.find(".attachAdditionalFile:first");this.$sendBtn=this.$widget.find(".submit:first");this.$spinner=this.$widget.find(".buttons .spinner");this.$error=this.$widget.find(".error:first");this.$form=this.$widget.find("form:first");this.$form.prepend('<input type="hidden" name="widgetId" value="'+this.widgetId+'" />');this.addListener(this.$sendBtn,"activate","sendMessage");"undefined"==typeof Craft.widgets&&(Craft.widgets={});Craft.widgets[this.widgetId]=this},

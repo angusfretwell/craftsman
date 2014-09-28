@@ -2,7 +2,7 @@
 /**
  * PHPUnit
  *
- * Copyright (c) 2002-2013, Sebastian Bergmann <sebastian@phpunit.de>.
+ * Copyright (c) 2002-2014, Sebastian Bergmann <sebastian@phpunit.de>.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@
  *
  * @package    DbUnit
  * @author     Mike Lively <m@digitalsandwich.com>
- * @copyright  2002-2013 Sebastian Bergmann <sebastian@phpunit.de>
+ * @copyright  2002-2014 Sebastian Bergmann <sebastian@phpunit.de>
  * @license    http://www.opensource.org/licenses/BSD-3-Clause  The BSD 3-Clause License
  * @link       http://www.phpunit.de/
  * @since      File available since Release 1.0.0
@@ -49,7 +49,7 @@ class BankAccountException extends RuntimeException {}
  *
  * @package    DbUnit
  * @author     Mike Lively <m@digitalsandwich.com>
- * @copyright  2002-2013 Sebastian Bergmann <sebastian@phpunit.de>
+ * @copyright  2002-2014 Sebastian Bergmann <sebastian@phpunit.de>
  * @license    http://www.opensource.org/licenses/BSD-3-Clause  The BSD 3-Clause License
  * @version    Release: @package_version@
  * @link       http://www.phpunit.de/
@@ -62,14 +62,14 @@ class BankAccount
      *
      * @var    float
      */
-    protected $balance = 0;
+    protected $balance = 0.00;
 
     /**
      * The bank account's number.
      *
-     * @var    float
+     * @var    string
      */
-    protected $accountNumber = 0;
+    protected $accountNumber = '';
 
     /**
      * The PDO connection used to store and retrieve bank account information.
@@ -78,6 +78,12 @@ class BankAccount
      */
     protected $pdo;
 
+    /**
+     * Initializes the bank account object.
+     *
+     * @param string $accountNumber
+     * @param \PDO $pdo
+     */
     public function __construct($accountNumber, PDO $pdo)
     {
         $this->accountNumber = $accountNumber;

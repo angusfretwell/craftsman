@@ -1,11 +1,9 @@
 /**
- * Craft by Pixel & Tonic
- *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.resources
  */
 
 (function($) {
@@ -212,13 +210,17 @@ var LoginForm = Garnish.Base.extend(
 		}
 
 		this.$error = $('<p class="error" style="display:none">'+error+'</p>').appendTo(this.$form);
-		this.$error.fadeIn();
+		this.$error.velocity('fadeIn');
 	},
 
 	onForgetPassword: function(event)
 	{
 		event.preventDefault();
-		this.$loginNameInput.focus();
+
+		if (!Garnish.isMobileBrowser())
+		{
+			this.$loginNameInput.focus();
+		}
 
 		if (this.$error)
 		{
@@ -229,8 +231,8 @@ var LoginForm = Garnish.Base.extend(
 			loginFieldsHeight = this.$loginFields.height(),
 			newFormTopMargin = formTopMargin + Math.round(loginFieldsHeight/2);
 
-		this.$form.animate({marginTop: newFormTopMargin}, 'fast');
-		this.$loginFields.animate({height: 0}, 'fast');
+		this.$form.velocity({marginTop: newFormTopMargin}, 'fast');
+		this.$loginFields.velocity({height: 0}, 'fast');
 
 		this.$submitBtn.addClass('reset-password');
 		this.$submitBtn.attr('value', Craft.t('Reset Password'));

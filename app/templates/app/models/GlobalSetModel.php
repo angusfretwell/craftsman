@@ -2,45 +2,36 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
- *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
- * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
  * GlobalSet model class
  *
- * Used for transporting page data throughout the system.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.models
+ * @since     1.0
  */
 class GlobalSetModel extends BaseElementModel
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var string
+	 */
 	protected $elementType = ElementType::GlobalSet;
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Use the global set's name as its string representation.
 	 *
 	 * @return string
 	 */
-	function __toString()
+	public function __toString()
 	{
 		return $this->name;
-	}
-
-	/**
-	 * @access protected
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array_merge(parent::defineAttributes(), array(
-			'name'          => AttributeType::Name,
-			'handle'        => AttributeType::Handle,
-			'fieldLayoutId' => AttributeType::Number,
-		));
 	}
 
 	/**
@@ -54,7 +45,7 @@ class GlobalSetModel extends BaseElementModel
 	}
 
 	/**
-	 * Returns the field layout used by this element.
+	 * @inheritDoc BaseElementModel::getFieldLayout()
 	 *
 	 * @return FieldLayoutModel|null
 	 */
@@ -64,12 +55,29 @@ class GlobalSetModel extends BaseElementModel
 	}
 
 	/**
-	 * Returns the element's CP edit URL.
+	 * @inheritDoc BaseElementModel::getCpEditUrl()
 	 *
 	 * @return string|false
 	 */
 	public function getCpEditUrl()
 	{
 		return UrlHelper::getCpUrl('globals/'.$this->handle);
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc BaseModel::defineAttributes()
+	 *
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array_merge(parent::defineAttributes(), array(
+			'name'          => AttributeType::Name,
+			'handle'        => AttributeType::Handle,
+			'fieldLayoutId' => AttributeType::Number,
+		));
 	}
 }

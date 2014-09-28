@@ -1,23 +1,23 @@
 <?php
 namespace Craft;
 
-/**
- * Craft by Pixel & Tonic
- *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
- * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
 craft()->requireEdition(Craft::Client);
 
 /**
- * Email functions
+ * Email functions.
+ *
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.variables
+ * @since     1.0
  */
 class EmailMessagesVariable
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Returns all of the system email messages.
 	 *
@@ -31,8 +31,9 @@ class EmailMessagesVariable
 	/**
 	 * Returns a system email message by its key.
 	 *
-	 * @param string $key
+	 * @param string      $key
 	 * @param string|null $language
+	 *
 	 * @return RebrandEmailModel|null
 	 */
 	public function getMessage($key, $language = null)

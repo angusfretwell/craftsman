@@ -2,22 +2,22 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Class TableFieldType
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- *
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.fieldtypes
+ * @since     1.0
  */
 class TableFieldType extends BaseFieldType
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
-	 * Returns the type of field this is.
+	 * @inheritDoc IComponentType::getName()
 	 *
 	 * @return string
 	 */
@@ -27,7 +27,7 @@ class TableFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Returns the content attribute config.
+	 * @inheritDoc IFieldType::defineContentAttribute()
 	 *
 	 * @return mixed
 	 */
@@ -37,21 +37,7 @@ class TableFieldType extends BaseFieldType
 	}
 
 	/**
-	 * Defines the settings.
-	 *
-	 * @access protected
-	 * @return array
-	 */
-	protected function defineSettings()
-	{
-		return array(
-			'columns' => AttributeType::Mixed,
-			'defaults' => AttributeType::Mixed,
-		);
-	}
-
-	/**
-	 * Returns the field's settings HTML.
+	 * @inheritDoc ISavableComponentType::getSettingsHtml()
 	 *
 	 * @return string|null
 	 */
@@ -137,20 +123,116 @@ class TableFieldType extends BaseFieldType
 			)
 		));
 
-		return $columnsField . $defaultsField;
+		return $columnsField.$defaultsField;
 	}
 
 	/**
-	 * Returns the field's input HTML.
+	 * @inheritDoc IFieldType::getInputHtml()
 	 *
 	 * @param string $name
 	 * @param mixed  $value
+	 *
 	 * @return string
 	 */
 	public function getInputHtml($name, $value)
 	{
 		$input = '<input type="hidden" name="'.$name.'" value="">';
 
+		$tableHtml = $this->_getInputHtml($name, $value, false);
+
+		if ($tableHtml)
+		{
+			$input .= $tableHtml;
+		}
+
+		return $input;
+	}
+
+	/**
+	 * @inheritDoc IFieldType::prepValueFromPost()
+	 *
+	 * @param mixed $value
+	 *
+	 * @return mixed
+	 */
+	public function prepValueFromPost($value)
+	{
+		if (is_array($value))
+		{
+			// Drop the string row keys
+			return array_values($value);
+		}
+	}
+
+	/**
+	 * @inheritDoc IFieldType::prepValue()
+	 *
+	 * @param mixed $value
+	 *
+	 * @return mixed
+	 */
+	public function prepValue($value)
+	{
+		if (is_array($value) && ($columns = $this->getSettings()->columns))
+		{
+			// Make the values accessible from both the col IDs and the handles
+			foreach ($value as &$row)
+			{
+				foreach ($columns as $colId => $col)
+				{
+					if ($col['handle'])
+					{
+						$row[$col['handle']] = (isset($row[$colId]) ? $row[$colId] : null);
+					}
+				}
+			}
+
+			return $value;
+		}
+	}
+
+	/**
+	 * @inheritDoc BaseFieldType::getStaticHtml()
+	 *
+	 * @param mixed $value
+	 *
+	 * @return string
+	 */
+	public function getStaticHtml($value)
+	{
+		return $this->_getInputHtml(StringHelper::randomString(), $value, true);
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc BaseSavableComponentType::defineSettings()
+	 *
+	 * @return array
+	 */
+	protected function defineSettings()
+	{
+		return array(
+			'columns' => AttributeType::Mixed,
+			'defaults' => AttributeType::Mixed,
+		);
+	}
+
+	// Private Methods
+	// =========================================================================
+
+	/**
+	 * Returns the field's input HTML.
+	 *
+	 * @param string $name
+	 * @param mixed  $value
+	 * @param bool  $static
+	 *
+	 * @return string
+	 */
+	private function _getInputHtml($name, $value, $static)
+	{
 		$columns = $this->getSettings()->columns;
 
 		if ($columns)
@@ -176,55 +258,13 @@ class TableFieldType extends BaseFieldType
 
 			$id = craft()->templates->formatInputId($name);
 
-			$input .= craft()->templates->render('_includes/forms/editableTable', array(
-				'id'   => $id,
-				'name' => $name,
-				'cols' => $columns,
-				'rows' => $value
+			return craft()->templates->render('_includes/forms/editableTable', array(
+				'id'     => $id,
+				'name'   => $name,
+				'cols'   => $columns,
+				'rows'   => $value,
+				'static' => $static
 			));
-		}
-
-		return $input;
-	}
-
-	/**
-	 * Returns the input value as it should be saved to the database.
-	 *
-	 * @param mixed $value
-	 * @return mixed
-	 */
-	public function prepValueFromPost($value)
-	{
-		if (is_array($value))
-		{
-			// Drop the string row keys
-			return array_values($value);
-		}
-	}
-
-	/**
-	 * Preps the field value for use.
-	 *
-	 * @param mixed $value
-	 * @return mixed
-	 */
-	public function prepValue($value)
-	{
-		if (is_array($value) && ($columns = $this->getSettings()->columns))
-		{
-			// Make the values accessible from both the col IDs and the handles
-			foreach ($value as &$row)
-			{
-				foreach ($columns as $colId => $col)
-				{
-					if ($col['handle'])
-					{
-						$row[$col['handle']] = (isset($row[$colId]) ? $row[$colId] : null);
-					}
-				}
-			}
-
-			return $value;
 		}
 	}
 }

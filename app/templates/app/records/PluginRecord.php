@@ -2,21 +2,23 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Class PluginRecord
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- *
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.records
+ * @since     1.0
  */
 class PluginRecord extends BaseRecord
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
+	 * @inheritDoc BaseRecord::getTableName()
+	 *
 	 * @return string
 	 */
 	public function getTableName()
@@ -25,7 +27,23 @@ class PluginRecord extends BaseRecord
 	}
 
 	/**
-	 * @access protected
+	 * @inheritDoc BaseRecord::defineRelations()
+	 *
+	 * @return array
+	 */
+	public function defineRelations()
+	{
+		return array(
+			'migrations' => array(static::HAS_MANY, 'MigrationRecord', 'pluginId'),
+		);
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc BaseRecord::defineAttributes()
+	 *
 	 * @return array
 	 */
 	protected function defineAttributes()
@@ -36,16 +54,6 @@ class PluginRecord extends BaseRecord
 			'enabled'     => AttributeType::Bool,
 			'settings'    => AttributeType::Mixed,
 			'installDate' => array(AttributeType::DateTime, 'required' => true),
-		);
-	}
-
-	/**
-	 * @return array
-	 */
-	public function defineRelations()
-	{
-		return array(
-			'migrations' => array(static::HAS_MANY, 'MigrationRecord', 'pluginId'),
 		);
 	}
 }

@@ -2,26 +2,40 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Class RequirementsChecker
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- *
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.etc.requirements
+ * @since     1.0
  */
 class RequirementsChecker extends \CComponent
 {
-	private $_requirements;
-	private $_result;
-	private $_serverInfo;
+	// Properties
+	// =========================================================================
 
 	/**
-	 *
+	 * @var
+	 */
+	private $_requirements;
+
+	/**
+	 * @var
+	 */
+	private $_result;
+
+	/**
+	 * @var
+	 */
+	private $_serverInfo;
+
+	// Public Methods
+	// =========================================================================
+
+	/**
+	 * @return null
 	 */
 	public function run()
 	{
@@ -70,8 +84,10 @@ class RequirementsChecker extends \CComponent
 		return $this->_requirements;
 	}
 
+	// Private Methods
+	// =========================================================================
+
 	/**
-	 * @access private
 	 * @return string
 	 */
 	private function _calculateServerInfo()

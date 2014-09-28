@@ -2,28 +2,35 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Will validate that the given attribute is a valid URL format.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Will validate that the given attribute is a valid URL format.
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.validators
+ * @since     2.0
  */
 class UrlFormatValidator extends \CValidator
 {
+	// Properties
+	// =========================================================================
+
 	/**
-	 * @var bool Whether we should ensure that "{slug}" is used within the URL format.
+	 * Whether we should ensure that "{slug}" is used within the URL format.
+	 *
+	 * @var bool
 	 */
 	public $requireSlug = false;
+
+	// Protected Methods
+	// =========================================================================
 
 	/**
 	 * @param $object
 	 * @param $attribute
+	 *
+	 * @return null
 	 */
 	protected function validateAttribute($object, $attribute)
 	{

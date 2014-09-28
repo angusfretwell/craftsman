@@ -2,21 +2,23 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Class AssetSourceRecord
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- *
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.records
+ * @since     1.0
  */
 class AssetSourceRecord extends BaseRecord
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
+	 * @inheritDoc BaseRecord::getTableName()
+	 *
 	 * @return string
 	 */
 	public function getTableName()
@@ -25,21 +27,8 @@ class AssetSourceRecord extends BaseRecord
 	}
 
 	/**
-	 * @access protected
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'name'                => array(AttributeType::Name, 'required' => true),
-			'type'                => array(AttributeType::ClassName, 'required' => true),
-			'settings'            => AttributeType::Mixed,
-			'sortOrder'           => AttributeType::SortOrder,
-			'fieldLayoutId'       => AttributeType::Number,
-		);
-	}
-
-	/**
+	 * @inheritDoc BaseRecord::defineRelations()
+	 *
 	 * @return array
 	 */
 	public function defineRelations()
@@ -50,12 +39,33 @@ class AssetSourceRecord extends BaseRecord
 	}
 
 	/**
+	 * @inheritDoc BaseRecord::defineIndexes()
+	 *
 	 * @return array
 	 */
 	public function defineIndexes()
 	{
 		return array(
 			array('columns' => array('name'), 'unique' => true),
+		);
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc BaseRecord::defineAttributes()
+	 *
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'name'                => array(AttributeType::Name, 'required' => true),
+			'type'                => array(AttributeType::ClassName, 'required' => true),
+			'settings'            => AttributeType::Mixed,
+			'sortOrder'           => AttributeType::SortOrder,
+			'fieldLayoutId'       => AttributeType::Number,
 		);
 	}
 }

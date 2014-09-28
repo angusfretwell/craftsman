@@ -2,32 +2,26 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * The LicenseKeyStatus class is an abstract class that defines all of the license key status states that are available
+ * in Craft.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * This class is a poor man's version of an enum, since PHP does not have support for native enumerations.
+ *
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- *
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.enums
+ * @since     1.0
  */
 abstract class LicenseKeyStatus extends BaseEnum
 {
-	// Valid Key
-	const Valid = 'Valid';
+	// Constants
+	// =========================================================================
 
-	// We either can't find the given key, or it's not tied to the domain they are running on.
-	const Invalid = 'Invalid';
-
-	// Can't find the a license key at all.
-	const Missing = 'Missing';
-
-	//  Haven't been able to verify the license key status yet.
-	const Unverified = 'Unverified';
-
-	// The domain associated with this license key is not the one the request was made with.
+	const Valid            = 'Valid';
+	const Invalid          = 'Invalid';
+	const Missing          = 'Missing';
+	const Unverified       = 'Unverified';
 	const MismatchedDomain = 'MismatchedDomain';
 }

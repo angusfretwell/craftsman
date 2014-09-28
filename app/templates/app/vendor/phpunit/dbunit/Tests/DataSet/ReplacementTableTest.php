@@ -2,7 +2,7 @@
 /**
  * PHPUnit
  *
- * Copyright (c) 2002-2013, Sebastian Bergmann <sebastian@phpunit.de>.
+ * Copyright (c) 2002-2014, Sebastian Bergmann <sebastian@phpunit.de>.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@
  *
  * @package    DbUnit
  * @author     Mike Lively <m@digitalsandwich.com>
- * @copyright  2002-2013 Sebastian Bergmann <sebastian@phpunit.de>
+ * @copyright  2002-2014 Sebastian Bergmann <sebastian@phpunit.de>
  * @license    http://www.opensource.org/licenses/BSD-3-Clause  The BSD 3-Clause License
  * @link       http://www.phpunit.de/
  * @since      File available since Release 1.0.0
@@ -45,7 +45,7 @@
 /**
  * @package    DbUnit
  * @author     Mike Lively <m@digitalsandwich.com>
- * @copyright  2002-2013 Sebastian Bergmann <sebastian@phpunit.de>
+ * @copyright  2002-2014 Sebastian Bergmann <sebastian@phpunit.de>
  * @license    http://www.opensource.org/licenses/BSD-3-Clause  The BSD 3-Clause License
  * @link       http://www.phpunit.de/
  * @since      File available since Release 1.0.0
@@ -439,10 +439,65 @@ class Extensions_Database_DataSet_ReplacementTableTest extends PHPUnit_Framework
                 false,
             ),
 
-            // Comparisons must include a type check
+            // Int and int as string must match
+            array(
+                array(
+                    array('id' => 42),
+                ),
+                array(
+                    array('id' => '42'),
+                ),
+                true,
+            ),
+
+            // Float and float as string must match
+            array(
+                array(
+                    array('id' => 15.3),
+                ),
+                array(
+                    array('id' => '15.3'),
+                ),
+                true,
+            ),
+
+            // Int and float must match
+            array(
+                array(
+                    array('id' => 18.00),
+                ),
+                array(
+                    array('id' => 18),
+                ),
+                true,
+            ),
+
+            // 0 and empty string must not match
             array(
                 array(
                     array('id' => 0),
+                ),
+                array(
+                    array('id' => ''),
+                ),
+                false,
+            ),
+
+            // 0 and null must not match
+            array(
+                array(
+                    array('id' => 0),
+                ),
+                array(
+                    array('id' => null),
+                ),
+                false,
+            ),
+
+            // empty string and null must not match
+            array(
+                array(
+                    array('id' => ''),
                 ),
                 array(
                     array('id' => null),

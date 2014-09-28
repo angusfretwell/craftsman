@@ -2,27 +2,39 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Class ImageVariable
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- *
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.variables
+ * @since     1.0
  */
 class ImageVariable
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var string
+	 */
 	protected $path;
+
+	/**
+	 * @var
+	 */
 	protected $size;
+
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Constructor
 	 *
 	 * @param string $path
+	 *
+	 * @return ImageVariable
 	 */
 	public function __construct($path)
 	{

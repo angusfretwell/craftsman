@@ -1,7 +1,8 @@
 /*
  Copyright (c) 2014, Pixel & Tonic, Inc.
  @license   http://buildwithcraft.com/license Craft License Agreement
- @link      http://buildwithcraft.com
+ @see       http://buildwithcraft.com
+ @package   craft.app.resources
 */
 (function(d){var h=Garnish.Base.extend({tokens:null,routes:null,$container:null,$addRouteBtn:null,sorter:null,init:function(){this.tokens={};this.routes=[];this.$container=d("#routes");for(var a=this.getRoutes(),b=0;b<a.length;b++){var c=new f(a[b]);this.routes.push(c)}this.sorter=new Garnish.DragSort(a,{axis:Garnish.Y_AXIS,onSortChange:d.proxy(this,"updateRouteOrder")});this.$addRouteBtn=d("#add-route-btn");this.addListener(this.$addRouteBtn,"click","addRoute")},getRoutes:function(){return this.$container.children()},
 updateRouteOrder:function(){for(var a=this.getRoutes(),b={},c=0;c<a.length;c++)b["routeIds["+c+"]"]=d(a[c]).attr("data-id");Craft.postActionRequest("routes/updateRouteOrder",b,d.proxy(function(a,b){"success"==b&&(a.success?Craft.cp.displayNotice(Craft.t("New route order saved.")):Craft.cp.displayError(Craft.t("Couldn\u2019t save new route order.")))},this))},addRoute:function(){new g}}),f=Garnish.Base.extend({$container:null,id:null,locale:null,$locale:null,$url:null,$template:null,modal:null,init:function(a){this.$container=

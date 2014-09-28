@@ -1,25 +1,42 @@
 <?php
 namespace Craft;
 
-/**
- * Craft by Pixel & Tonic
- *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
- * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
 craft()->requireEdition(Craft::Client);
 
 /**
- * Handles email message tasks.
+ * The EmailMessagesController class is a controller that handles various email message tasks such as saving email
+ * messages.
+ *
+ * Note that all actions in the controller require an authenticated Craft session via {@link BaseController::allowAnonymous}.
+ *
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license   http://buildwithcraft.com/license Craft License Agreement
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.controllers
+ * @since     1.0
  */
 class EmailMessagesController extends BaseController
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
-	 * Saves an email message
+	 * @inheritDoc BaseController::init()
+	 *
+	 * @throws HttpException
+	 * @return null
+	 */
+	public function init()
+	{
+		// All email message actions require an admin
+		craft()->userSession->requireAdmin();
+	}
+
+	/**
+	 * Saves an email message.
+	 *
+	 * @return null
 	 */
 	public function actionSaveMessage()
 	{

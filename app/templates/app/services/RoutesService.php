@@ -2,20 +2,20 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Class RoutesService
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- *
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.services
+ * @since     1.0
  */
 class RoutesService extends BaseApplicationComponent
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Returns the routes defined in craft/config/routes.php
 	 *
@@ -82,11 +82,10 @@ class RoutesService extends BaseApplicationComponent
 	/**
 	 * Saves a new or existing route.
 	 *
-	 * @param array       $urlParts The URL as defined by the user.
-	 * This is an array where each element is either a string
-	 * or an array containing the name of a subpattern and the subpattern.
+	 * @param array       $urlParts The URL as defined by the user. This is an array where each element is either a
+	 *                              string or an array containing the name of a subpattern and the subpattern.
 	 * @param string      $template The template to route matching URLs to.
-	 * @param int|null    $routeId The route ID, if editing an existing route.
+	 * @param int|null    $routeId  The route ID, if editing an existing route.
 	 * @param string|null $locale
 	 *
 	 * @throws Exception
@@ -156,6 +155,7 @@ class RoutesService extends BaseApplicationComponent
 	 * Deletes a route by its ID.
 	 *
 	 * @param int $routeId
+	 *
 	 * @return bool
 	 */
 	public function deleteRouteById($routeId)
@@ -168,6 +168,8 @@ class RoutesService extends BaseApplicationComponent
 	 * Updates the route order.
 	 *
 	 * @param array $routeIds An array of each of the route IDs, in their new order.
+	 *
+	 * @return null
 	 */
 	public function updateRouteOrder($routeIds)
 	{

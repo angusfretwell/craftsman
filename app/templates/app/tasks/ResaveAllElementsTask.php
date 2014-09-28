@@ -2,38 +2,30 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Resave All Elements Task.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Resave All Elements Task
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.tasks
+ * @since     2.0
  */
 class ResaveAllElementsTask extends BaseTask
 {
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var
+	 */
 	private $_elementTypes;
 
-	/**
-	 * Defines the settings.
-	 *
-	 * @access protected
-	 * @return array
-	 */
-	protected function defineSettings()
-	{
-		return array(
-			'locale'          => array(AttributeType::Locale, 'default' => craft()->language),
-			'localizableOnly' => AttributeType::Bool
-		);
-	}
+	// Public Methods
+	// =========================================================================
 
 	/**
-	 * Returns the default description for this task.
+	 * @inheritDoc ITask::getDescription()
 	 *
 	 * @return string
 	 */
@@ -50,7 +42,7 @@ class ResaveAllElementsTask extends BaseTask
 	}
 
 	/**
-	 * Returns the total number of steps for this task.
+	 * @inheritDoc ITask::getTotalSteps()
 	 *
 	 * @return int
 	 */
@@ -71,9 +63,10 @@ class ResaveAllElementsTask extends BaseTask
 	}
 
 	/**
-	 * Runs a task step.
+	 * @inheritDoc ITask::runStep()
 	 *
 	 * @param int $step
+	 *
 	 * @return bool
 	 */
 	public function runStep($step)
@@ -86,5 +79,21 @@ class ResaveAllElementsTask extends BaseTask
 				'localeEnabled' => null,
 			)
 		));
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc BaseSavableComponentType::defineSettings()
+	 *
+	 * @return array
+	 */
+	protected function defineSettings()
+	{
+		return array(
+			'locale'          => array(AttributeType::Locale, 'default' => craft()->language),
+			'localizableOnly' => AttributeType::Bool
+		);
 	}
 }

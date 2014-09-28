@@ -2,20 +2,20 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Dashboard functions.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Dashboard functions
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.variables
+ * @since     1.0
  */
 class DashboardVariable
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * Returns all installed widget types.
 	 *
@@ -31,6 +31,7 @@ class DashboardVariable
 	 * Returns a widget type.
 	 *
 	 * @param string $class
+	 *
 	 * @return WidgetTypeVariable|null
 	 */
 	public function getWidgetType($class)
@@ -47,6 +48,7 @@ class DashboardVariable
 	 * Populates a widget type.
 	 *
 	 * @param WidgetModel $widget
+	 *
 	 * @return WidgetTypeVariable|null
 	 */
 	public function populateWidgetType(WidgetModel $widget)
@@ -72,6 +74,7 @@ class DashboardVariable
 	 * Returns a widget by its ID.
 	 *
 	 * @param int $id
+	 *
 	 * @return WidgetModel|null
 	 */
 	public function getUserWidgetById($id)

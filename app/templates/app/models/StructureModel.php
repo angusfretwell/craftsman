@@ -2,32 +2,19 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Class StructureModel
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- *
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.models
+ * @since     2.0
  */
 class StructureModel extends BaseModel
 {
-	/**
-	 * @access protected
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'id'             => AttributeType::Number,
-			'maxLevels'      => AttributeType::Number,
-			'movePermission' => AttributeType::String,
-		);
-	}
+	// Public Methods
+	// =========================================================================
 
 	/**
 	 * Returns whether elements in this structure can be sorted by the current user.
@@ -37,5 +24,22 @@ class StructureModel extends BaseModel
 	public function isSortable()
 	{
 		return (!$this->movePermission || craft()->userSession->checkPermission($this->movePermission));
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc BaseModel::defineAttributes()
+	 *
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'id'             => AttributeType::Number,
+			'maxLevels'      => AttributeType::Number,
+			'movePermission' => AttributeType::String,
+		);
 	}
 }

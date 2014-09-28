@@ -2,40 +2,47 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Interface IZip
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- *
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.etc.io
+ * @since     1.0
  */
 interface IZip
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
 	 * @param $sourceFolder
 	 * @param $destZip
+	 *
 	 * @return mixed
 	 */
-	function zip($sourceFolder, $destZip);
+	public function zip($sourceFolder, $destZip);
 
 	/**
 	 * @param $sourceZip
 	 * @param $destFolder
+	 *
 	 * @return mixed
 	 */
-	function unzip($sourceZip, $destFolder);
+	public function unzip($sourceZip, $destFolder);
 
 	/**
-	 * @param      $sourceZip
-	 * @param      $filePath
-	 * @param      $basePath
-	 * @param null $pathPrefix
-	 * @return mixed
+	 * Will add either a file or a folder to an existing zip file.  If it is a folder, it will add the contents
+     * recursively.
+     *
+     * @param string $sourceZip  The zip file to be added to.
+     * @param string $filePath   A file or a folder to add.  If it is a folder, it will recursively add the contents of
+     *                           the folder to the zip.
+     * @param string $basePath   The root path of the file(s) to be added that will be removed before adding.
+     * @param string $pathPrefix A path to be prepended to each file before it is added to the zip.
+     *
+     * @return bool
 	 */
-	function add($sourceZip, $filePath, $basePath, $pathPrefix = null);
+	public function add($sourceZip, $filePath, $basePath, $pathPrefix = null);
 }

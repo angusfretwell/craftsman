@@ -1,16 +1,13 @@
 <?php
-/**
- * NestedSetBehavior class file.
- *
- * @author Alexander Kochetov <creocoder@gmail.com>
- * @link https://github.com/yiiext/nested-set-behavior
- */
 
 /**
  * Provides nested set functionality for a model.
  *
  * @version 1.06
- * @package yiiext.behaviors.model.trees
+ * @author  Alexander Kochetov <creocoder@gmail.com>
+ * @link    https://github.com/yiiext/nested-set-behavior
+ * @package craft.app.extensions
+ * @since   1.2
  */
 class NestedSetBehavior extends CActiveRecordBehavior
 {

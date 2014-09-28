@@ -2,7 +2,7 @@
 /**
  * PHPUnit
  *
- * Copyright (c) 2002-2013, Sebastian Bergmann <sebastian@phpunit.de>.
+ * Copyright (c) 2002-2014, Sebastian Bergmann <sebastian@phpunit.de>.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@
  *
  * @package    DbUnit
  * @author     Mike Lively <m@digitalsandwich.com>
- * @copyright  2002-2013 Sebastian Bergmann <sebastian@phpunit.de>
+ * @copyright  2002-2014 Sebastian Bergmann <sebastian@phpunit.de>
  * @license    http://www.opensource.org/licenses/BSD-3-Clause  The BSD 3-Clause License
  * @link       http://www.phpunit.de/
  * @since      File available since Release 1.0.0
@@ -49,7 +49,7 @@
  *
  * @package    DbUnit
  * @author     Mike Lively <m@digitalsandwich.com>
- * @copyright  2010-2013 Mike Lively <m@digitalsandwich.com>
+ * @copyright  2010-2014 Mike Lively <m@digitalsandwich.com>
  * @license    http://www.opensource.org/licenses/BSD-3-Clause  The BSD 3-Clause License
  * @version    Release: @package_version@
  * @link       http://www.phpunit.de/
@@ -57,7 +57,7 @@
  */
 class PHPUnit_Extensions_Database_DataSet_CompositeDataSet extends PHPUnit_Extensions_Database_DataSet_AbstractDataSet
 {
-    protected $dataSets = array();
+    protected $motherDataSet;
 
     /**
      * Creates a new Composite dataset
@@ -68,8 +68,10 @@ class PHPUnit_Extensions_Database_DataSet_CompositeDataSet extends PHPUnit_Exten
      * @param string $enclosure
      * @param string $escape
      */
-    public function __construct(Array $dataSets)
+    public function __construct(Array $dataSets = array())
     {
+        $this->motherDataset = new PHPUnit_Extensions_Database_DataSet_DefaultDataSet();
+
         foreach ($dataSets as $dataSet)
         {
             $this->addDataSet($dataSet);
@@ -87,13 +89,20 @@ class PHPUnit_Extensions_Database_DataSet_CompositeDataSet extends PHPUnit_Exten
     {
         foreach ($dataSet->getTableNames() as $tableName)
         {
-            if (in_array($tableName, $this->getTableNames()))
-            {
-                throw new InvalidArgumentException("DataSet contains a table that already exists: {$tableName}");
+            if (!in_array($tableName, $this->getTableNames())) {
+                $this->motherDataset->addTable($dataSet->getTable($tableName));
+            } else {
+                $other = $dataSet->getTable($tableName);
+                $table = $this->getTable($tableName);
+
+                if (!$table->getTableMetaData()->matches($other->getTableMetaData()))
+                {
+                   throw new InvalidArgumentException("There is already a table named $tableName with different table definition");
+                }
+
+                $table->addTableRows($dataSet->getTable($tableName));
             }
         }
-
-        $this->dataSets[] = $dataSet;
     }
 
     /**
@@ -105,16 +114,6 @@ class PHPUnit_Extensions_Database_DataSet_CompositeDataSet extends PHPUnit_Exten
      */
     protected function createIterator($reverse = FALSE)
     {
-        $iterator = new AppendIterator();
-
-        $dataSets = $reverse ? array_reverse($this->dataSets) : $this->dataSets;
-
-        foreach ($dataSets as $dataSet)
-        {
-            /* @var $dataSet PHPUnit_Extensions_Database_DataSet_IDataSet */
-            $dataSetIterator = $reverse ? $dataSet->getReverseIterator() : $dataSet->getIterator();
-            $iterator->append($dataSetIterator);
-        }
-        return $iterator;
+        return $this->motherDataset->getIterator($reverse);
     }
 }

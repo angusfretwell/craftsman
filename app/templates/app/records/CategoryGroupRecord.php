@@ -2,21 +2,23 @@
 namespace Craft;
 
 /**
- * Craft by Pixel & Tonic
+ * Category group record.
  *
- * @package   Craft
- * @author    Pixel & Tonic, Inc.
+ * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://buildwithcraft.com/license Craft License Agreement
- * @link      http://buildwithcraft.com
- */
-
-/**
- * Category group record
+ * @see       http://buildwithcraft.com
+ * @package   craft.app.records
+ * @since     2.0
  */
 class CategoryGroupRecord extends BaseRecord
 {
+	// Public Methods
+	// =========================================================================
+
 	/**
+	 * @inheritDoc BaseRecord::getTableName()
+	 *
 	 * @return string
 	 */
 	public function getTableName()
@@ -25,20 +27,8 @@ class CategoryGroupRecord extends BaseRecord
 	}
 
 	/**
-	 * @access protected
-	 * @return array
-	 */
-	protected function defineAttributes()
-	{
-		return array(
-			'name'      => array(AttributeType::Name, 'required' => true),
-			'handle'    => array(AttributeType::Handle, 'required' => true),
-			'hasUrls'   => array(AttributeType::Bool, 'default' => true),
-			'template'  => AttributeType::Template,
-		);
-	}
-
-	/**
+	 * @inheritDoc BaseRecord::defineRelations()
+	 *
 	 * @return array
 	 */
 	public function defineRelations()
@@ -52,6 +42,8 @@ class CategoryGroupRecord extends BaseRecord
 	}
 
 	/**
+	 * @inheritDoc BaseRecord::defineIndexes()
+	 *
 	 * @return array
 	 */
 	public function defineIndexes()
@@ -63,12 +55,32 @@ class CategoryGroupRecord extends BaseRecord
 	}
 
 	/**
+	 * @inheritDoc BaseRecord::scopes()
+	 *
 	 * @return array
 	 */
 	public function scopes()
 	{
 		return array(
 			'ordered' => array('order' => 'name'),
+		);
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @inheritDoc BaseRecord::defineAttributes()
+	 *
+	 * @return array
+	 */
+	protected function defineAttributes()
+	{
+		return array(
+			'name'      => array(AttributeType::Name, 'required' => true),
+			'handle'    => array(AttributeType::Handle, 'required' => true),
+			'hasUrls'   => array(AttributeType::Bool, 'default' => true),
+			'template'  => AttributeType::Template,
 		);
 	}
 }

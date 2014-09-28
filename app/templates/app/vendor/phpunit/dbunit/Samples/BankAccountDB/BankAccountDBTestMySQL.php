@@ -2,7 +2,7 @@
 /**
  * PHPUnit
  *
- * Copyright (c) 2002-2013, Sebastian Bergmann <sebastian@phpunit.de>.
+ * Copyright (c) 2002-2014, Sebastian Bergmann <sebastian@phpunit.de>.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,108 +36,30 @@
  *
  * @package    DbUnit
  * @author     Mike Lively <m@digitalsandwich.com>
- * @copyright  2002-2013 Sebastian Bergmann <sebastian@phpunit.de>
+ * @copyright  2002-2014 Sebastian Bergmann <sebastian@phpunit.de>
  * @license    http://www.opensource.org/licenses/BSD-3-Clause  The BSD 3-Clause License
  * @link       http://www.phpunit.de/
  * @since      File available since Release 1.0.0
  */
 
-require_once 'BankAccount.php';
+require_once dirname(__FILE__) . '/BankAccount.php';
+require_once dirname(__FILE__) . '/BankAccountDBTest.php';
 
 /**
  * Tests for the BankAccount class.
  *
  * @package    DbUnit
  * @author     Mike Lively <m@digitalsandwich.com>
- * @copyright  2002-2013 Sebastian Bergmann <sebastian@phpunit.de>
+ * @copyright  2002-2014 Sebastian Bergmann <sebastian@phpunit.de>
  * @license    http://www.opensource.org/licenses/BSD-3-Clause  The BSD 3-Clause License
  * @version    Release: @package_version@
  * @link       http://www.phpunit.de/
  * @since      Class available since Release 1.0.0
  */
-class BankAccountDBTestMySQL extends PHPUnit_Extensions_Database_TestCase
+class BankAccountDBTestMySQL extends BankAccountDBTest
 {
-    protected $pdo;
-
-    public function __construct()
+    protected function getPdo()
     {
-        $this->pdo = new PDO('mysql:host=localhost;dbname=test', 'root', 'selkirk');
-        BankAccount::createTable($this->pdo);
+        return new PDO('mysql:host=localhost;dbname=test', 'root');
     }
-
-    /**
-     * Returns the test database connection.
-     *
-     * @return PHPUnit_Extensions_Database_DB_IDatabaseConnection
-     */
-    protected function getConnection()
-    {
-        return $this->createDefaultDBConnection($this->pdo, 'test');
-    }
-
-    protected function getDataSet()
-    {
-        return $this->createFlatXMLDataSet(dirname(__FILE__).'/_files/bank-account-seed.xml');
-    }
-
-    public function testNewAccountBalanceIsInitiallyZero()
-    {
-        $bank_account = new BankAccount('12345678912345678', $this->pdo);
-        $this->assertEquals(0, $bank_account->getBalance());
-    }
-
-    public function testOldAccountInfoInitiallySet()
-    {
-        $bank_account = new BankAccount('15934903649620486', $this->pdo);
-        $this->assertEquals(100, $bank_account->getBalance());
-        $this->assertEquals('15934903649620486', $bank_account->getAccountNumber());
-
-        $bank_account = new BankAccount('15936487230215067', $this->pdo);
-        $this->assertEquals(1216, $bank_account->getBalance());
-        $this->assertEquals('15936487230215067', $bank_account->getAccountNumber());
-
-        $bank_account = new BankAccount('12348612357236185', $this->pdo);
-        $this->assertEquals(89, $bank_account->getBalance());
-        $this->assertEquals('12348612357236185', $bank_account->getAccountNumber());
-    }
-
-    public function testAccountBalanceDeposits()
-    {
-        $bank_account = new BankAccount('15934903649620486', $this->pdo);
-        $bank_account->depositMoney(100);
-
-        $bank_account = new BankAccount('15936487230215067', $this->pdo);
-        $bank_account->depositMoney(230);
-
-        $bank_account = new BankAccount('12348612357236185', $this->pdo);
-        $bank_account->depositMoney(24);
-
-        $xml_dataset = $this->createFlatXMLDataSet(dirname(__FILE__).'/_files/bank-account-after-deposits.xml');
-        $this->assertDataSetsEqual($xml_dataset, $this->getConnection()->createDataSet());
-    }
-
-    public function testAccountBalanceWithdrawals()
-    {
-        $bank_account = new BankAccount('15934903649620486', $this->pdo);
-        $bank_account->withdrawMoney(100);
-
-        $bank_account = new BankAccount('15936487230215067', $this->pdo);
-        $bank_account->withdrawMoney(230);
-
-        $bank_account = new BankAccount('12348612357236185', $this->pdo);
-        $bank_account->withdrawMoney(24);
-
-        $xml_dataset = $this->createFlatXMLDataSet(dirname(__FILE__).'/_files/bank-account-after-withdrawals.xml');
-        $this->assertDataSetsEqual($xml_dataset, $this->getConnection()->createDataSet());
-    }
-
-    public function testNewAccountCreation()
-    {
-        $bank_account = new BankAccount('12345678912345678', $this->pdo);
-
-        $xml_dataset = $this->createFlatXMLDataSet(dirname(__FILE__).'/_files/bank-account-after-new-account.xml');
-        $this->assertDataSetsEqual($xml_dataset, $this->getConnection()->createDataSet());
-    }
-    /*
-    */
 }
