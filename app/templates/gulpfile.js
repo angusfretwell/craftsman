@@ -2,18 +2,7 @@
 'use strict';
 
 var gulp = require('gulp'),
-  prefix = require('gulp-autoprefixer'),
-  cache = require('gulp-cache'),
-  csso = require('gulp-csso'),
-  clean = require('del'),
-  filter = require('gulp-filter'),
-  imagemin = require('gulp-imagemin'),
-  jshint = require('gulp-jshint'),
-  rubySass = require('gulp-ruby-sass'),
-  shell = require('gulp-shell'),
-  size = require('gulp-size'),
-  uglify = require('gulp-uglify'),
-  useref = require('gulp-useref');
+    $ = require('gulp-load-plugins')();
 
 var paths = {
   styles: 'app/styles/**/*.scss',
@@ -82,20 +71,22 @@ gulp.task('db-dump', ['clean', 'db-dump-local', 'db-dump-remote'], function() {
 
 gulp.task('styles', function() {
   return gulp.src([paths.styles, 'bower_components/**/*.scss'])
-    .pipe(rubySass({
-      style: 'expanded'
+    .pipe($.plumber())
+    .pipe($.rubySass({
+      style: 'expanded',
+      precision: 10
     }))
+    .pipe($.autoprefixer('last 1 version'))
     .pipe(prefix('last 1 version'))
     .pipe(gulp.dest('public/styles'))
-    .pipe(size());
 });
 
 gulp.task('scripts', function() {
   return gulp.src(paths.scripts)
     .pipe(jshint())
-    .pipe(jshint.reporter(require('jshint-stylish')))
-    .pipe(gulp.dest('public/scripts'))
-    .pipe(size());
+    .pipe($.jshint.reporter('jshint-stylish'))
+    .pipe($.jshint.reporter('fail'))
+    .pipe(gulp.dest('public/scripts'));
 });
 
 gulp.task('images', function() {
@@ -115,7 +106,7 @@ gulp.task('extras', function() {
 });
 
 gulp.task('clean', function(cb) {
-  clean(paths.clean, cb);
+  require('del').bind(null, paths.clean)
 });
 
 gulp.task('build', ['clean'], function() {
@@ -141,10 +132,16 @@ gulp.task('build-useref', ['images', 'styles', 'extras'], function() {
 });
 
 gulp.task('watch', function() {
+  gulp.src(paths.index($.inject('http://localhost:35729/livereload.js')));
+
   gulp.start('extras')
     .start('scripts')
     .start('images')
     .start('build-useref');
+
+  livereload.listen();
+  gulp.watch('public/**/*')
+    .on('change', livereload.changed);
 
   gulp.watch(paths.extras, ['extras']);
   gulp.watch(paths.html, ['build-useref']);
