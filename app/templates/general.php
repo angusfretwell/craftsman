@@ -17,16 +17,16 @@ define('SITE_URL', URI_SCHEME . $_SERVER['SERVER_NAME'] . '/');
 define('BASEPATH', realpath(CRAFT_BASE_PATH . '/../') . '/');
 
 return array(
-    '*' => array(
-        'omitScriptNameInUrls' => true,
+  '*' => array(
+    'omitScriptNameInUrls' => true,
 
-        'environmentVariables' => array(
-            'siteUrl'  => SITE_URL,
-            'basePath' => BASEPATH
-        )
-    ),
+    'environmentVariables' => array(
+      'siteUrl'  => SITE_URL,
+      'basePath' => BASEPATH
+    )
+  ),
 
-    '<%= _.slugify(slug) %>.craft.dev' => array(
-        'devMode' => true,
-    ),
+  '<%= _.slugify(slug) %>.craft.dev' => array(
+    'devMode' => true,
+  ),
 );
