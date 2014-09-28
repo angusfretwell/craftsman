@@ -8,14 +8,18 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
     this.pkg = require('../package.json');
   },
 
-  askFor: function() {
+  promptTask: function() {
     var done = this.async();
 
     this.log(yosay('You\'re using Francis Bond\'s fantastic Craft generator.'));
 
-    var prompts = [{
+    this.prompt({
       name: 'slug',
       message: 'Enter a unique slug for this project',
+    }, {
+      name: 'remote',
+      message: 'Enter the hostname of the dokku server',
+      default: 'staging.francisbond.com'
     }, {
       type: 'checkbox',
       name: 'features',
@@ -29,15 +33,13 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
         value: 'includejQuery',
         checked: true
       }]
-    }];
-
-    this.prompt(prompts, function(props) {
+    }, function(props) {
       this.slug = props.slug;
+      this.remote = props.remote;
 
-      var features = props.features,
-        hasFeature = function(feat) {
-          return features.indexOf(feat) !== -1;
-        }
+      var hasFeature = function(feat) {
+        return props.features.indexOf(feat) !== -1;
+      }
 
       this.includeInuit = hasFeature('includeInuit');
       this.includejQuery = hasFeature('includejQuery');
@@ -67,25 +69,36 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
     this.write('app/scripts/main.js', 'console.log(\'\\\'Allo \\\'Allo!\');');
   },
 
-  projectFiles: function() {
-    this.copy('gulpfile.js', 'gulpfile.js');
-
-    this.copy('_package.json', 'package.json');
-    this.copy('_composer.json', 'composer.json');
-    this.write('composer.lock', '');
-
+  bower: function() {
     this.copy('bowerrc', '.bowerrc');
     this.copy('_bower.json', 'bower.json');
+  },
 
-    this.copy('editorconfig', '.editorconfig');
-    this.copy('jshintrc', '.jshintrc');
+  gulp: function() {
+    this.copy('gulpfile.js', 'gulpfile.js');
+  },
 
+  git: function() {
     this.copy('gitignore', '.gitignore');
     this.copy('gitattributes', '.gitattributes');
+  },
 
+  package: function() {
+    this.copy('_package.json', 'package.json');
+  },
+
+  composer: function() {
+    this.copy('_composer.json', 'composer.json');
+    this.write('composer.lock', '');
+  },
+
+  extras: function() {
     this.copy('favicon.ico', 'app/favicon.ico');
     this.copy('robots.txt', 'app/robots.txt');
     this.copy('humans.txt', 'app/humans.txt');
+
+    this.copy('editorconfig', '.editorconfig');
+    this.copy('jshintrc', '.jshintrc');
   },
 
   vagrant: function() {
@@ -93,33 +106,10 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
   },
 
   puppet: function() {
-    this.mkdir('puppet');
-    this.mkdir('puppet/manifests');
-    this.mkdir('puppet/modules');
-    this.mkdir('puppet/modules/app');
-    this.mkdir('puppet/modules/app/manifests');
-
-    this.write('puppet/manifests/init.pp', 'include \'app\'');
-    this.copy('init.pp', 'puppet/modules/app/manifests/init.pp');
-
-    this.directory('bootstrap', 'puppet/bootstrap');
-    this.directory('apache', 'puppet/modules/apache');
-    this.directory('mysql', 'puppet/modules/mysql');
-    this.directory('php', 'puppet/modules/php');
-    this.directory('git', 'puppet/modules/git');
-    this.directory('curl', 'puppet/modules/curl');
-    this.directory('composer', 'puppet/modules/composer');
+    this.directory('puppet', 'puppet');
   },
 
   craft: function() {
-    this.mkdir('craft');
-
-    this.mkdir('craft/storage');
-    this.write('craft/storage/.gitkeep', '');
-
-    this.mkdir('craft/plugins');
-    this.write('craft/plugins/.gitkeep', '');
-
     this.mkdir('public');
     this.mkdir('public/assets');
     this.write('public/assets/.gitkeep', '');
@@ -127,23 +117,12 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
     this.copy('index.php', 'public/index.php')
     this.copy('htaccess', 'public/.htaccess');
 
-    this.directory('app', 'craft/app');
-    this.directory('config', 'craft/config');
-
-    this.copy('general.php', 'craft/config/general.php');
-    this.copy('db.php', 'craft/config/db.php');
+    this.mkdir('craft');
+    this.directory('craft', 'craft');
   },
 
   templates: function() {
-    this.mkdir('app/templates');
-    this.mkdir('app/templates/news');
-
-    this.copy('layout.html', 'app/templates/_layout.html')
-    this.copy('index.html', 'app/templates/index.html')
-    this.copy('404.html', 'app/templates/404.html')
-
-    this.copy('news__index.html', 'app/templates/news/index.html')
-    this.copy('news__entry.html', 'app/templates/news/_entry.html')
+    this.directory('templates', 'app/templates');
   },
 
   install: function() {

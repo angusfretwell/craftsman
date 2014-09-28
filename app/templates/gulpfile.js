@@ -24,11 +24,11 @@ var paths = {
  * 5. Link app container with mariadb container.
  */
 gulp.task('deploy-init', $.shell.task([
-  'git remote add dokku dokku@staging.francisbond.com:<%= _.slugify(slug) %>', /*[1]*/
+  'git remote add dokku dokku@<%= _.slugify(slug) %>:<%= _.slugify(slug) %>', /*[1]*/
   'git push dokku master', /*[2]*/
-  'ssh dokku@staging.francisbond.com config:set <%= _.slugify(slug) %> BUILDPACK_URL=https://github.com/CHH/heroku-buildpack-php', /*[3]*/
-  'ssh dokku@staging.francisbond.com mariadb:create <%= _.slugify(slug) %>', /*[4]*/
-  'ssh dokku@staging.francisbond.com mariadb:link <%= _.slugify(slug) %> <%= _.slugify(slug) %>' /*[5]*/
+  'ssh dokku@<%= _.slugify(slug) %> config:set <%= _.slugify(slug) %> BUILDPACK_URL=https://github.com/CHH/heroku-buildpack-php', /*[3]*/
+  'ssh dokku@<%= _.slugify(slug) %> mariadb:create <%= _.slugify(slug) %>', /*[4]*/
+  'ssh dokku@<%= _.slugify(slug) %> mariadb:link <%= _.slugify(slug) %> <%= _.slugify(slug) %>' /*[5]*/
 ]));
 
 gulp.task('deploy', $.shell.task([
@@ -50,11 +50,11 @@ gulp.task('db-dump-local', ['build'], $.shell.task([
  */
 gulp.task('db-dump-remote', ['build'], $.shell.task([
   '[ -d ".tmp" ] || mkdir .tmp', /*[1]*/
-  'ssh dokku@staging.francisbond.com mariadb:dumpraw <%= _.slugify(slug) %> | tee .tmp/remote.sql > /dev/null' /*[2]*/
+  'ssh dokku@<%= remote %> mariadb:dumpraw <%= _.slugify(slug) %> | tee .tmp/remote.sql > /dev/null' /*[2]*/
 ]));
 
 gulp.task('db-push', ['db-dump-local'], $.shell.task([
-  'ssh dokku@staging.francisbond.com mariadb:console <%= _.slugify(slug) %> < .tmp/local.sql'
+  'ssh dokku@<%= remote %> mariadb:console <%= _.slugify(slug) %> < .tmp/local.sql'
 ]));
 
 gulp.task('db-pull', ['db-dump-remote'], $.shell.task([
