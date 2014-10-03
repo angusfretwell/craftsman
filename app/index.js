@@ -81,7 +81,7 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
   },
 
   gulp: function() {
-    this.copy('gulpfile.js', 'gulpfile.js');
+    this.template('gulpfile.js', 'gulpfile.js');
   },
 
   git: function() {
