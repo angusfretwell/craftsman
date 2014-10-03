@@ -109,7 +109,6 @@ gulp.task('scripts', function() {
   return gulp.src(paths.scripts)
     .pipe($.jshint())
     .pipe($.jshint.reporter('jshint-stylish'))
-    .pipe($.jshint.reporter('fail'))
     .pipe($.uglify())
     .pipe(gulp.dest('public/scripts'));
 });
@@ -129,7 +128,7 @@ gulp.task('extras', function() {
 });
 
 gulp.task('clean', function(cb) {
-  del(paths.clean, cb);
+  require('del')(paths.clean, cb);
 });
 
 gulp.task('build', ['clean'], function() {
