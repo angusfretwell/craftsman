@@ -77,7 +77,7 @@ gulp.task('db-push', ['db-dump-local'], $.shell.task([
 ]));
 
 gulp.task('db-push-production', ['db-dump-local'], $.shell.task([
-  'ssh dokku@<%= remote-production %> mariadb:console <%= _.slugify(rslug) %> < .tmp/local.sql'
+  'ssh dokku@<%= remote-production %> mariadb:console <%= _.slugify(slug) %> < .tmp/local.sql'
 ]));
 
 gulp.task('db-pull', ['db-dump-remote'], $.shell.task([
