@@ -64,20 +64,20 @@ gulp.task('db-dump-local', ['build'], $.shell.task([
  */
 gulp.task('db-dump-remote', ['build'], $.shell.task([
   '[ -d ".tmp" ] || mkdir .tmp', /*[1]*/
-  'ssh dokku@<%= remote-staging %> mariadb:dumpraw <%= _.slugify(slug) %> | tee .tmp/remote-staging.sql > /dev/null' /*[2]*/
+  'ssh dokku@<%= remoteStaging %> mariadb:dumpraw <%= _.slugify(slug) %> | tee .tmp/remote-staging.sql > /dev/null' /*[2]*/
 ]));
 
 gulp.task('db-dump-remote-production', ['build'], $.shell.task([
   '[ -d ".tmp" ] || mkdir .tmp', /*[1]*/
-  'ssh dokku@<%= remote-production %> mariadb:dumpraw <%= _.slugify(slug) %> | tee .tmp/remote-production.sql > /dev/null' /*[2]*/
+  'ssh dokku@<%= remoteProduction %> mariadb:dumpraw <%= _.slugify(slug) %> | tee .tmp/remote-production.sql > /dev/null' /*[2]*/
 ]));
 
 gulp.task('db-push', ['db-dump-local'], $.shell.task([
-  'ssh dokku@<%= remote-staging %> mariadb:console <%= _.slugify(slug) %> < .tmp/local.sql'
+  'ssh dokku@<%= remoteStaging %> mariadb:console <%= _.slugify(slug) %> < .tmp/local.sql'
 ]));
 
 gulp.task('db-push-production', ['db-dump-local'], $.shell.task([
-  'ssh dokku@<%= remote-production %> mariadb:console <%= _.slugify(slug) %> < .tmp/local.sql'
+  'ssh dokku@<%= remoteProduction %> mariadb:console <%= _.slugify(slug) %> < .tmp/local.sql'
 ]));
 
 gulp.task('db-pull', ['db-dump-remote'], $.shell.task([
