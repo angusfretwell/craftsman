@@ -19,7 +19,7 @@ var paths = {
 /**
  * 1. Add dokku remote to git repository.
  * 2. Push to dokku to intialize app container.
- * 3. Set a custom PHP buildpack
+ * 3. Set a custom PHP buildpack.
  * 4. Create mariadb container.
  * 5. Link app container with mariadb container.
  */
