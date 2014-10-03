@@ -24,15 +24,27 @@ var paths = {
  * 5. Link app container with mariadb container.
  */
 gulp.task('deploy-init', $.shell.task([
-  'git remote add dokku dokku@<%= _.slugify(slug) %>:<%= _.slugify(slug) %>', /*[1]*/
-  'git push dokku master', /*[2]*/
-  'ssh dokku@<%= _.slugify(slug) %> config:set <%= _.slugify(slug) %> BUILDPACK_URL=https://github.com/CHH/heroku-buildpack-php', /*[3]*/
-  'ssh dokku@<%= _.slugify(slug) %> mariadb:create <%= _.slugify(slug) %>', /*[4]*/
-  'ssh dokku@<%= _.slugify(slug) %> mariadb:link <%= _.slugify(slug) %> <%= _.slugify(slug) %>' /*[5]*/
+  'git remote add dokku-staging dokku@<%= remoteStaging %>:<%= _.slugify(slug) %>', /*[1]*/
+  'git push dokku-staging master', /*[2]*/
+  'ssh dokku@<%= remoteStaging %> config:set <%= _.slugify(slug) %> BUILDPACK_URL=https://github.com/CHH/heroku-buildpack-php', /*[3]*/
+  'ssh dokku@<%= remoteStaging %> mariadb:create <%= _.slugify(slug) %>', /*[4]*/
+  'ssh dokku@<%= remoteStaging %> mariadb:link <%= _.slugify(slug) %> <%= _.slugify(slug) %>' /*[5]*/
+]));
+
+gulp.task('deploy-init-production', $.shell.task([
+  'git remote add dokku-production dokku@<%= remoteProduction %>:<%= _.slugify(slug) %>', /*[1]*/
+  'git push dokku-production master', /*[2]*/
+  'ssh dokku@<%= remoteProduction %> config:set <%= _.slugify(slug) %> BUILDPACK_URL=https://github.com/CHH/heroku-buildpack-php', /*[3]*/
+  'ssh dokku@<%= remoteProduction %> mariadb:create <%= _.slugify(slug) %>', /*[4]*/
+  'ssh dokku@<%= remoteProduction %> mariadb:link <%= _.slugify(slug) %> <%= _.slugify(slug) %>' /*[5]*/
 ]));
 
 gulp.task('deploy', $.shell.task([
-  'git push dokku master'
+  'git push dokku-staging master'
+]));
+
+gulp.task('deploy-production', $.shell.task([
+  'git push dokku-production master'
 ]));
 
 /**
@@ -50,16 +62,34 @@ gulp.task('db-dump-local', ['build'], $.shell.task([
  */
 gulp.task('db-dump-remote', ['build'], $.shell.task([
   '[ -d ".tmp" ] || mkdir .tmp', /*[1]*/
-  'ssh dokku@<%= remote %> mariadb:dumpraw <%= _.slugify(slug) %> | tee .tmp/remote.sql > /dev/null' /*[2]*/
+  'ssh dokku@<%= remote-staging %> mariadb:dumpraw <%= _.slugify(slug) %> | tee .tmp/remote-staging.sql > /dev/null' /*[2]*/
+]));
+
+gulp.task('db-dump-remote-production', ['build'], $.shell.task([
+  '[ -d ".tmp" ] || mkdir .tmp', /*[1]*/
+  'ssh dokku@<%= remote-production %> mariadb:dumpraw <%= _.slugify(slug) %> | tee .tmp/remote-production.sql > /dev/null' /*[2]*/
 ]));
 
 gulp.task('db-push', ['db-dump-local'], $.shell.task([
-  'ssh dokku@<%= remote %> mariadb:console <%= _.slugify(slug) %> < .tmp/local.sql'
+  'ssh dokku@<%= remote-staging %> mariadb:console <%= _.slugify(slug) %> < .tmp/local.sql'
+]));
+
+gulp.task('db-push-production', ['db-dump-local'], $.shell.task([
+  'ssh dokku@<%= remote-production %> mariadb:console <%= _.slugify(rslug) %> < .tmp/local.sql'
 ]));
 
 gulp.task('db-pull', ['db-dump-remote'], $.shell.task([
-  'vagrant ssh --command "mysql -uroot -proot <%= _.slugify(slug) %> < /vagrant/.tmp/remote.sql"'
+  'vagrant ssh --command "mysql -uroot -proot <%= _.slugify(slug) %> < /vagrant/.tmp/remote-staging.sql"'
 ]));
+
+gulp.task('db-pull-production', ['db-dump-remote-production'], $.shell.task([
+  'vagrant ssh --command "mysql -uroot -proot <%= _.slugify(slug) %> < /vagrant/.tmp/remote-production.sql"'
+]));
+
+ gulp.task('db-dump', ['clean', 'db-dump-local', 'db-dump-remote', 'db-dump-remote-production'], function() {     
+    return gulp.src(['.tmp/local.sql', '.tmp/remote-staging.sql', '.tmp/remote-production.sql'])
+      .pipe(gulp.dest('databases'));
+ });
 
 gulp.task('styles', function() {
   return gulp.src([paths.styles, 'bower_components/**/*.scss'])

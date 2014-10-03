@@ -17,9 +17,14 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
       name: 'slug',
       message: 'Enter a unique slug for this project',
     }, {
-      name: 'remote',
-      message: 'Enter the hostname of the dokku server',
+      name: 'staging',
+      message: 'Enter the hostname of the dokku staging server',
       default: 'staging.francisbond.com'
+    },
+    {
+      name: 'production',
+      message: 'Enter the hostname of the dokku production server',
+      default: 'production.francisbond.com'
     }, {
       type: 'checkbox',
       name: 'features',
@@ -35,7 +40,8 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
       }]
     }], function(props) {
       this.slug = props.slug;
-      this.remote = props.remote;
+      this.remoteStaging = props.staging;
+      this.remoteProduction = props.production;
 
       var hasFeature = function(feat) {
         return props.features.indexOf(feat) !== -1;
