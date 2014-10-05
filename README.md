@@ -9,25 +9,21 @@ generator-francis-craft
 
 * Set up a fresh copy of Craft
 * Generate a Vagrantfile with provisioning via Puppet
-* Deploy to a Dokku-powered staging server
-* Deploy to a Dokku-powered production server
-* Copy databases between local and staging environments
+* Deploy to a Dokku-powered server
+* Copy databases between local and remote environments
 * Automatically compile Sass with Autoprefixing
 * Automatically lint your Javascript
 * Image optimization (png, jpg, gif)
 * Optionally include inuit.css and jQuery
 
-## Installation
+## Initialization
 
 * Install: `npm install -g francisbond/generator-francis-craft`
 * Run: `yo francis-craft`
 * Run `gulp build` for building and `gulp watch` for preview
-* Use `gulp deploy-init` to initalise a staging deployment environment
-* Use `gulp deploy-init-production` to initalise a production deployment environment
-* Run `gulp deploy` after committing changes to deploy them to staging
-* Run `gulp deploy-production` after committing changes to deploy them to production
-* Use `gulp db-push` and `gulp db-pull` to push and pull databases between local and staging environments
-* Use `gulp db-push-production` and `gulp db-pull-production` to push and pull databases between local and production environments
+* Use `gulp deploy-init` to initalise a deployment environment
+* Run `gulp deploy` after committing changes to deploy them
+* Use `gulp db-push` and `gulp db-pull` to push and pull databases between local and remote environments
 
 ### Requirements
 * For using the provided development environment, VirtualBox, Vagrant, and the [Vagrant Host Manager](https://github.com/smdahlen/vagrant-hostmanager) plugin must be installed.
@@ -40,53 +36,30 @@ generator-francis-craft
 
 * `gulp deploy-init`
 
-  Initialize a Dokku container for use in the project's staging deployment.
+  Initialize a Dokku container for use in the project's deployment.
 
-  1. Adds a git remote corresponding with the Dokku staging server.
+  1. Adds a git remote corresponding with the Dokku server.
   2. Pushes the repository to the Dokku remote.
   3. Defines a Buildpack for Dokku to use in the project's deployment.
   4. Sets up and links a new MariaDB container.
 
   You should follow this command with gulp db-push.
 
-* `gulp deploy-init-production`
-
-Initialize a Dokku container for use in the project's production deployment.
-
-1. Adds a git remote corresponding with the Dokku production server.
-2. Pushes the repository to the Dokku remote.
-3. Defines a Buildpack for Dokku to use in the project's deployment.
-4. Sets up and links a new MariaDB container.
-
-You should follow this command with gulp db-push.
-
 * `gulp deploy`
 
-  Pushes the repository to the Dokku staging remote.
-
-* `gulp deploy-production`
-
-  Pushes the repository to the Dokku production remote.
+  Pushes the repository to the Dokku remote.
 
 * `gulp db-push`
 
-  Dumps the local database to `/.tmp`, and imports it to the linked staging Dokku MariaDB container.
-
-* `gulp db-push-production`
-
-  Dumps the local database to `/.tmp`, and imports it to the linked prodction Dokku MariaDB container.
+  Dumps the local database to `/.tmp`, and imports it to the linked Dokku MariaDB container.
 
 * `gulp db-pull`
 
-  Dumps the remote staging Dokku MariaDB database to `/.tmp`, and imports it to the local environment.
-
-* `gulp db-pull-production`
-
-  Dumps the remote production Dokku MariaDB database to `/.tmp`, and imports it to the local environment.
+  Dumps the remote Dokku MariaDB database to `/.tmp`, and imports it to the local environment.
 
 * `gulp db-dump`
 
-  Dumps the local, remote staging and, remote production databases, and saves them to `/databases`.
+  Dumps the local and remote databases, and saves them to `/databases`.
 
 ### Development
 
