@@ -16,81 +16,134 @@ var paths = {
       '!public/index.php', '!public/.htaccess']
 };
 
-/**
- * 1. Add dokku remote to git repository.
- * 2. Push to dokku to intialize app container.
- * 3. Set a custom PHP buildpack.
- * 4. Create mariadb container.
- * 5. Link app container with mariadb container.
- */
-gulp.task('deploy-init', $.shell.task([
-  'git remote add dokku-staging dokku@<%= remoteStaging %>:<%= _.slugify(slug) %>', /*[1]*/
-  'git push dokku-staging master', /*[2]*/
-  'ssh dokku@<%= remoteStaging %> config:set <%= _.slugify(slug) %> BUILDPACK_URL=https://github.com/CHH/heroku-buildpack-php', /*[3]*/
-  'ssh dokku@<%= remoteStaging %> mariadb:create <%= _.slugify(slug) %>', /*[4]*/
-  'ssh dokku@<%= remoteStaging %> mariadb:link <%= _.slugify(slug) %> <%= _.slugify(slug) %>' /*[5]*/
-]));
+var knownOptions = {
+  string: 'env',
+  default: { env: process.env.NODE_ENV || 'production' }
+};
 
-gulp.task('deploy-init-production', $.shell.task([
-  'git remote add dokku-production dokku@<%= remoteProduction %>:<%= _.slugify(slug) %>', /*[1]*/
-  'git push dokku-production master', /*[2]*/
-  'ssh dokku@<%= remoteProduction %> config:set <%= _.slugify(slug) %> BUILDPACK_URL=https://github.com/CHH/heroku-buildpack-php', /*[3]*/
-  'ssh dokku@<%= remoteProduction %> mariadb:create <%= _.slugify(slug) %>', /*[4]*/
-  'ssh dokku@<%= remoteProduction %> mariadb:link <%= _.slugify(slug) %> <%= _.slugify(slug) %>' /*[5]*/
-]));
-
-gulp.task('deploy', $.shell.task([
-  'git push dokku-staging master'
-]));
-
-gulp.task('deploy-production', $.shell.task([
-  'git push dokku-production master'
-]));
+var options = minimist(process.argv.slice(2), knownOptions);
 
 /**
- * 1. Check if .tmp exists, create it if it doesn't.
- * 2. Dump the local database to .tmp/local.sql.
+ * gulp deploy-init
  */
-gulp.task('db-dump-local', ['build'], $.shell.task([
-  '[ -d ".tmp" ] || mkdir .tmp', /*[1]*/
-  'vagrant ssh --command "mysqldump -uroot -proot <%= _.slugify(slug) %> > /vagrant/.tmp/local.sql"' /*[2]*/
-]));
+gulp.task('deploy-init', function() {
+  var server = options.env === 'production'
+    ? '<%= remoteProduction %>'
+    : '<%= remoteStaging %>';
+
+  var branch = options.env === 'production'
+    ? 'dokku-production'
+    : 'dokku-staging';
+
+  var slug = '<%= _.slugify(slug) %>',
+      buildpack = 'https://github.com/CHH/heroku-buildpack-php';
+
+  return $.shell.task([
+    'git remote add ' + branch + ' dokku@' + server + ':' + slug,
+    'git push ' + branch + ' master',
+    'ssh dokku@' + server + ' config:set  BUILDPACK_URL=' + buildpackUrl,
+    'ssh dokku@' + server + ' mariadb:create ' + slug,
+    'ssh dokku@' + server + ' mariadb:link ' + slug + ' ' + slug + ''
+  ]);
+});
 
 /**
- * 1. Check if .tmp exists, create it if it doesn't.
- * 2. Dump the remote database to .tmp/remote.sql.
+ * gulp deploy
  */
-gulp.task('db-dump-remote', ['build'], $.shell.task([
-  '[ -d ".tmp" ] || mkdir .tmp', /*[1]*/
-  'ssh dokku@<%= remoteStaging %> mariadb:dumpraw <%= _.slugify(slug) %> | tee .tmp/remote-staging.sql > /dev/null' /*[2]*/
-]));
+gulp.task('deploy', function() {
+  var branch = options.env === 'production'
+    ? 'dokku-production'
+    : 'dokku-staging';
 
-gulp.task('db-dump-remote-production', ['build'], $.shell.task([
-  '[ -d ".tmp" ] || mkdir .tmp', /*[1]*/
-  'ssh dokku@<%= remoteProduction %> mariadb:dumpraw <%= _.slugify(slug) %> | tee .tmp/remote-production.sql > /dev/null' /*[2]*/
-]));
+  return $.shell.task([
+    'git push ' + branch + ' master'
+  ]);
+});
 
-gulp.task('db-push', ['db-dump-local'], $.shell.task([
-  'ssh dokku@<%= remoteStaging %> mariadb:console <%= _.slugify(slug) %> < .tmp/local.sql'
-]));
+/**
+ * gulp db-dump-local
+ */
+gulp.task('db-dump-local', ['build'], function() {
+  var slug = '<%= _.slugify(slug) %>';
 
-gulp.task('db-push-production', ['db-dump-local'], $.shell.task([
-  'ssh dokku@<%= remoteProduction %> mariadb:console <%= _.slugify(slug) %> < .tmp/local.sql'
-]));
+  return $.shell.task([
+    '[ -d ".tmp" ] || mkdir .tmp',
+    'vagrant ssh --command "mysqldump -uroot -proot ' + slug + ' > /vagrant/.tmp/local.sql"'
+  ]);
+});
 
-gulp.task('db-pull', ['db-dump-remote'], $.shell.task([
-  'vagrant ssh --command "mysql -uroot -proot <%= _.slugify(slug) %> < /vagrant/.tmp/remote-staging.sql"'
-]));
+/**
+ * gulp db-dump-remote
+ */
+gulp.task('db-dump-remote', ['build'], function() {
+  var server = options.env === 'production'
+    ? '<%= remoteProduction %>'
+    : '<%= remoteStaging %>';
 
-gulp.task('db-pull-production', ['db-dump-remote-production'], $.shell.task([
-  'vagrant ssh --command "mysql -uroot -proot <%= _.slugify(slug) %> < /vagrant/.tmp/remote-production.sql"'
-]));
+  var file = options.env === 'production'
+    ? 'remote--production.sql'
+    : 'remote--staging.sql';
 
- gulp.task('db-dump', ['clean', 'db-dump-local', 'db-dump-remote', 'db-dump-remote-production'], function() {
-    return gulp.src(['.tmp/local.sql', '.tmp/remote-staging.sql', '.tmp/remote-production.sql'])
+  var slug = '<%= _.slugify(slug) %>';
+
+  return $.shell.task([
+    '[ -d ".tmp" ] || mkdir .tmp',
+    'ssh dokku@' + server + ' mariadb:dumpraw ' + slug + ' | tee .tmp/' + file + ' > /dev/null'
+  ]);
+});
+
+/**
+ * gulp db-push
+ */
+gulp.task('db-push', ['db-dump-local'], function() {
+  var server = options.env === 'production'
+    ? '<%= remoteProduction %>'
+    : '<%= remoteStaging %>';
+
+  var slug = '<%= _.slugify(slug) %>';
+
+  return $.shell.task([
+    'ssh dokku@' + server + ' mariadb:console ' + slug + ' < .tmp/local.sql'
+  ]);
+});
+
+/**
+ * gulp db-pull
+ */
+gulp.task('db-pull', ['db-dump-remote'], function(){
+  var file = options.env === 'production'
+    ? 'remote--production.sql'
+    : 'remote--staging.sql';
+
+  var slug = '<%= _.slugify(slug) %>';
+
+  $.shell.task([
+    'vagrant ssh --command "mysql -uroot -proot ' + slug + ' < /vagrant/.tmp/ ' + file + '"'
+  ]);
+});
+
+/**
+ * gulp db-dump
+ */
+gulp.task('db-dump', [
+    'clean',
+    'db-dump-local',
+    'db-dump-remote'
+  ], function() {
+    var file = options.env === 'production'
+      ? 'remote--production.sql'
+      : 'remote--staging.sql';
+
+    return gulp.src([
+        '.tmp/local.sql',
+        '.tmp/ ' + file
+      ])
       .pipe(gulp.dest('databases'));
- });
+});
 
+/**
+ * gulp styles
+ */
 gulp.task('styles', function() {
   return gulp.src([paths.styles, 'bower_components/**/*.scss'])
     .pipe($.plumber())
@@ -103,6 +156,9 @@ gulp.task('styles', function() {
     .pipe(gulp.dest('public/styles'))
 });
 
+/**
+ * gulp scripts
+ */
 gulp.task('scripts', function() {
   return gulp.src(paths.scripts)
     .pipe($.changed('public/scripts'))
@@ -112,6 +168,9 @@ gulp.task('scripts', function() {
     .pipe(gulp.dest('public/scripts'));
 });
 
+/**
+ * gulp images
+ */
 gulp.task('images', function () {
   return gulp.src(paths.images)
     .pipe($.changed('public/images'))
@@ -122,27 +181,48 @@ gulp.task('images', function () {
     .pipe(gulp.dest('public/images'));
 });
 
+/**
+ * gulp extras
+ */
 gulp.task('extras', function() {
   return gulp.src(paths.extras, { dot: true })
     .pipe($.changed('public'))
     .pipe(gulp.dest('public'));
 });
 
+/**
+ * gulp clean
+ */
 gulp.task('clean', function(cb) {
   require('del')(paths.clean, cb);
 });
 
-gulp.task('build', ['clean'], function() {
-  gulp.start('build-useref');
-});
-
+/**
+ * gulp html
+ */
 gulp.task('html', function() {
   return gulp.src(paths.html)
     .pipe($.changed('public/templates'))
     .pipe(gulp.dest('public/templates'));
 })
 
-gulp.task('build-useref', ['html', 'images', 'scripts', 'styles', 'extras'], function() {
+/**
+ * gulp build
+ */
+gulp.task('build', ['clean'], function() {
+  gulp.start('build-useref');
+});
+
+/**
+ * gulp build-useref
+ */
+gulp.task('build-useref', [
+    'html',
+    'images',
+    'scripts',
+    'styles',
+    'extras'
+  ], function() {
   var assets = $.useref.assets({searchPath: '{public, app}'});
 
   return gulp.src(paths.index)
@@ -152,18 +232,24 @@ gulp.task('build-useref', ['html', 'images', 'scripts', 'styles', 'extras'], fun
     .pipe(gulp.dest('public/templates'));
 });
 
+/**
+ * gulp watch
+ */
 gulp.task('watch', function() {
   gulp.start('build-useref');
 
   livereload.listen();
   gulp.watch('public/**/*', $.livereload.changed);
 
-  gulp.watch(paths.extras, ['extras']);
-  gulp.watch(paths.html, ['html']);
-  gulp.watch(paths.index, ['build-useref']);
+  gulp.watch(paths.extras,  ['extras']);
+  gulp.watch(paths.html,    ['html']);
+  gulp.watch(paths.index,   ['build-useref']);
   gulp.watch(paths.scripts, ['scripts']);
-  gulp.watch(paths.styles, ['styles']);
-  gulp.watch(paths.images, ['images']);
+  gulp.watch(paths.styles,  ['styles']);
+  gulp.watch(paths.images,  ['images']);
 });
 
+/**
+ * gulp
+ */
 gulp.task('default', ['build']);
