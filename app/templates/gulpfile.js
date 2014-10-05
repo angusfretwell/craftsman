@@ -86,7 +86,7 @@ gulp.task('db-pull-production', ['db-dump-remote-production'], $.shell.task([
   'vagrant ssh --command "mysql -uroot -proot <%= _.slugify(slug) %> < /vagrant/.tmp/remote-production.sql"'
 ]));
 
- gulp.task('db-dump', ['clean', 'db-dump-local', 'db-dump-remote', 'db-dump-remote-production'], function() {     
+ gulp.task('db-dump', ['clean', 'db-dump-local', 'db-dump-remote', 'db-dump-remote-production'], function() {
     return gulp.src(['.tmp/local.sql', '.tmp/remote-staging.sql', '.tmp/remote-production.sql'])
       .pipe(gulp.dest('databases'));
  });
@@ -98,21 +98,23 @@ gulp.task('styles', function() {
       style: 'expanded',
       precision: 10
     }))
-    .pipe($.autoprefixer('last 1 version'))
-    .pipe($.csso())
+    .pipe(gulpif(options.env === 'production', $.autoprefixer('last 1 version')))
+    .pipe(gulpif(options.env === 'production', $.csso()))
     .pipe(gulp.dest('public/styles'))
 });
 
 gulp.task('scripts', function() {
   return gulp.src(paths.scripts)
+    .pipe($.changed('public/scripts'))
     .pipe($.jshint())
     .pipe($.jshint.reporter('jshint-stylish'))
-    .pipe($.uglify())
+    .pipe(gulpif(options.env === 'production', $.uglify()))
     .pipe(gulp.dest('public/scripts'));
 });
 
 gulp.task('images', function () {
   return gulp.src(paths.images)
+    .pipe($.changed('public/images'))
     .pipe($.cache($.imagemin({
       progressive: true,
       interlaced: true
@@ -122,6 +124,7 @@ gulp.task('images', function () {
 
 gulp.task('extras', function() {
   return gulp.src(paths.extras, { dot: true })
+    .pipe($.changed('public'))
     .pipe(gulp.dest('public'));
 });
 
@@ -135,6 +138,7 @@ gulp.task('build', ['clean'], function() {
 
 gulp.task('html', function() {
   return gulp.src(paths.html)
+    .pipe($.changed('public/templates'))
     .pipe(gulp.dest('public/templates'));
 })
 
