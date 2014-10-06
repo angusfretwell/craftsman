@@ -2,7 +2,8 @@
 'use strict';
 
 var gulp = require('gulp'),
-    $ = require('gulp-load-plugins')();
+    $ = require('gulp-load-plugins')(),
+    minimist = require('minimist');
 
 var paths = {
   styles: 'app/styles/**/*.scss',
@@ -151,8 +152,8 @@ gulp.task('styles', function() {
       style: 'expanded',
       precision: 10
     }))
-    .pipe(gulpif(options.env === 'production', $.autoprefixer('last 1 version')))
-    .pipe(gulpif(options.env === 'production', $.csso()))
+    .pipe($.if(options.env === 'production', $.autoprefixer('last 1 version')))
+    .pipe($.if(options.env === 'production', $.csso()))
     .pipe(gulp.dest('public/styles'))
 });
 
@@ -164,7 +165,7 @@ gulp.task('scripts', function() {
     .pipe($.changed('public/scripts'))
     .pipe($.jshint())
     .pipe($.jshint.reporter('jshint-stylish'))
-    .pipe(gulpif(options.env === 'production', $.uglify()))
+    .pipe($.if(options.env === 'production', $.uglify()))
     .pipe(gulp.dest('public/scripts'));
 });
 
