@@ -19,7 +19,7 @@ var paths = {
 
 var knownOptions = {
   string: 'env',
-  default: { env: process.env.NODE_ENV || 'production' }
+  default: { env: process.env.NODE_ENV || 'staging' }
 };
 
 var options = minimist(process.argv.slice(2), knownOptions);
