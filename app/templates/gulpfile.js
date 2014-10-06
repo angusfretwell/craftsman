@@ -39,13 +39,14 @@ gulp.task('deploy-init', function() {
   var slug = '<%= _.slugify(slug) %>',
       buildpack = 'https://github.com/CHH/heroku-buildpack-php';
 
-  return $.shell.task([
-    'git remote add ' + branch + ' dokku@' + server + ':' + slug,
-    'git push ' + branch + ' master',
-    'ssh dokku@' + server + ' config:set  BUILDPACK_URL=' + buildpack,
-    'ssh dokku@' + server + ' mariadb:create ' + slug,
-    'ssh dokku@' + server + ' mariadb:link ' + slug + ' ' + slug + ''
-  ]);
+  return gulp.src('')
+    .pipe($.shell.task([
+      'git remote add ' + branch + ' dokku@' + server + ':' + slug,
+      'git push ' + branch + ' master',
+      'ssh dokku@' + server + ' config:set  BUILDPACK_URL=' + buildpack,
+      'ssh dokku@' + server + ' mariadb:create ' + slug,
+      'ssh dokku@' + server + ' mariadb:link ' + slug + ' ' + slug + ''
+    ]));
 });
 
 /**
@@ -56,9 +57,10 @@ gulp.task('deploy', function() {
     ? 'dokku-production'
     : 'dokku-staging';
 
-  return $.shell.task([
-    'git push ' + branch + ' master'
-  ]);
+  return gulp.src('')
+    .pipe($.shell.task([
+      'git push ' + branch + ' master'
+    ]));
 });
 
 /**
@@ -67,10 +69,11 @@ gulp.task('deploy', function() {
 gulp.task('db-dump-local', ['build'], function() {
   var slug = '<%= _.slugify(slug) %>';
 
-  return $.shell.task([
-    '[ -d ".tmp" ] || mkdir .tmp',
-    'vagrant ssh --command "mysqldump -uroot -proot ' + slug + ' > /vagrant/.tmp/local.sql"'
-  ]);
+  return gulp.src('')
+    .pipe($.shell.task([
+      '[ -d ".tmp" ] || mkdir .tmp',
+      'vagrant ssh --command "mysqldump -uroot -proot ' + slug + ' > /vagrant/.tmp/local.sql"'
+    ]));
 });
 
 /**
@@ -87,10 +90,11 @@ gulp.task('db-dump-remote', ['build'], function() {
 
   var slug = '<%= _.slugify(slug) %>';
 
-  return $.shell.task([
-    '[ -d ".tmp" ] || mkdir .tmp',
-    'ssh dokku@' + server + ' mariadb:dumpraw ' + slug + ' | tee .tmp/' + file + ' > /dev/null'
-  ]);
+  return gulp.src('')
+    .pipe($.shell.task([
+      '[ -d ".tmp" ] || mkdir .tmp',
+      'ssh dokku@' + server + ' mariadb:dumpraw ' + slug + ' | tee .tmp/' + file + ' > /dev/null'
+    ]));
 });
 
 /**
@@ -103,9 +107,10 @@ gulp.task('db-push', ['db-dump-local'], function() {
 
   var slug = '<%= _.slugify(slug) %>';
 
-  return $.shell.task([
-    'ssh dokku@' + server + ' mariadb:console ' + slug + ' < .tmp/local.sql'
-  ]);
+  return gulp.src('')
+    .pipe($.shell.task([
+      'ssh dokku@' + server + ' mariadb:console ' + slug + ' < .tmp/local.sql'
+    ]));
 });
 
 /**
@@ -118,9 +123,10 @@ gulp.task('db-pull', ['db-dump-remote'], function(){
 
   var slug = '<%= _.slugify(slug) %>';
 
-  $.shell.task([
-    'vagrant ssh --command "mysql -uroot -proot ' + slug + ' < /vagrant/.tmp/ ' + file + '"'
-  ]);
+   return gulp.src('')
+    .pipe($.shell.task([
+      'vagrant ssh --command "mysql -uroot -proot ' + slug + ' < /vagrant/.tmp/ ' + file + '"'
+    ]));
 });
 
 /**
