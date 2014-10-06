@@ -42,7 +42,7 @@ gulp.task('deploy-init', function() {
   return $.shell.task([
     'git remote add ' + branch + ' dokku@' + server + ':' + slug,
     'git push ' + branch + ' master',
-    'ssh dokku@' + server + ' config:set  BUILDPACK_URL=' + buildpackUrl,
+    'ssh dokku@' + server + ' config:set  BUILDPACK_URL=' + buildpack,
     'ssh dokku@' + server + ' mariadb:create ' + slug,
     'ssh dokku@' + server + ' mariadb:link ' + slug + ' ' + slug + ''
   ]);
