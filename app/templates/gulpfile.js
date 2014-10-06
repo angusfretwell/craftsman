@@ -40,7 +40,7 @@ gulp.task('deploy-init', function() {
       buildpack = 'https://github.com/CHH/heroku-buildpack-php';
 
   return gulp.src('')
-    .pipe($.shell.task([
+    .pipe($.shell([
       'git remote add ' + branch + ' dokku@' + server + ':' + slug,
       'git push ' + branch + ' master',
       'ssh dokku@' + server + ' config:set  BUILDPACK_URL=' + buildpack,
@@ -58,7 +58,7 @@ gulp.task('deploy', function() {
     : 'dokku-staging';
 
   return gulp.src('')
-    .pipe($.shell.task([
+    .pipe($.shell([
       'git push ' + branch + ' master'
     ]));
 });
@@ -70,7 +70,7 @@ gulp.task('db-dump-local', ['build'], function() {
   var slug = '<%= _.slugify(slug) %>';
 
   return gulp.src('')
-    .pipe($.shell.task([
+    .pipe($.shell([
       '[ -d ".tmp" ] || mkdir .tmp',
       'vagrant ssh --command "mysqldump -uroot -proot ' + slug + ' > /vagrant/.tmp/local.sql"'
     ]));
@@ -91,7 +91,7 @@ gulp.task('db-dump-remote', ['build'], function() {
   var slug = '<%= _.slugify(slug) %>';
 
   return gulp.src('')
-    .pipe($.shell.task([
+    .pipe($.shell([
       '[ -d ".tmp" ] || mkdir .tmp',
       'ssh dokku@' + server + ' mariadb:dumpraw ' + slug + ' | tee .tmp/' + file + ' > /dev/null'
     ]));
@@ -108,7 +108,7 @@ gulp.task('db-push', ['db-dump-local'], function() {
   var slug = '<%= _.slugify(slug) %>';
 
   return gulp.src('')
-    .pipe($.shell.task([
+    .pipe($.shell([
       'ssh dokku@' + server + ' mariadb:console ' + slug + ' < .tmp/local.sql'
     ]));
 });
@@ -124,7 +124,7 @@ gulp.task('db-pull', ['db-dump-remote'], function(){
   var slug = '<%= _.slugify(slug) %>';
 
    return gulp.src('')
-    .pipe($.shell.task([
+    .pipe($.shell([
       'vagrant ssh --command "mysql -uroot -proot ' + slug + ' < /vagrant/.tmp/ ' + file + '"'
     ]));
 });
