@@ -105,6 +105,7 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
 
     this.copy('editorconfig', '.editorconfig');
     this.copy('jshintrc', '.jshintrc');
+    this.copy('env', '.env');
   },
 
   vagrant: function() {

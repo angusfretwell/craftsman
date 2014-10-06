@@ -36,14 +36,12 @@ gulp.task('deploy-init', function() {
     ? 'dokku-production'
     : 'dokku-staging';
 
-  var slug = '<%= _.slugify(slug) %>',
-      buildpack = 'https://github.com/CHH/heroku-buildpack-php';
+  var slug = '<%= _.slugify(slug) %>';
 
   return gulp.src('')
     .pipe($.shell([
       'git remote add ' + branch + ' dokku@' + server + ':' + slug,
       'git push ' + branch + ' master',
-      'ssh dokku@' + server + ' config:set  BUILDPACK_URL=' + buildpack,
       'ssh dokku@' + server + ' mariadb:create ' + slug,
       'ssh dokku@' + server + ' mariadb:link ' + slug + ' ' + slug + ''
     ]));
