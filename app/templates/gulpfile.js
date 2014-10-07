@@ -228,6 +228,7 @@ gulp.task('build-useref', [
   var assets = $.useref.assets({searchPath: '{public,app}'});
 
   return gulp.src(paths.index)
+    .pipe($.multinject(['http://localhost:35729/livereload.js?snipver=1'], 'livereload'))
     .pipe(assets)
     .pipe($.if(options.env === 'production', $.if('*.js', $.uglify())))
     .pipe($.if(options.env === 'production', $.if('*.css', $.csso())))
