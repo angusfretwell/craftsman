@@ -150,7 +150,7 @@ gulp.task('db-dump', [
  * gulp styles
  */
 gulp.task('styles', function() {
-  return gulp.src([paths.styles, 'bower_components/**/*.scss'])
+  return gulp.src([paths.styles])
     .pipe($.plumber())
     .pipe($.rubySass({
       style: 'expanded',
