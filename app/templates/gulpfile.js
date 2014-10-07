@@ -243,7 +243,7 @@ gulp.task('build-useref', [
 gulp.task('watch', function() {
   gulp.start('build-useref');
 
-  livereload.listen();
+  $.livereload.listen();
   gulp.watch('public/**/*', $.livereload.changed);
 
   gulp.watch(paths.extras,  ['extras']);
