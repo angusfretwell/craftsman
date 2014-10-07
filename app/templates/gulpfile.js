@@ -153,6 +153,7 @@ gulp.task('styles', function() {
   return gulp.src([paths.styles])
     .pipe($.plumber())
     .pipe($.rubySass({
+      loadPath: 'bower_components'
       style: 'expanded',
       precision: 10
     }))
