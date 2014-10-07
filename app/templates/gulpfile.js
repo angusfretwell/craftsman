@@ -11,7 +11,7 @@ var paths = {
   images: 'app/images/**/*.{gif,jpg,png,svg,webp}',
   extras: 'app/*.*',
   html: ['app/**/*.html'],
-  index: 'app/templates/_layout.html',
+  index: 'app/**/_layout.html',
   clean: ['.tmp/*', 'public/**/*',
       '!public/assets', '!public/assets/**/*',
       '!public/index.php', '!public/.htaccess']
@@ -156,8 +156,6 @@ gulp.task('styles', function() {
       style: 'expanded',
       precision: 10
     }))
-    .pipe($.if(options.env === 'production', $.autoprefixer('last 1 version')))
-    .pipe($.if(options.env === 'production', $.csso()))
     .pipe(gulp.dest('public/styles'))
 });
 
@@ -169,7 +167,6 @@ gulp.task('scripts', function() {
     .pipe($.changed('public/scripts'))
     .pipe($.jshint())
     .pipe($.jshint.reporter('jshint-stylish'))
-    .pipe($.if(options.env === 'production', $.uglify()))
     .pipe(gulp.dest('public/scripts'));
 });
 
@@ -228,13 +225,16 @@ gulp.task('build-useref', [
     'styles',
     'extras'
   ], function() {
-  var assets = $.useref.assets({searchPath: '{public, app}'});
+  var assets = $.useref.assets({searchPath: '{public,app}'});
 
   return gulp.src(paths.index)
     .pipe(assets)
+    .pipe($.if(options.env === 'production', $.if('*.js', $.uglify())))
+    .pipe($.if(options.env === 'production', $.if('*.css', $.csso())))
+    .pipe($.if(options.env === 'production', $.if('*.css', $.autoprefixer('last 1 version'))))
     .pipe(assets.restore())
     .pipe($.useref())
-    .pipe(gulp.dest('public/templates'));
+    .pipe(gulp.dest('public'));
 });
 
 /**
