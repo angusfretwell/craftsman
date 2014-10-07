@@ -4,8 +4,6 @@
   },
   "extra": {
     "heroku": {
-      "framework": "slim",
-      "document-root": "public",
       "index-document": "index.php",
       "compile": [
         "chmod -R 777 craft/storage craft/app craft/config"

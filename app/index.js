@@ -95,7 +95,7 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
 
   composer: function() {
     this.copy('_composer.json', 'composer.json');
-    this.write('composer.lock', '');
+    this.copy('_composer.lock', 'composer.lock');
   },
 
   extras: function() {
@@ -106,9 +106,7 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
     this.copy('editorconfig', '.editorconfig');
     this.copy('jshintrc', '.jshintrc');
     this.copy('env', '.env');
-
-    this.mkdir('bin');
-    this.write('bin/.gitkeep', '');
+    this.copy('Procfile', 'Procfile');
   },
 
   vagrant: function() {
