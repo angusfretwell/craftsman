@@ -204,8 +204,8 @@ gulp.task('clean', function(cb) {
  */
 gulp.task('html', function() {
   return gulp.src(paths.html)
-    .pipe($.changed('public/templates'))
-    .pipe(gulp.dest('public/templates'));
+    .pipe($.changed('public'))
+    .pipe(gulp.dest('public'));
 })
 
 /**
