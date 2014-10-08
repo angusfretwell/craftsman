@@ -123,7 +123,7 @@ gulp.task('db-pull', ['db-dump-remote'], function(){
 
    return gulp.src('')
     .pipe($.shell([
-      'vagrant ssh --command "mysql -uroot -proot ' + slug + ' < /vagrant/.tmp/ ' + file + '"'
+      'vagrant ssh --command "mysql -uroot -proot ' + slug + ' < /vagrant/.tmp/' + file + '"'
     ]));
 });
 
@@ -153,7 +153,7 @@ gulp.task('styles', function() {
   return gulp.src([paths.styles])
     .pipe($.plumber())
     .pipe($.rubySass({
-      loadPath: 'bower_components'
+      loadPath: 'bower_components',
       style: 'expanded',
       precision: 10
     }))
