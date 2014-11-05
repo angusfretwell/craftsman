@@ -83,6 +83,5 @@ generator-francis-craft
 
 ## Known Issues
 
-* Upon initial deployment to the Dokku server, the website will sometimes return a 502 or 504 error. This is usually fixed by making a commit and running `gulp deploy`.
 * Rerunning `gulp deploy-init` will fail, since a Dokku remote has already been created. Running `git remote remove dokku` will resolve this.
 * `gulp deploy` will sometimes fail if a newer commit has been deployed but not pushed to the repository. You can override this by running `git push origin dokku --force`.
