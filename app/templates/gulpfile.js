@@ -206,6 +206,7 @@ gulp.task('clean', function(cb) {
 gulp.task('html', function() {
   return gulp.src(paths.html)
     .pipe($.changed('public'))
+    .pipe($.if(options.env === 'production', $.htmlmin({collapseWhitespace: true})))
     .pipe(gulp.dest('public'));
 })
 
