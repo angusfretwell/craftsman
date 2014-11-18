@@ -239,6 +239,7 @@ gulp.task('build-useref', [
     .pipe($.if(options.env === 'production', $.if('*.css', $.autoprefixer('last 1 version'))))
     .pipe(assets.restore())
     .pipe($.useref())
+    .pipe($.if(options.env === 'production',  $.if('*.html', $.htmlmin({collapseWhitespace: true}))))
     .pipe(gulp.dest('public'));
 });
 
