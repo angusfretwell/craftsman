@@ -57,6 +57,7 @@ gulp.task('deploy', function() {
 
   return gulp.src('')
     .pipe($.shell([
+      'git push ',
       'git push ' + branch + ' master'
     ]));
 });
@@ -123,7 +124,7 @@ gulp.task('db-pull', ['db-dump-remote'], function(){
 
    return gulp.src('')
     .pipe($.shell([
-      'vagrant ssh --command "mysql -uroot -proot ' + slug + ' < /vagrant/.tmp/ ' + file + '"'
+      'vagrant ssh --command "mysql -uroot -proot ' + slug + ' < /vagrant/.tmp/' + file + '"'
     ]));
 });
 
@@ -206,6 +207,7 @@ gulp.task('clean', function(cb) {
 gulp.task('html', function() {
   return gulp.src(paths.html)
     .pipe($.changed('public'))
+    .pipe($.if(options.env === 'production', $.htmlmin({collapseWhitespace: true})))
     .pipe(gulp.dest('public'));
 })
 
@@ -238,6 +240,7 @@ gulp.task('build-useref', [
     .pipe($.if(options.env === 'production', $.if('*.css', $.autoprefixer('last 1 version'))))
     .pipe(assets.restore())
     .pipe($.useref())
+    .pipe($.if(options.env === 'production',  $.if('*.html', $.htmlmin({collapseWhitespace: true}))))
     .pipe(gulp.dest('public'));
 });
 
