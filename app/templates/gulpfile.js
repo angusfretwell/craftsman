@@ -57,6 +57,7 @@ gulp.task('deploy', function() {
 
   return gulp.src('')
     .pipe($.shell([
+      'git push ',
       'git push ' + branch + ' master'
     ]));
 });
