@@ -10,6 +10,12 @@
     <link rel="home" href="{{ siteUrl }}" />
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    {% set serverName = craft.request.getServerName() | split('.') %}
+
+    {% if serverName[1] == 'staging' %}
+      <meta name="robots" content="noindex, nofollow">
+    {% endif %}
 
     <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
 
