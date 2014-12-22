@@ -237,7 +237,7 @@ gulp.task('build-useref', [
     .pipe(assets)
     .pipe($.if(options.env === 'production', $.if('*.js', $.uglify())))
     .pipe($.if(options.env === 'production', $.if('*.css', $.csso())))
-    .pipe($.if(options.env === 'production', $.if('*.css', $.autoprefixer('last 1 version'))))
+    .pipe($.if('*.css', $.autoprefixer('last 1 version')))
     .pipe(assets.restore())
     .pipe($.useref())
     .pipe($.if(options.env === 'production',  $.if('*.html', $.htmlmin({collapseWhitespace: true}))))
