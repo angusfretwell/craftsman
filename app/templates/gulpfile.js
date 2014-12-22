@@ -10,7 +10,7 @@ var paths = {
   scripts: 'app/scripts/**/*.js',
   images: 'app/images/**/*.{gif,jpg,png,svg,webp}',
   extras: 'app/*.*',
-  html: ['app/**/*.html'],
+  html: ['app/**/*.{html,json,csv}'],
   index: 'app/**/_layout.html',
   clean: ['.tmp/*', 'public/**/*',
       '!public/assets', '!public/assets/**/*',
