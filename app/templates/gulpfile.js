@@ -3,7 +3,9 @@
 
 var gulp = require('gulp'),
     $ = require('gulp-load-plugins')(),
-    minimist = require('minimist');
+    minimist = require('minimist'),
+    browserify = require('browserify'),
+    transform = require('vinyl-transform');
 
 var paths = {
   styles: 'app/styles/**/*.scss',
@@ -166,13 +168,16 @@ gulp.task('styles', function() {
  * gulp scripts
  */
 gulp.task('scripts', function() {
+  var browserified = transform(function(filename) {
+    var b = browserify(filename);
+    return b.bundle();
+  });
+
   return gulp.src(paths.scripts)
     .pipe($.changed('public/scripts'))
     .pipe($.jshint())
     .pipe($.jshint.reporter('jshint-stylish'))
-    .pipe($.browserify({
-      insertGlobals: true
-    }))
+    .pipe(browserified)
     .pipe(gulp.dest('public/scripts'));
 });
 
