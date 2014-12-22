@@ -24,17 +24,17 @@
     "inuit-pack": "~0.1.1",
     "inuit-page": "~0.2.1",
     "inuit-paragraphs": "~0.1.4",
-    "inuit-print": "~0.0.1",
+    "inuit-print": "*",
     "inuit-reset": "~0.1.1",
     "inuit-responsive-settings": "~0.1.3",
-    "inuit-responsive-spacing": "~0.0.4",
     "inuit-responsive-tools": "~0.1.3",
-    "inuit-responsive-widths": "~0.1.3",
     "inuit-shared": "~0.1.3",
     "inuit-spacing": "~0.6.2",
+    "inuit-spacing-responsive": "~0.0.4",
     "inuit-tables": "~0.2.1",
     "inuit-tabs": "~0.2.1",
-    "inuit-widths": "~0.3.2",<% } if (includejQuery) { %>
+    "inuit-widths": "~0.3.2",
+    "inuit-widths-responsive": "~0.1.3",<% } if (includejQuery) { %>
     "jquery": "~1.11.2",<% } %>
     "modernizr": "~2.8.3"
   },
