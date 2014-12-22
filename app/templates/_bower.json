@@ -2,9 +2,41 @@
   "name": "<%= _.slugify(appname) %>",
   "private": true,
   "dependencies": {<% if (includeInuit) { %>
-    "inuitcss": "~5.0.1",<% } if (includejQuery) { %>
-    "jquery": "~1.11.0",<% } %>
-    "modernizr": "~2.7.2"
+    "inuit-block": "~0.1.2",
+    "inuit-box": "~0.4.4",
+    "inuit-box-sizing": "~0.2.0",
+    "inuit-buttons": "~0.4.1",
+    "inuit-clearfix": "~0.2.1",
+    "inuit-defaults": "~0.2.1",
+    "inuit-flag": "~0.3.2",
+    "inuit-functions": "~0.2.0",
+    "inuit-headings": "~0.2.2",
+    "inuit-images": "~0.3.2",
+    "inuit-layout": "~0.3.2",
+    "inuit-list-bare": "~0.3.0",
+    "inuit-list-block": "~0.4.2",
+    "inuit-list-inline": "~0.3.2",
+    "inuit-list-ui": "~0.4.1",
+    "inuit-lists": "~0.1.0",
+    "inuit-media": "~0.4.2",
+    "inuit-mixins": "~0.2.3",
+    "inuit-normalize.css": "~3.0.1",
+    "inuit-pack": "~0.1.1",
+    "inuit-page": "~0.2.1",
+    "inuit-paragraphs": "~0.1.4",
+    "inuit-print": "~0.0.1",
+    "inuit-reset": "~0.1.1",
+    "inuit-responsive-settings": "~0.1.3",
+    "inuit-responsive-spacing": "~0.0.4",
+    "inuit-responsive-tools": "~0.1.3",
+    "inuit-responsive-widths": "~0.1.3",
+    "inuit-shared": "~0.1.3",
+    "inuit-spacing": "~0.6.2",
+    "inuit-tables": "~0.2.1",
+    "inuit-tabs": "~0.2.1",
+    "inuit-widths": "~0.3.2",<% } if (includejQuery) { %>
+    "jquery": "~1.11.2",<% } %>
+    "modernizr": "~2.8.3"
   },
   "devDependencies": {}
 }

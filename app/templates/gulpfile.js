@@ -158,6 +158,7 @@ gulp.task('styles', function() {
       style: 'expanded',
       precision: 10
     }))
+    .pipe($.autoprefixer('last 1 version'))
     .pipe(gulp.dest('public/styles'))
 });
 
@@ -169,6 +170,9 @@ gulp.task('scripts', function() {
     .pipe($.changed('public/scripts'))
     .pipe($.jshint())
     .pipe($.jshint.reporter('jshint-stylish'))
+    .pipe($.browserify({
+      insertGlobals: true
+    }))
     .pipe(gulp.dest('public/scripts'));
 });
 
@@ -237,10 +241,9 @@ gulp.task('build-useref', [
     .pipe(assets)
     .pipe($.if(options.env === 'production', $.if('*.js', $.uglify())))
     .pipe($.if(options.env === 'production', $.if('*.css', $.csso())))
-    .pipe($.if('*.css', $.autoprefixer('last 1 version')))
     .pipe(assets.restore())
     .pipe($.useref())
-    .pipe($.if(options.env === 'production',  $.if('*.html', $.htmlmin({collapseWhitespace: true}))))
+    .pipe($.if(options.env === 'production', $.if('*.html', $.htmlmin({collapseWhitespace: true}))))
     .pipe(gulp.dest('public'));
 });
 
