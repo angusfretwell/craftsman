@@ -24,7 +24,7 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
     {
       name: 'production',
       message: 'Enter the hostname of the dokku production server',
-      default: 'production.francisbond.com'
+      default: 'craft.francisbond.com'
     }, {
       type: 'checkbox',
       name: 'features',
