@@ -110,6 +110,7 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
     this.copy('editorconfig', '.editorconfig');
     this.copy('jshintrc', '.jshintrc');
     this.copy('env', '.env');
+    this.copy('CHECKS', 'CHECKS');
     this.copy('_env.json', 'env.json');
     this.copy('Procfile', 'Procfile');
   },
