@@ -1,0 +1,24 @@
+0 info it worked if it ends with ok
+1 verbose cli [ 'node', '/usr/local/bin/npm', 'version', 'patch' ]
+2 info using npm@2.5.1
+3 info using node@v0.10.33
+4 info git [ 'status', '--porcelain' ]
+5 verbose stack Error: Git working directory not clean.
+5 verbose stack M app/templates/gulpfile.js
+5 verbose stack     at /usr/local/lib/node_modules/npm/lib/version.js:138:37
+5 verbose stack     at ChildProcess.exithandler (child_process.js:646:7)
+5 verbose stack     at ChildProcess.emit (events.js:98:17)
+5 verbose stack     at maybeClose (child_process.js:756:16)
+5 verbose stack     at Socket.<anonymous> (child_process.js:969:11)
+5 verbose stack     at Socket.emit (events.js:95:17)
+5 verbose stack     at Pipe.close (net.js:465:12)
+6 verbose cwd /Users/angus/Sites/generators/generator-francis-craft
+7 error Darwin 14.1.0
+8 error argv "node" "/usr/local/bin/npm" "version" "patch"
+9 error node v0.10.33
+10 error npm  v2.5.1
+11 error Git working directory not clean.
+11 error M app/templates/gulpfile.js
+12 error If you need help, you may report this error at:
+12 error     <http://github.com/npm/npm/issues>
+13 verbose exit [ 1, true ]
