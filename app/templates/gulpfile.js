@@ -14,9 +14,14 @@ var paths = {
   extras: 'app/*.*',
   html: ['app/**/*.{html,json,csv}'],
   index: 'app/**/_layout.html',
-  clean: ['.tmp/*', 'public/**/*',
-      '!public/assets', '!public/assets/**/*',
-      '!public/index.php', '!public/.htaccess']
+  clean: [
+    '.tmp/*',
+    'public/**/*',
+    '!public/assets',
+    '!public/assets/**/*',
+    '!public/index.php',
+    '!public/.htaccess'
+  ]
 };
 
 var knownOptions = {
@@ -24,110 +29,104 @@ var knownOptions = {
   default: { env: process.env.NODE_ENV || 'staging' }
 };
 
-var options = minimist(process.argv.slice(2), knownOptions);
+var options = minimist(process.argv.slice(2), knownOptions),
+    remotes = require('./env.json').remotes;
+
+var env = {
+  slug: '<%= _.slugify(slug) %>',
+  branch: 'dokku-' + options.env,
+  sqlFile: 'remote--' + options.env + '.sql'
+}
+
+if (remotes[options.env]) {
+  env.server = remotes[options.env]
+} else {
+  var remoteName = $.util.colors.cyan('\'' + options.env + '\'');
+
+  $.util
+    .log('Uh oh, ' + remoteName + ' is not a valid remote.')
+    .beep();
+
+  process.exit(1);
+}
 
 /**
  * gulp deploy-init
  */
 gulp.task('deploy-init', function() {
-  var server = options.env === 'production'
-    ? '<%= remoteProduction %>'
-    : '<%= remoteStaging %>';
-
-  var branch = options.env === 'production'
-    ? 'dokku-production'
-    : 'dokku-staging';
-
-  var slug = '<%= _.slugify(slug) %>';
 
   return gulp.src('')
     .pipe($.shell([
-      'git remote add ' + branch + ' dokku@' + server + ':' + slug,
-      'git push ' + branch + ' master',
-      'ssh dokku@' + server + ' mariadb:create ' + slug,
-      'ssh dokku@' + server + ' mariadb:link ' + slug + ' ' + slug + ''
-    ]));
+      'git remote add <%= remote %> dokku@<%= server %>:<%= slug %>',
+      'git push <%= remote %> master',
+      'ssh dokku@<%= server %> mariadb:create <%= slug %>',
+      'ssh dokku@<%= server %> mariadb:link <%= slug %> <%= slug %>'
+    ], {
+      templateData: env
+    }));
 });
 
 /**
  * gulp deploy
  */
 gulp.task('deploy', function() {
-  var branch = options.env === 'production'
-    ? 'dokku-production'
-    : 'dokku-staging';
-
   return gulp.src('')
-    .pipe($.shell([
-      'git push ',
-      'git push ' + branch + ' master'
-    ]));
+   .pipe($.shell([
+      'git push origin master',
+      'git push <%= remote %> master'
+    ], {
+      templateData: env
+    }));
 });
 
 /**
  * gulp db-dump-local
  */
 gulp.task('db-dump-local', ['build'], function() {
-  var slug = '<%= _.slugify(slug) %>';
-
   return gulp.src('')
     .pipe($.shell([
       '[ -d ".tmp" ] || mkdir .tmp',
-      'vagrant ssh --command "mysqldump -uroot -proot ' + slug + ' > /vagrant/.tmp/local.sql"'
-    ]));
+      'vagrant ssh --command "mysqldump -uroot -proot <%= slug %> > /vagrant/.tmp/local.sql"'
+    ], {
+      templateData: env
+    }));
 });
 
 /**
  * gulp db-dump-remote
  */
 gulp.task('db-dump-remote', ['build'], function() {
-  var server = options.env === 'production'
-    ? '<%= remoteProduction %>'
-    : '<%= remoteStaging %>';
-
-  var file = options.env === 'production'
-    ? 'remote--production.sql'
-    : 'remote--staging.sql';
-
-  var slug = '<%= _.slugify(slug) %>';
-
   return gulp.src('')
     .pipe($.shell([
       '[ -d ".tmp" ] || mkdir .tmp',
-      'ssh dokku@' + server + ' mariadb:dumpraw ' + slug + ' | tee .tmp/' + file + ' > /dev/null'
-    ]));
+      'ssh dokku@<%= server %> mariadb:dumpraw <%= skyg %> | tee .tmp/<%= sqlFile %> > /dev/null'
+    ], {
+      templateData: env
+    }));
 });
 
 /**
  * gulp db-push
  */
 gulp.task('db-push', ['db-dump-local'], function() {
-  var server = options.env === 'production'
-    ? '<%= remoteProduction %>'
-    : '<%= remoteStaging %>';
-
-  var slug = '<%= _.slugify(slug) %>';
-
   return gulp.src('')
     .pipe($.shell([
-      'ssh dokku@' + server + ' mariadb:console ' + slug + ' < .tmp/local.sql'
-    ]));
+      'ssh dokku@<%= server %> mariadb:console <%= skyg %> < .tmp/local.sql'
+    ], {
+      templateData: env
+    }));
 });
 
 /**
  * gulp db-pull
  */
 gulp.task('db-pull', ['db-dump-remote'], function(){
-  var file = options.env === 'production'
-    ? 'remote--production.sql'
-    : 'remote--staging.sql';
-
-  var slug = '<%= _.slugify(slug) %>';
-
-   return gulp.src('')
+  return gulp.src('')
     .pipe($.shell([
-      'vagrant ssh --command "mysql -uroot -proot ' + slug + ' < /vagrant/.tmp/' + file + '"'
-    ]));
+      'vagrant ssh --command "mysql -uroot -proot <%= slug %> < /vagrant/.tmp/<%= sqlFile %>"'
+    ], {
+      templateData: env
+    }));
 });
 
 /**
@@ -138,15 +137,11 @@ gulp.task('db-dump', [
     'db-dump-local',
     'db-dump-remote'
   ], function() {
-    var file = options.env === 'production'
-      ? 'remote--production.sql'
-      : 'remote--staging.sql';
-
     return gulp.src([
-        '.tmp/local.sql',
-        '.tmp/ ' + file
-      ])
-      .pipe(gulp.dest('databases'));
+      '.tmp/local.sql',
+      '.tmp/ ' + env.sqlFile
+    ])
+    .pipe(gulp.dest('databases'));
 });
 
 /**
@@ -161,6 +156,7 @@ gulp.task('styles', function() {
       precision: 10
     }))
     .pipe($.autoprefixer('last 1 version'))
+    .pipe($.if(options.env === 'production', $.csso()))
     .pipe(gulp.dest('public/styles'))
 });
 
@@ -174,10 +170,10 @@ gulp.task('scripts', function() {
   });
 
   return gulp.src(paths.scripts)
-    .pipe($.changed('public/scripts'))
     .pipe($.jshint())
     .pipe($.jshint.reporter('jshint-stylish'))
     .pipe(browserified)
+    .pipe($.if(options.env === 'production', $.uglify()))
     .pipe(gulp.dest('public/scripts'));
 });
 
@@ -239,7 +235,7 @@ gulp.task('build-useref', [
     'styles',
     'extras'
   ], function() {
-  var assets = $.useref.assets({searchPath: '{public,app}'});
+  var assets = $.useref.assets({search Path: '{public,app}'});
 
   return gulp.src(paths.index)
     .pipe($.if(options.env !== 'production',
