@@ -99,7 +99,7 @@ gulp.task('db-dump-remote', ['build'], function() {
   return gulp.src('')
     .pipe($.shell([
       '[ -d ".tmp" ] || mkdir .tmp',
-      'ssh dokku@<%= server %> mariadb:dumpraw <%= skyg %> | tee .tmp/<%= sqlFile %> > /dev/null'
+      'ssh dokku@<%= server %> mariadb:dumpraw <%= slug %> | tee .tmp/<%= sqlFile %> > /dev/null'
     ], {
       templateData: env
     }));
@@ -111,7 +111,7 @@ gulp.task('db-dump-remote', ['build'], function() {
 gulp.task('db-push', ['db-dump-local'], function() {
   return gulp.src('')
     .pipe($.shell([
-      'ssh dokku@<%= server %> mariadb:console <%= skyg %> < .tmp/local.sql'
+      'ssh dokku@<%= server %> mariadb:console <%= slug %> < .tmp/local.sql'
     ], {
       templateData: env
     }));
@@ -132,16 +132,21 @@ gulp.task('db-pull', ['db-dump-remote'], function(){
 /**
  * gulp db-dump
  */
-gulp.task('db-dump', [
+gulp.task('db-backup', [
     'clean',
     'db-dump-local',
     'db-dump-remote'
   ], function() {
+    var d = new Date().toLocaleString()
+
     return gulp.src([
       '.tmp/local.sql',
-      '.tmp/ ' + env.sqlFile
+      '.tmp/' + env.sqlFile
     ])
-    .pipe(gulp.dest('databases'));
+    .pipe($.rename({
+      prefix: d + ' '
+    }))
+    .pipe(gulp.dest('databases'))
 });
 
 /**

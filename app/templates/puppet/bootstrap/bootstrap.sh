@@ -31,4 +31,3 @@ rm puppetlabs-release-precise.deb
 echo '- VM is bootstrapped and ready to go...'
 echo '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 echo ''
-
