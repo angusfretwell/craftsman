@@ -1,6 +1,6 @@
 {
   "name": "generator-francis-craft",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "Scaffold out a Craft website",
   "license": "MIT",
   "main": "app/index.js",
