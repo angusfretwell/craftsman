@@ -65,12 +65,11 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
   },
 
   styles: function() {
-    this.mkdir('app/styles');
-
-    this.copy('main.scss', 'app/styles/main.scss');
-
-    if (this.includeInuit) {
-      this.copy('vars.scss', 'app/styles/_vars.scss');
+    if (!this.includeInuit) {
+      this.mkdir('app/styles');
+      this.copy('main.scss', 'app/styles/main.scss');
+    } else {
+      this.dir('styles', 'app/styles');
     }
   },
 
