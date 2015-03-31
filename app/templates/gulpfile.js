@@ -156,6 +156,8 @@ gulp.task('styles', function() {
   return gulp.src(paths.styles)
     .pipe($.plumber())
     .pipe($.rubySass({
+      bundleExec: true,
+      require: 'sass-globbing',
       loadPath: 'bower_components',
       style: 'expanded',
       precision: 10
@@ -164,6 +166,7 @@ gulp.task('styles', function() {
     .pipe($.if(options.env === 'production', $.csso()))
     .pipe(gulp.dest('public/styles'))
 });
+
 
 /**
  * gulp scripts
@@ -240,7 +243,7 @@ gulp.task('build-useref', [
     'styles',
     'extras'
   ], function() {
-  var assets = $.useref.assets({search Path: '{public,app}'});
+  var assets = $.useref.assets({searchPath: '{public,app}'});
 
   return gulp.src(paths.index)
     .pipe($.if(options.env !== 'production',

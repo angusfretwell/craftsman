@@ -107,6 +107,7 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
     this.copy('humans.txt', 'app/humans.txt');
 
     this.copy('editorconfig', '.editorconfig');
+    this.copy('Gemfile', 'Gemfile');
     this.copy('jshintrc', '.jshintrc');
     this.copy('env', '.env');
     this.copy('CHECKS', 'CHECKS');
