@@ -69,7 +69,7 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
       this.mkdir('app/styles');
       this.copy('main.scss', 'app/styles/main.scss');
     } else {
-      this.dir('styles', 'app/styles');
+      this.directory('styles', 'app/styles');
     }
   },
 
