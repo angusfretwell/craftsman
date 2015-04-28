@@ -57,8 +57,8 @@ gulp.task('deploy-init', function() {
 
   return gulp.src('')
     .pipe($.shell([
-      'git remote add <%%= remote %> dokku@<%%= server %>:<%%= slug %>',
-      'git push <%%= remote %> master',
+      'git remote add <%%= branch %> dokku@<%%= server %>:<%%= slug %>',
+      'git push <%%= branch %> master',
       'ssh dokku@<%%= server %> mariadb:create <%%= slug %>',
       'ssh dokku@<%%= server %> mariadb:link <%%= slug %> <%%= slug %>'
     ], {
@@ -73,7 +73,7 @@ gulp.task('deploy', function() {
   return gulp.src('')
    .pipe($.shell([
       'git push origin master',
-      'git push <%%= remote %> master'
+      'git push <%%= branch %> master'
     ], {
       templateData: env
     }));
