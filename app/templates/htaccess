@@ -12,4 +12,5 @@
 	php_value max_execution_time 600
 	php_value memory_limit 768M
 	php_value upload_max_filesize 32M
+	php_value xdebug.max_nesting_level 1000
 </IfModule>
