@@ -81,6 +81,10 @@ generator-francis-craft
 
   Install project-specific npm packages defined in the package.json. You should run this command when cloning an already initialized repository.
 
+* `bundle install`
+
+  Install `sass` and `sass-globbing` which are required by the build system.
+
 ## Known Issues
 
 * Rerunning `gulp deploy-init` will fail, since a Dokku remote has already been created. Running `git remote remove dokku` will resolve this.
