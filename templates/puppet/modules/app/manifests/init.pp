@@ -3,7 +3,7 @@ class app {
   # CONFIGURABLE PROPERTIES
   # -----------------------------------------------------------------
   $root_password = 'root'
-  $db_name       = '<%= _.slugify(slug) %>'
+  $db_name       = '<%= slug %>'
   $db_username   = 'root'
   $db_password   = 'root'
   # -----------------------------------------------------------------

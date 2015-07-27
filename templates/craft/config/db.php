@@ -28,7 +28,7 @@ return array(
   'tablePrefix' => 'craft',
   ),
 
-  '<%= _.slugify(slug) %>.craft.dev' => array(
+  '<%= slug %>.craft.dev' => array(
   // The database server name or IP address. Usually this is 'localhost' or '127.0.0.1'.
   'server' => 'localhost',
 
@@ -39,6 +39,6 @@ return array(
   'password' => 'root',
 
   // The name of the database to select.
-  'database' => '<%= _.slugify(slug) %>',
+  'database' => '<%= slug %>',
   ),
 );

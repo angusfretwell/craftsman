@@ -26,7 +26,7 @@ return array(
     )
   ),
 
-  '<%= _.slugify(slug) %>.craft.dev' => array(
+  '<%= slug %>.craft.dev' => array(
     'devMode' => true,
     'cacheDuration' => 'PT1S'
   ),

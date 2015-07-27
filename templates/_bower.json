@@ -1,5 +1,5 @@
 {
-  "name": "<%= _.slugify(appname) %>",
+  "name": "<%= slug %>",
   "private": true,
   "dependencies": {<% if (includeInuit) { %>
     "inuit-spacing-responsive": "~0.0.8",

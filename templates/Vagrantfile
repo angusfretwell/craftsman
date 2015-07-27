@@ -4,7 +4,7 @@
 # ------------------------------------------------------------------------
 # CONFIGURABLE PROPERTIES
 # ------------------------------------------------------------------------
-$project_name  = '<%= _.slugify(slug) %>'
+$project_name  = '<%= slug %>'
 $ip_address = '192.168.11.11'
 $hostname = $project_name + '.craft.dev'
 # ------------------------------------------------------------------------
@@ -17,7 +17,7 @@ Vagrant.configure('2') do |config|
   # Host manager
   config.hostmanager.enabled = true
   config.hostmanager.manage_host = true
-  
+
   # VirtualBox
   config.vm.provider "virtualbox" do |v|
     v.memory = 1024
