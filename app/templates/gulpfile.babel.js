@@ -5,7 +5,10 @@ import gulp from 'gulp';
 import gulpLoadPlugins from 'gulp-load-plugins';
 import browserSync from 'browser-sync';
 import del from 'del';
-import {stream as wiredep} from 'wiredep';
+import minimist from 'minimist';
+
+const $ = gulpLoadPlugins();
+const reload = browserSync.reload;
 
 const knownOptions = {
   string: 'env',
