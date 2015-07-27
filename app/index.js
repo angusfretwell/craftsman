@@ -3,7 +3,7 @@
 var yeoman = require('yeoman-generator'),
     yosay = require('yosay');
 
-var FrancisCraftGenerator = yeoman.generators.Base.extend({
+var CraftGenerator = yeoman.generators.Base.extend({
   init: function() {
     this.pkg = require('../package.json');
   },
@@ -11,7 +11,7 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
   promptTask: function() {
     var done = this.async();
 
-    this.log(yosay('You\'re using Francis Bond\'s fantastic Craft generator.'));
+    this.log(yosay('You\'re using the fantastic Craft generator.'));
 
     this.prompt([{
       name: 'slug',
@@ -19,15 +19,15 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
     }, {
       name: 'dev',
       message: 'Enter the hostname of the dokku development server',
-      default: 'dev.francisbond.com'
+      default: 'dev.mydokkuhost.com'
     }, {
       name: 'staging',
       message: 'Enter the hostname of the dokku staging server',
-      default: 'staging.francisbond.com'
+      default: 'staging.mydokkuhost.com'
     }, {
       name: 'production',
       message: 'Enter the hostname of the dokku production server',
-      default: 'craft.francisbond.com'
+      default: 'craft.mydokkuhost.com'
     }, {
       type: 'checkbox',
       name: 'features',
@@ -141,4 +141,4 @@ var FrancisCraftGenerator = yeoman.generators.Base.extend({
   }
 });
 
-module.exports = FrancisCraftGenerator;
+module.exports = CraftGenerator;

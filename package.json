@@ -1,13 +1,13 @@
 {
-  "name": "generator-francis-craft",
+  "name": "generator-craft",
   "version": "0.7.3",
   "description": "Scaffold out a Craft website",
   "license": "MIT",
   "main": "app/index.js",
-  "repository": "francisbond/generator-francis-craft",
+  "repository": "francisbond/generator-craft",
   "author": {
     "name": "Angus Fretwell",
-    "email": "angus@francisbond.com",
+    "email": "angusfretwell@me.com",
     "url": "https://github.com/angusfretwell"
   },
   "engines": {
