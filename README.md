@@ -1,34 +1,53 @@
-generator-craftsman
+Generator Craftsman
 ===================
 
-[Yeoman](http://yeoman.io) generator for scaffolding a [Craft](http://buildwithcraft.com) website with [Gulp](http://gulpjs.com/), Bower, Sass, inuit.css, Modernizr, and jQuery.
+A [Yeoman](http://yeoman.io) generator for scaffolding a [Craft](http://buildwithcraft.com) website with [Gulp](http://gulpjs.com/), Bower, Sass, Babel, inuit.css, and more.
 
-## Features
+Features
+--------
 
-* Set up a fresh copy of Craft
-* Generate a Vagrantfile with provisioning via Puppet
-* Deploy to a Dokku-powered server
-* Copy databases between local and remote environments
+* Create a fresh installation of craft
+* Generate a Vagrantfile and Puppet provisioning scripts
+* Deploy to a Dokku-powered hosting environment
+* Copy databases to and from from Dokku hosts
 * Automatically compile Sass with Autoprefixing
 * Automatically lint your Javascript
 * Image optimization (png, jpg, gif)
 * Optionally include inuit.css and jQuery
 
-## Initialization
+Installation
+------------
 
 * Install: `npm install -g generator-craftsman`
-* Run: `yo craft`
-* Run `gulp build` for building and `gulp watch` for preview
-* Use `gulp deploy-init` to initalise a deployment environment
-* Run `gulp deploy` after committing changes to deploy them
-* Use `gulp db-push` and `gulp db-pull` to push and pull databases between local and remote environments
 
 ### Requirements
-* For using the provided development environment, VirtualBox, Vagrant, and the [Vagrant Host Manager](https://github.com/smdahlen/vagrant-hostmanager) plugin must be installed.
-* The generator requires Ruby and Sass to be installed, and inuit.css requires at least Sass 3.3. Using the newest version available is recommended: `gem install sass`.
-* Yeoman, Bower, and gulp.js should be installed globally via npm.
 
-## Available Commands
+* For using the provided development environment, VirtualBox, Vagrant, and the [Vagrant Host Manager](https://github.com/smdahlen/vagrant-hostmanager) plugin must be installed.
+* Yeoman, Bower, and gulp.js should be installed globally via npm: `npm i -g yo bower gulp`
+
+
+Project Setup
+-------------
+
+* Create a new directory with `mkdir my-craft-project`
+* Change to the project directory with `cd my-craft-project`
+* Run `yo craft` and follow the prompts
+
+### Development
+
+* Run `gulp build` to build to `/public`
+* Run `gulp watch` to watch for changes and live-reload via BrowserSync
+
+### Deployment
+
+Hint: Use the `--env` flag to specify an environment listend in `env.json`, e.g., `gulp deploy --env production`.
+
+* Use `gulp deploy-init` to initalise a deployment environment
+* Run `gulp deploy` after committing changes to deploy them
+* Use `gulp db-push` and `gulp db-pull` to copy databases to and from an environment
+
+Available Commands
+------------------
 
 ### Deployment
 
@@ -55,7 +74,7 @@ generator-craftsman
 
   Dumps the remote Dokku MariaDB database to `/.tmp`, and imports it to the local environment.
 
-* `gulp db-dump`
+* `gulp db-backup`
 
   Dumps the local and remote databases, and saves them to `/databases`.
 
@@ -63,7 +82,7 @@ generator-craftsman
 
 * `gulp watch`
 
-  Watches the project for changes in images, styles, javascript, HTML, etc. and performs appropriate actions. Skips some non-critical resource-intensive processes (e.g. image optimization).
+  Watches the project for changes in images, styles, javascript, HTML, etc. and performs appropriate actions.
 
 * `gulp build`
 
@@ -78,10 +97,6 @@ generator-craftsman
 * `npm install`
 
   Install project-specific npm packages defined in the package.json. You should run this command when cloning an already initialized repository.
-
-* `bundle install`
-
-  Install `sass` and `sass-globbing` which are required by the build system.
 
 ## Known Issues
 
