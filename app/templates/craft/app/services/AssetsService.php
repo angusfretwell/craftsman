@@ -4,12 +4,13 @@ namespace Craft;
 /**
  * Class AssetsService
  *
- * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
- * @package   craft.app.services
- * @since     1.0
+ * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright  Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license    http://buildwithcraft.com/license Craft License Agreement
+ * @see        http://buildwithcraft.com
+ * @package    craft.app.services
+ * @since      1.0
+ * @deprecated This class will have several breaking changes in Craft 3.0.
  */
 class AssetsService extends BaseApplicationComponent
 {
@@ -123,7 +124,7 @@ class AssetsService extends BaseApplicationComponent
 
 			if (!$fileRecord)
 			{
-				throw new Exception(Craft::t("No asset exists with the ID “{id}”", array('id' => $file->id)));
+				throw new Exception(Craft::t("No asset exists with the ID “{id}”.", array('id' => $file->id)));
 			}
 		}
 		else
@@ -148,24 +149,41 @@ class AssetsService extends BaseApplicationComponent
 			return false;
 		}
 
+		if ($isNewFile && !$file->getContent()->title)
+		{
+			// Give it a default title based on the file name
+			$file->getContent()->title = str_replace('_', ' ', IOHelper::getFileName($file->filename, false));
+		}
+
 		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+
 		try
 		{
-			if ($isNewFile && !$file->getContent()->title)
-			{
-				// Give it a default title based on the file name
-				$file->getContent()->title = str_replace('_', ' ', IOHelper::getFileName($file->filename, false));
-			}
-
 			// Fire an 'onBeforeSaveAsset' event
-			$this->onBeforeSaveAsset(new Event($this, array(
+			$event = new Event($this, array(
 				'asset'      => $file,
 				'isNewAsset' => $isNewFile
-			)));
+			));
 
-			// Save the element
-			if (craft()->elements->saveElement($file, false))
+			$this->onBeforeSaveAsset($event);
+
+			// Is the event giving us the go-ahead?
+			if ($event->performAction)
 			{
+				// Save the element
+				$success = craft()->elements->saveElement($file, false);
+
+				// If it didn't work, rollback the transaction in case something changed in onBeforeSaveAsset
+				if (!$success)
+				{
+					if ($transaction !== null)
+					{
+						$transaction->rollback();
+					}
+
+					return false;
+				}
+
 				// Now that we have an element ID, save it on the other stuff
 				if ($isNewFile)
 				{
@@ -174,15 +192,17 @@ class AssetsService extends BaseApplicationComponent
 
 				// Save the file row
 				$fileRecord->save(false);
-
-				if ($transaction !== null)
-				{
-					$transaction->commit();
-				}
 			}
 			else
 			{
-				return false;
+				$success = false;
+			}
+
+			// Commit the transaction regardless of whether we saved the asset, in case something changed
+			// in onBeforeSaveAsset
+			if ($transaction !== null)
+			{
+				$transaction->commit();
 			}
 		}
 		catch (\Exception $e)
@@ -195,60 +215,24 @@ class AssetsService extends BaseApplicationComponent
 			throw $e;
 		}
 
-		// If we've made it here, everything has been successful so far.
-
-		// Fire an 'onSaveAsset' event
-		$this->onSaveAsset(new Event($this, array(
-			'asset'      => $file
-		)));
-
-		if ($this->hasEventHandler('onSaveFileContent'))
+		if ($success)
 		{
-			// Fire an 'onSaveFileContent' event (deprecated)
-			$this->onSaveFileContent(new Event($this, array(
-				'file' => $file
+			// Fire an 'onSaveAsset' event
+			$this->onSaveAsset(new Event($this, array(
+				'asset'      => $file,
+				'isNewAsset' => $isNewFile
 			)));
+
+			if ($this->hasEventHandler('onSaveFileContent'))
+			{
+				// Fire an 'onSaveFileContent' event (deprecated)
+				$this->onSaveFileContent(new Event($this, array(
+					'file' => $file
+				)));
+			}
 		}
 
-		return true;
-	}
-
-	/**
-	 * Fires an 'onBeforeSaveAsset' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onBeforeSaveAsset(Event $event)
-	{
-		$this->raiseEvent('onBeforeSaveAsset', $event);
-	}
-
-	/**
-	 * Fires an 'onSaveAsset' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @return null
-	 */
-	public function onSaveAsset(Event $event)
-	{
-		$this->raiseEvent('onSaveAsset', $event);
-	}
-
-	/**
-	 * Fires an 'onSaveFileContent' event.
-	 *
-	 * @param Event $event
-	 *
-	 * @deprecated Deprecated in 2.0. Use {@link onSaveAsset() `assets.onSaveAsset`} instead.
-	 * @return null
-	 */
-	public function onSaveFileContent(Event $event)
-	{
-		craft()->deprecator->log('AssetsService::onSaveFileContent()', 'The assets.onSaveFileContent event has been deprecated. Use assets.onSaveAsset instead.');
-		$this->raiseEvent('onSaveFileContent', $event);
+		return $success;
 	}
 
 	//  Folders
@@ -290,6 +274,11 @@ class AssetsService extends BaseApplicationComponent
 	 */
 	public function getFolderTreeBySourceIds($allowedSourceIds)
 	{
+		if (empty($allowedSourceIds))
+		{
+			return array();
+		}
+
 		$folders = $this->findFolders(array('sourceId' => $allowedSourceIds, 'order' => 'path'));
 		$tree = $this->_getFolderTreeByFolders($folders);
 
@@ -424,7 +413,7 @@ class AssetsService extends BaseApplicationComponent
 			}
 
 			$source = craft()->assetSources->getSourceTypeById($folder->sourceId);
-			$response = $source->renameFolder($folder, AssetsHelper::cleanAssetName($newName));
+			$response = $source->renameFolder($folder, AssetsHelper::cleanAssetName($newName, false));
 		}
 		catch (Exception $exception)
 		{
@@ -693,12 +682,34 @@ class AssetsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Inserts a file from a local path into a folder and returns the resulting file id.
+	 * Saves a file into an asset folder.
 	 *
-	 * @param string $localPath
-	 * @param string $fileName
-	 * @param int    $folderId
-	 * @param mixed  $conflictResolution What action should be taken in the event of a filename conflict.
+	 * This can be used to store newly-uploaded files:
+	 *
+	 * ```php
+	 * $uploadedFile = UploadedFile::getInstanceByName('photo');
+	 * $folderId = 10;
+	 *
+	 * $response = craft()->assets->insertFileByLocalPath(
+	 *     $uploadedFile->tempName,
+	 *     $uploadedFile->name,
+	 *     $folderId,
+	 *     AssetConflictResolution::KeepBoth
+	 * );
+	 *
+	 * if ($response->isSuccess())
+	 * {
+	 *     $fileId = $response->getDataItem('fileId');
+	 *     // ...
+	 * }
+	 * ```
+	 *
+	 * @param string $localPath          The local path to the file.
+	 * @param string $fileName           The name that the file should be given when saved in the asset folder.
+	 * @param int    $folderId           The ID of the folder that the file should be saved into.
+	 * @param string $conflictResolution What action should be taken in the event of a filename conflict, if any
+	 *                                   (`AssetConflictResolution::KeepBoth`, `AssetConflictResolution::Replace`,
+	 *                                   or `AssetConflictResolution::Cancel).
 	 *
 	 * @return AssetOperationResponseModel
 	 */
@@ -738,11 +749,12 @@ class AssetsService extends BaseApplicationComponent
 	/**
 	 * Delete a list of files by an array of ids (or a single id).
 	 *
-	 * @param $fileIds
+	 * @param array $fileIds
+	 * @param bool $deleteFile Should the file be deleted along the record. Defaults to true.
 	 *
 	 * @return AssetOperationResponseModel
 	 */
-	public function deleteFiles($fileIds)
+	public function deleteFiles($fileIds, $deleteFile = true)
 	{
 		if (!is_array($fileIds))
 		{
@@ -757,9 +769,30 @@ class AssetsService extends BaseApplicationComponent
 			{
 				$file = $this->getFileById($fileId);
 				$source = craft()->assetSources->getSourceTypeById($file->sourceId);
-				$source->deleteFile($file);
-				craft()->elements->deleteElementById($fileId);
+
+				// Fire an 'onBeforeDeleteAsset' event
+				$event = new Event($this, array(
+					'asset' => $file
+				));
+
+				$this->onBeforeDeleteAsset($event);
+
+				if ($event->performAction)
+				{
+					if ($deleteFile)
+					{
+						$source->deleteFile($file);
+					}
+
+					craft()->elements->deleteElementById($fileId);
+
+					// Fire an 'onDeleteAsset' event
+					$this->onDeleteAsset(new Event($this, array(
+						'asset' => $file
+					)));
+				}
 			}
+
 			$response->setSuccess();
 		}
 		catch (Exception $exception)
@@ -801,6 +834,18 @@ class AssetsService extends BaseApplicationComponent
 		$results = array();
 
 		$response = new AssetOperationResponseModel();
+
+		// Make sure the filename is allowed
+		if ($filename)
+		{
+			$extension = IOHelper::getExtension($filename);
+
+			if (!IOHelper::isExtensionAllowed($extension))
+			{
+				$response->setError(Craft::t('This file type is not allowed'));
+				return $response;
+			}
+		}
 
 		$folder = $this->getFolderById($folderId);
 		$newSourceType = craft()->assetSources->getSourceTypeById($folder->sourceId);
@@ -993,7 +1038,10 @@ class AssetsService extends BaseApplicationComponent
 				throw new Exception(Craft::t('That folder does not seem to exist anymore. Re-index the Assets source and try again.'));
 			}
 
-			if (!craft()->userSession->checkPermission($permission.':'.$folderModel->sourceId))
+			if (
+				!craft()->userSession->checkPermission($permission.':'.$folderModel->sourceId)
+				&&
+				!craft()->userSession->checkAuthorization($permission.':'.$folderModel->id))
 			{
 				throw new Exception(Craft::t('You don’t have the required permissions for this operation.'));
 			}
@@ -1030,6 +1078,107 @@ class AssetsService extends BaseApplicationComponent
 				throw new Exception(Craft::t('You don’t have the required permissions for this operation.'));
 			}
 		}
+	}
+
+	// Events
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Fires an 'onBeforeUploadAsset' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onBeforeUploadAsset(Event $event)
+	{
+		$this->raiseEvent('onBeforeUploadAsset', $event);
+	}
+
+	/**
+	 * Fires an 'onBeforeSaveAsset' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onBeforeSaveAsset(Event $event)
+	{
+		$this->raiseEvent('onBeforeSaveAsset', $event);
+	}
+
+	/**
+	 * Fires an 'onSaveAsset' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onSaveAsset(Event $event)
+	{
+		$this->raiseEvent('onSaveAsset', $event);
+	}
+
+	/**
+	 * Fires an 'onBeforeReplaceFile' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onBeforeReplaceFile(Event $event)
+	{
+		$this->raiseEvent('onBeforeReplaceFile', $event);
+	}
+
+	/**
+	 * Fires an 'onReplaceFile' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onReplaceFile(Event $event)
+	{
+		$this->raiseEvent('onReplaceFile', $event);
+	}
+
+	/**
+	 * Fires an 'onSaveFileContent' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @deprecated Deprecated in 2.0. Use {@link onSaveAsset() `assets.onSaveAsset`} instead.
+	 * @return null
+	 */
+	public function onSaveFileContent(Event $event)
+	{
+		craft()->deprecator->log('AssetsService::onSaveFileContent()', 'The assets.onSaveFileContent event has been deprecated. Use assets.onSaveAsset instead.');
+		$this->raiseEvent('onSaveFileContent', $event);
+	}
+
+	/**
+	 * Fires an 'onBeforeDeleteAsset' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onBeforeDeleteAsset(Event $event)
+	{
+		$this->raiseEvent('onBeforeDeleteAsset', $event);
+	}
+
+	/**
+	 * Fires an 'onDeleteAsset' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onDeleteAsset(Event $event)
+	{
+		$this->raiseEvent('onDeleteAsset', $event);
 	}
 
 	// Private Methods
@@ -1231,6 +1380,7 @@ class AssetsService extends BaseApplicationComponent
 		if ($fileId)
 		{
 			$response->setDataItem('fileId', $fileId);
+			$response->setDataItem('filename', $theNewFile->filename);
 		}
 
 		return $response;
@@ -1261,9 +1411,9 @@ class AssetsService extends BaseApplicationComponent
 			// Use the previous data to clean up
 			craft()->assetTransforms->deleteAllTransformData($oldFileModel);
 			$originatingSource->finalizeTransfer($oldFileModel);
-
-			IOHelper::deleteFile($localCopy);
 		}
+
+		IOHelper::deleteFile($localCopy);
 
 		return $response;
 	}

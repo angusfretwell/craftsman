@@ -82,6 +82,9 @@ class FeedsService extends BaseApplicationComponent
 			$cacheDuration = DateTimeHelper::timeFormatToSeconds($cacheDuration);
 		}
 
+		// Potentially long-running request, so close session to prevent session blocking on subsequent requests.
+		craft()->session->close();
+
 		$feed = new \SimplePie();
 		$feed->set_feed_url($url);
 		$feed->set_cache_location(craft()->path->getCachePath());
@@ -97,6 +100,21 @@ class FeedsService extends BaseApplicationComponent
 
 		foreach ($feed->get_items($offset, $limit) as $item)
 		{
+			// Validate the permalink
+			$permalink = $item->get_permalink();
+
+			if ($permalink)
+			{
+				$urlModel = new UrlModel();
+				$urlModel->url = $item->get_permalink();
+
+				if (!$urlModel->validate())
+				{
+					Craft::log('An item was omitted from the feed ('.$url.') because its permalink was an invalid URL: '.$permalink);
+					continue;
+				}
+			}
+
 			$date = $item->get_date('U');
 			$dateUpdated = $item->get_updated_date('U');
 

@@ -196,92 +196,166 @@ return array (
     'ZWD' => 'Z$',
   ),
   'monthNames' => 
-  array (
-    'wide' => 
     array (
-      1 => '1',
-      2 => '2',
-      3 => '3',
-      4 => '4',
-      5 => '5',
-      6 => '6',
-      7 => '7',
-      8 => '8',
-      9 => '9',
-      10 => '10',
-      11 => '11',
-      12 => '12',
+      'wide' =>
+      array (
+        1 => 'januar',
+        2 => 'februar',
+        3 => 'mars',
+        4 => 'april',
+        5 => 'mai',
+        6 => 'juni',
+        7 => 'juli',
+        8 => 'august',
+        9 => 'september',
+        10 => 'oktober',
+        11 => 'november',
+        12 => 'desember',
+      ),
+      'abbreviated' =>
+      array (
+        1 => 'jan.',
+        2 => 'feb.',
+        3 => 'mars',
+        4 => 'apr.',
+        5 => 'mai',
+        6 => 'juni',
+        7 => 'juli',
+        8 => 'aug.',
+        9 => 'sep.',
+        10 => 'okt.',
+        11 => 'nov.',
+        12 => 'des.',
+      ),
+      'narrow' =>
+      array (
+        1 => 'J',
+        2 => 'F',
+        3 => 'M',
+        4 => 'A',
+        5 => 'M',
+        6 => 'J',
+        7 => 'J',
+        8 => 'A',
+        9 => 'S',
+        10 => 'O',
+        11 => 'N',
+        12 => 'D',
+      ),
     ),
-    'abbreviated' => 
+    'monthNamesSA' =>
     array (
-      1 => '1',
-      2 => '2',
-      3 => '3',
-      4 => '4',
-      5 => '5',
-      6 => '6',
-      7 => '7',
-      8 => '8',
-      9 => '9',
-      10 => '10',
-      11 => '11',
-      12 => '12',
+      'narrow' =>
+      array (
+        1 => 'J',
+        2 => 'F',
+        3 => 'M',
+        4 => 'A',
+        5 => 'M',
+        6 => 'J',
+        7 => 'J',
+        8 => 'A',
+        9 => 'S',
+        10 => 'O',
+        11 => 'N',
+        12 => 'D',
+      ),
+      'abbreviated' =>
+      array (
+        1 => 'jan',
+        2 => 'feb',
+        3 => 'mar',
+        4 => 'apr',
+        5 => 'mai',
+        6 => 'jun',
+        7 => 'jul',
+        8 => 'aug',
+        9 => 'sep',
+        10 => 'okt',
+        11 => 'nov',
+        12 => 'des',
+      ),
+      'wide' =>
+      array (
+        1 => 'januar',
+        2 => 'februar',
+        3 => 'mars',
+        4 => 'april',
+        5 => 'mai',
+        6 => 'juni',
+        7 => 'juli',
+        8 => 'august',
+        9 => 'september',
+        10 => 'oktober',
+        11 => 'november',
+        12 => 'desember',
+      ),
     ),
-  ),
-  'monthNamesSA' => 
-  array (
-    'narrow' => 
+    'weekDayNames' =>
     array (
-      1 => '1',
-      2 => '2',
-      3 => '3',
-      4 => '4',
-      5 => '5',
-      6 => '6',
-      7 => '7',
-      8 => '8',
-      9 => '9',
-      10 => '10',
-      11 => '11',
-      12 => '12',
+      'wide' =>
+      array (
+        0 => 'søndag',
+        1 => 'mandag',
+        2 => 'tirsdag',
+        3 => 'onsdag',
+        4 => 'torsdag',
+        5 => 'fredag',
+        6 => 'lørdag',
+      ),
+      'abbreviated' =>
+      array (
+        0 => 'søn.',
+        1 => 'man.',
+        2 => 'tir.',
+        3 => 'ons.',
+        4 => 'tor.',
+        5 => 'fre.',
+        6 => 'lør.',
+      ),
+      'narrow' =>
+      array (
+        0 => 'S',
+        1 => 'M',
+        2 => 'T',
+        4 => 'T',
+        5 => 'F',
+        6 => 'L',
+      ),
     ),
-  ),
-  'weekDayNames' => 
-  array (
-    'wide' => 
+    'weekDayNamesSA' =>
     array (
-      0 => '1',
-      1 => '2',
-      2 => '3',
-      3 => '4',
-      4 => '5',
-      5 => '6',
-      6 => '7',
+      'narrow' =>
+      array (
+        0 => 'S',
+        1 => 'M',
+        2 => 'T',
+        3 => 'O',
+        4 => 'T',
+        5 => 'F',
+        6 => 'L',
+      ),
+      'abbreviated' =>
+      array (
+        0 => 'sø.',
+        1 => 'ma.',
+        2 => 'ti.',
+        3 => 'on.',
+        4 => 'to.',
+        5 => 'fr.',
+        6 => 'lø.',
+      ),
+      'wide' =>
+      array (
+        0 => 'søndag',
+        1 => 'mandag',
+        2 => 'tirsdag',
+        3 => 'onsdag',
+        4 => 'torsdag',
+        5 => 'fredag',
+        6 => 'lørdag',
+      ),
     ),
-    'abbreviated' => 
-    array (
-      0 => '1',
-      1 => '2',
-      2 => '3',
-      3 => '4',
-      4 => '5',
-      5 => '6',
-      6 => '7',
-    ),
-  ),
-  'weekDayNamesSA' => 
-  array (
-    'narrow' => 
-    array (
-      0 => '1',
-      1 => '2',
-      2 => '3',
-      3 => '4',
-      4 => '5',
-      5 => '6',
-      6 => '7',
-    ),
-  ),
   'eraNames' => 
   array (
     'abbreviated' => 

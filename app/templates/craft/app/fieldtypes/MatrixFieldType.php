@@ -113,6 +113,7 @@ class MatrixFieldType extends BaseFieldType
 						$field->id           = $fieldId;
 						$field->name         = $fieldSettings['name'];
 						$field->handle       = $fieldSettings['handle'];
+						$field->instructions = $fieldSettings['instructions'];
 						$field->required     = !empty($fieldSettings['required']);
 						$field->translatable = !empty($fieldSettings['translatable']);
 						$field->type         = $fieldSettings['type'];
@@ -166,7 +167,7 @@ class MatrixFieldType extends BaseFieldType
 	 *
 	 * @param mixed $value
 	 *
-	 * @return ElementCriteriaModel|array
+	 * @return ElementCriteriaModel
 	 */
 	public function prepValue($value)
 	{
@@ -195,6 +196,19 @@ class MatrixFieldType extends BaseFieldType
 
 			if (is_array($value))
 			{
+				$prevElement = null;
+
+				foreach ($value as $element)
+				{
+					if ($prevElement)
+					{
+						$prevElement->setNext($element);
+						$element->setPrev($prevElement);
+					}
+
+					$prevElement = $element;
+				}
+
 				$criteria->setMatchedElements($value);
 			}
 			else if ($value === '')
@@ -220,6 +234,21 @@ class MatrixFieldType extends BaseFieldType
 		$id = craft()->templates->formatInputId($name);
 		$settings = $this->getSettings();
 
+		if ($value instanceof ElementCriteriaModel)
+		{
+			$value->limit = null;
+			$value->status = null;
+			$value->localeEnabled = null;
+		}
+
+		$html = craft()->templates->render('_components/fieldtypes/Matrix/input', array(
+			'id' => $id,
+			'name' => $name,
+			'blockTypes' => $settings->getBlockTypes(),
+			'blocks' => $value,
+			'static' => false
+		));
+
 		// Get the block types data
 		$blockTypeInfo = $this->_getBlockTypeInfoForInput($name);
 
@@ -234,20 +263,7 @@ class MatrixFieldType extends BaseFieldType
 
 		craft()->templates->includeTranslations('Disabled', 'Actions', 'Collapse', 'Expand', 'Disable', 'Enable', 'Add {type} above', 'Add a block');
 
-		if ($value instanceof ElementCriteriaModel)
-		{
-			$value->limit = null;
-			$value->status = null;
-			$value->localeEnabled = null;
-		}
-
-		return craft()->templates->render('_components/fieldtypes/Matrix/input', array(
-			'id' => $id,
-			'name' => $name,
-			'blockTypes' => $settings->getBlockTypes(),
-			'blocks' => $value,
-			'static' => false
-		));
+		return $html;
 	}
 
 	/**
@@ -420,11 +436,10 @@ class MatrixFieldType extends BaseFieldType
 	 */
 	public function getSearchKeywords($value)
 	{
-		$criteria = $this->prepValue(null);
 		$keywords = array();
 		$contentService = craft()->content;
 
-		foreach ($criteria->find() as $block)
+		foreach ($value as $block)
 		{
 			$originalContentTable      = $contentService->contentTable;
 			$originalFieldColumnPrefix = $contentService->fieldColumnPrefix;
@@ -517,6 +532,7 @@ class MatrixFieldType extends BaseFieldType
 	{
 		$fieldTypes = array();
 
+		// Set a temporary namespace for these
 		$originalNamespace = craft()->templates->getNamespace();
 		$namespace = craft()->templates->namespaceInputName('blockTypes[__BLOCK_TYPE__][fields][__FIELD__][typesettings]', $originalNamespace);
 		craft()->templates->setNamespace($namespace);
@@ -559,18 +575,53 @@ class MatrixFieldType extends BaseFieldType
 	{
 		$blockTypes = array();
 
+		// Set a temporary namespace for these
 		$originalNamespace = craft()->templates->getNamespace();
 		$namespace = craft()->templates->namespaceInputName($name.'[__BLOCK__][fields]', $originalNamespace);
 		craft()->templates->setNamespace($namespace);
 
 		foreach ($this->getSettings()->getBlockTypes() as $blockType)
 		{
+			// Create a fake MatrixBlockModel so the field types have a way to get at the owner element, if there is one
+			$block = new MatrixBlockModel();
+			$block->fieldId = $this->model->id;
+			$block->typeId = $blockType->id;
+
+			if ($this->element)
+			{
+				$block->setOwner($this->element);
+			}
+
+			$fieldLayoutFields = $blockType->getFieldLayout()->getFields();
+
+			foreach ($fieldLayoutFields as $fieldLayoutField)
+			{
+				$fieldType = $fieldLayoutField->getField()->getFieldType();
+
+				if ($fieldType)
+				{
+					$fieldType->element = $block;
+					$fieldType->setIsFresh(true);
+				}
+			}
+
 			craft()->templates->startJsBuffer();
 
 			$bodyHtml = craft()->templates->namespaceInputs(craft()->templates->render('_includes/fields', array(
 				'namespace' => null,
-				'fields' => $blockType->getFieldLayout()->getFields()
+				'fields'    => $fieldLayoutFields
 			)));
+
+			// Reset $_isFresh's
+			foreach ($fieldLayoutFields as $fieldLayoutField)
+			{
+				$fieldType = $fieldLayoutField->getField()->getFieldType();
+
+				if ($fieldType)
+				{
+					$fieldType->setIsFresh(null);
+				}
+			}
 
 			$footHtml = craft()->templates->clearJsBuffer();
 

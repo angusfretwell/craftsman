@@ -1,6 +1,7 @@
 {% extends "_layouts/basecp" %}
 {% import "_includes/forms" as forms %}
 {% set title = "Login"|t %}
+{% set bodyClass = 'login' %}
 {% includeCssResource "css/login.css" %}
 {% includeJsResource "js/login.js" %}
 {% includeTranslations
@@ -47,7 +48,6 @@
 			{% if not craft.request.isMobileBrowser(true) %}
 				document.getElementById("{{ (username ? 'password' : 'loginName') }}").focus();
 			{% endif %}
-			window.returnUrl = '{{ craft.session.returnUrl|e('js') }}';
 		}
 		else
 		{
@@ -58,7 +58,7 @@
 							'<div class="notice">' +
 								'<div class="icon"></div>' +
 								'<p>{{ "Cookies must be enabled to access the Craft control panel."|t }}<br>' +
-									'<a class="go" href="">{{ "See how"|t }}</a>' +
+									'<a class="go nowrap" href="">{{ "See how"|t }}</a>' +
 								'</p>' +
 							'</div>' +
 						'</div>' +

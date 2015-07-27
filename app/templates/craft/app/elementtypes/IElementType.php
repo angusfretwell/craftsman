@@ -82,6 +82,8 @@ interface IElementType extends IComponentType
 	 * - **`data`** – An array of `data-X` attributes that should be set on the source’s `<a>` tag in the source list’s,
 	 *   HTML, where each key is the name of the attribute (without the “data-” prefix), and each value is the value of
 	 *   the attribute. (Optional)
+	 * - **`defaultSort` – A string identifying the sort attribute that should be selected by default, or an array where
+	 *   the first value identifies the sort attribute, and the second determines which direction to sort by. (Optional)
 	 * - **`hasThumbs`** – A boolean that defines whether this source supports Thumbs View. (Use your element model’s
 	 *   {@link BaseElementModel::getThumbUrl() getThumbUrl()} or {@link BaseElementModel::getIconUrl() getIconUrl()}
 	 *   methods to define your elements’ thumb/icon URLs.) (Optional)
@@ -107,6 +109,18 @@ interface IElementType extends IComponentType
 	 * @return array|null
 	 */
 	public function getSource($key, $context = null);
+
+	/**
+	 * Returns the available element actions for a given source (if one is provided).
+	 *
+	 * The actions can either be represented by their class handle (e.g. 'SetStatus'), or by an
+	 * {@link IElementAction} instance.
+	 *
+	 * @param string|null $source The selected source’s key, if any.
+	 *
+	 * @return array|null The available element actions.
+	 */
+	public function getAvailableActions($source = null);
 
 	/**
 	 * Defines which element model attributes should be searchable.
@@ -143,13 +157,48 @@ interface IElementType extends IComponentType
 	 * @param array                $viewState
 	 * @param string|null          $sourceKey
 	 * @param string|null          $context
+	 * @param bool                 $includeContainer
+	 * @param bool                 $showCheckboxes
 	 *
 	 * @return string
 	 */
-	public function getIndexHtml($criteria, $disabledElementIds, $viewState, $sourceKey, $context);
+	public function getIndexHtml($criteria, $disabledElementIds, $viewState, $sourceKey, $context, $includeContainer, $showCheckboxes);
 
 	/**
-	 * Defines the attributes that can be shown/sorted by in Table View.
+	 * Defines the attributes that elements can be sorted by.
+	 *
+	 * This method should return an array, where the keys reference database column names that should be sorted on,
+	 * and where the values define the user-facing labels.
+	 *
+	 * ```php
+	 * return array(
+	 *     'columnName1' => Craft::t('Attribute Label 1'),
+	 *     'columnName2' => Craft::t('Attribute Label 2'),
+	 * );
+	 * ```
+	 *
+	 * If you want to sort by multilple columns simultaneously, you can specify multiple column names in the key,
+	 * separated by commas.
+	 *
+	 * ```php
+	 * return array(
+	 *     'columnName1, columnName2 asc' => Craft::t('Attribute Label 1'),
+	 *     'columnName3'                  => Craft::t('Attribute Label 2'),
+	 * );
+	 * ```
+	 *
+	 * If you do that, you can specify the sort direction for the subsequent columns (`asc` or `desc`. There is no point
+	 * in specifying the sort direction for the first column, though, since the end user has full control over that.
+	 *
+	 * Note that this method will only get called once for the entire index; not each time that a new source is
+	 * selected.
+	 *
+	 * @retrun array The attributes that elements can be sorted by.
+	 */
+	public function defineSortableAttributes();
+
+	/**
+	 * Defines the columns that can be shown in table views.
 	 *
 	 * This method should return an array whose keys map to attribute names and database columns that can be sorted
 	 * against when querying for elements, and whose values make up the table’s column headers.
@@ -162,7 +211,7 @@ interface IElementType extends IComponentType
 	 * All other items besides the first one will also define which element attribute should be shown within the data
 	 * cells. (The actual HTML to be shown can be customized with {@link getTableAttributeHtml()}.)
 	 *
-	 * @param string|null $source The currently-selected source.
+	 * @param string|null $source The selected source’s key, if any.
 	 *
 	 * @return array The table attributes.
 	 */
@@ -258,6 +307,23 @@ interface IElementType extends IComponentType
 	public function getContentTableForElementsQuery(ElementCriteriaModel $criteria);
 
 	/**
+	 * Returns the fields that should take part in an upcoming elements qurery.
+	 *
+	 * These fields will get their own parameters in the {@link ElementCriteriaModel} that gets passed in,
+	 * their field types will each have an opportunity to help build the element query, and their columns in the content
+	 * table will be selected by the query (for those that have one).
+	 *
+	 * If a field has its own column in the content table, but the column name is prefixed with something besides
+	 * “field_”, make sure you set the `columnPrefix` attribute on the {@link FieldModel}, so
+	 * {@link ElementsService::buildElementsQuery()} knows which column to select.
+	 *
+	 * @param ElementCriteriaModel
+	 *
+	 * @return FieldModel[]
+	 */
+	public function getFieldsForElementsQuery(ElementCriteriaModel $criteria);
+
+	/**
 	 * Returns the field column names that should be selected from the content table.
 	 *
 	 * This method will tell {@link ElementsService::buildElementsQuery()} which custom fields it should be selecting
@@ -266,6 +332,7 @@ interface IElementType extends IComponentType
 	 *
 	 * @param ElementCriteriaModel
 	 *
+	 * @deprecated Deprecated in 2.3. Element types should implement {@link getFieldsForElementsQuery()} instead.
 	 * @return array
 	 */
 	public function getContentFieldColumnsForElementsQuery(ElementCriteriaModel $criteria);
@@ -326,12 +393,13 @@ interface IElementType extends IComponentType
 	 * ```
 	 *
 	 * If you are able to determine from the element criteria’s paramteers that there’s no way that the query is going
-	 * to match any elements, you can have it return `false`.
+	 * to match any elements, you can have it return `false`. The query will be stopped before it ever gets a chance to
+	 * execute.
 	 *
-	 * @param DbCommand            $query    The database query.
-	 * @param ElementCriteriaModel $criteria
+	 * @param DbCommand            $query    The database query currently being built to find the elements.
+	 * @param ElementCriteriaModel $criteria The criteria that is being used to find the elements.
 	 *
-	 * @return null|false
+	 * @return null|false `false` in the event that the method is sure that no elements are going to be found.
 	 */
 	public function modifyElementsQuery(DbCommand $query, ElementCriteriaModel $criteria);
 

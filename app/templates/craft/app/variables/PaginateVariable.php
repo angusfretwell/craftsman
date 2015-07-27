@@ -29,7 +29,7 @@ class PaginateVariable
 	/**
 	 * @var
 	 */
-	public $total;
+	public $total = 0;
 
 	/**
 	 * @var
@@ -39,7 +39,7 @@ class PaginateVariable
 	/**
 	 * @var
 	 */
-	public $totalPages;
+	public $totalPages = 0;
 
 	// Public Methods
 	// =========================================================================
@@ -56,18 +56,42 @@ class PaginateVariable
 		if ($page >= 1 && $page <= $this->totalPages)
 		{
 			$path = craft()->request->getPath();
+			$params = array();
 
 			if ($page != 1)
 			{
-				if ($path)
+				$pageTrigger = craft()->config->get('pageTrigger');
+
+				if (!is_string($pageTrigger) || !strlen($pageTrigger))
 				{
-					$path .= '/';
+					$pageTrigger = 'p';
 				}
 
-				$path .= craft()->config->get('pageTrigger').$page;
+				// Is this query string-based pagination?
+				if ($pageTrigger[0] === '?')
+				{
+					$pageTrigger = trim($pageTrigger, '?=');
+
+					if ($pageTrigger === 'p')
+					{
+						// Avoid conflict with the main 'p' param
+						$pageTrigger = 'pg';
+					}
+
+					$params = array($pageTrigger => $page);
+				}
+				else
+				{
+					if ($path)
+					{
+						$path .= '/';
+					}
+
+					$path .= $pageTrigger.$page;
+				}
 			}
 
-			return UrlHelper::getUrl($path);
+			return UrlHelper::getUrl($path, $params);
 		}
 	}
 

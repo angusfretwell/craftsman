@@ -54,10 +54,26 @@ class RebrandController extends BaseController
 					$this->returnErrorJson(Craft::t('The uploaded image is too large'));
 				}
 
-				craft()->images->cleanImage($folderPath.$fileName);
+                list ($width, $height) = ImageHelper::getImageSize($folderPath.$fileName);
+
+                if (IOHelper::getExtension($fileName) != 'svg')
+                {
+                    craft()->images->cleanImage($folderPath.$fileName);
+                }
+                else
+                {
+                    // Resave svg files as png
+                    $newFilename = preg_replace('/\.svg$/i', '.png', $fileName);
+
+                    craft()->images->
+                        loadImage($folderPath.$fileName, $width, $height)->
+                        saveAs($folderPath.$newFilename);
+
+                    IOHelper::deleteFile($folderPath.$fileName);
+                    $fileName = $newFilename;
+                }
 
 				$constraint = 500;
-				list ($width, $height) = getimagesize($folderPath.$fileName);
 
 				// If the file is in the format badscript.php.gif perhaps.
 				if ($width && $height)
@@ -71,7 +87,8 @@ class RebrandController extends BaseController
 							'width' => round($width * $factor),
 							'height' => round($height * $factor),
 							'factor' => $factor,
-							'constraint' => $constraint
+							'constraint' => $constraint,
+                            'fileName' => $fileName
 						)
 					);
 
@@ -106,10 +123,7 @@ class RebrandController extends BaseController
 			$source = craft()->request->getRequiredPost('source');
 
 			// Strip off any querystring info, if any.
-			if (($qIndex = mb_strpos($source, '?')) !== false)
-			{
-				$source = mb_substr($source, 0, mb_strpos($source, '?'));
-			}
+			$source = UrlHelper::stripQueryString($source);
 
 			$imagePath = craft()->path->getTempUploadsPath().$source;
 
@@ -118,10 +132,10 @@ class RebrandController extends BaseController
 				$targetPath = craft()->path->getStoragePath().'logo/';
 
 				IOHelper::ensureFolderExists($targetPath);
+                IOHelper::clearFolder($targetPath);
 
-					IOHelper::clearFolder($targetPath);
-					craft()->images
-						->loadImage($imagePath)
+                craft()->images
+						->loadImage($imagePath, 300, 300)
 						->crop($x1, $x2, $y1, $y2)
 						->scaleToFit(300, 300, false)
 						->saveAs($targetPath.$source);
@@ -131,6 +145,7 @@ class RebrandController extends BaseController
 				$html = craft()->templates->render('settings/general/_logo');
 				$this->returnJson(array('html' => $html));
 			}
+
 			IOHelper::deleteFile($imagePath);
 		}
 		catch (Exception $exception)

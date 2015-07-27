@@ -7,12 +7,13 @@ namespace Craft;
  *
  * Note that all actions in the controller require an authenticated Craft session via {@link BaseController::allowAnonymous}.
  *
- * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
- * @package   craft.app.controllers
- * @since     1.0
+ * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright  Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license    http://buildwithcraft.com/license Craft License Agreement
+ * @see        http://buildwithcraft.com
+ * @package    craft.app.controllers
+ * @since      1.0
+ * @deprecated This class will have several breaking changes in Craft 3.0.
  */
 class AssetSourcesController extends BaseController
 {
@@ -126,7 +127,8 @@ class AssetSourcesController extends BaseController
 			$source = new AssetSourceModel();
 		}
 
-		$source->name = craft()->request->getPost('name');
+		$source->name   = craft()->request->getPost('name');
+		$source->handle = craft()->request->getPost('handle');
 
 		if (craft()->getEdition() == Craft::Pro)
 		{
@@ -134,18 +136,15 @@ class AssetSourcesController extends BaseController
 		}
 
 		$typeSettings = craft()->request->getPost('types');
+
 		if (isset($typeSettings[$source->type]))
 		{
-			if (!$source->settings)
-			{
-				$source->settings = array();
-			}
-
+			$source->settings = array();
 			$source->settings = array_merge($source->settings, $typeSettings[$source->type]);
 		}
 
 		// Set the field layout
-		$fieldLayout = craft()->fields->assembleLayoutFromPost(false);
+		$fieldLayout = craft()->fields->assembleLayoutFromPost();
 		$fieldLayout->type = ElementType::Asset;
 		$source->setFieldLayout($fieldLayout);
 

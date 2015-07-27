@@ -133,6 +133,7 @@ class CCompareValidator extends CValidator
 	 * @param string $attribute the name of the attribute to be validated.
 	 * @throws CException if invalid operator is used
 	 * @return string the client-side validation script.
+	 * @see CActiveForm::enableClientValidation
 	 * @since 1.1.7
 	 */
 	public function clientValidateAttribute($object,$attribute)

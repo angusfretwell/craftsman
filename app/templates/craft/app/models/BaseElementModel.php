@@ -110,7 +110,7 @@ abstract class BaseElementModel extends BaseModel
 	 */
 	public function __isset($name)
 	{
-		if (parent::__isset($name) || $this->getFieldByHandle($name))
+		if ($name == 'title' || parent::__isset($name) || $this->getFieldByHandle($name))
 		{
 			return true;
 		}
@@ -284,7 +284,7 @@ abstract class BaseElementModel extends BaseModel
 	 */
 	public function getLink()
 	{
-		$link = '<a href="'.$this->getUrl().'">'.$this->__toString().'</a>';
+		$link = '<a href="'.$this->getUrl().'">'.HtmlHelper::encode($this->__toString()).'</a>';
 		return TemplateHelper::getRaw($link);
 	}
 
@@ -624,6 +624,21 @@ abstract class BaseElementModel extends BaseModel
 	}
 
 	/**
+	 * Returns the total number of descendants that the element has.
+	 *
+	 * @return bool
+	 */
+	public function getTotalDescendants()
+	{
+		if ($this->hasDescendants())
+		{
+			return ($this->rgt - $this->lft - 1) / 2;
+		}
+
+		return 0;
+	}
+
+	/**
 	 * Returns whether this element is an ancestor of another one.
 	 *
 	 * @param BaseElementModel $element
@@ -744,7 +759,7 @@ abstract class BaseElementModel extends BaseModel
 	 */
 	public function offsetExists($offset)
 	{
-		if (parent::offsetExists($offset) || $this->getFieldByHandle($offset))
+		if ($offset == 'title' || parent::offsetExists($offset) || $this->getFieldByHandle($offset))
 		{
 			return true;
 		}
@@ -813,7 +828,7 @@ abstract class BaseElementModel extends BaseModel
 
 			if (!$this->_content)
 			{
-				$this->_content = craft()->content->createContent($this);
+				$this->_content = $this->createContent();
 			}
 		}
 
@@ -833,7 +848,7 @@ abstract class BaseElementModel extends BaseModel
 		{
 			if (!isset($this->_content))
 			{
-				$this->_content = craft()->content->createContent($this);
+				$this->_content = $this->createContent();
 			}
 
 			$this->_content->setAttributes($content);
@@ -885,7 +900,8 @@ abstract class BaseElementModel extends BaseModel
 					// Do we have any post data for this field?
 					if (isset($content[$handle]))
 					{
-						$value = $this->_rawPostContent[$handle] = $content[$handle];
+						$value = $content[$handle];
+						$this->setRawPostContent($handle, $value);
 					}
 					// Were any files uploaded for this field?
 					else if (!empty($this->_contentPostLocation) && UploadedFile::getInstancesByName($this->_contentPostLocation.'.'.$handle))
@@ -912,6 +928,17 @@ abstract class BaseElementModel extends BaseModel
 				}
 			}
 		}
+	}
+
+	/**
+	 * Sets a field’s raw post content.
+	 *
+	 * @param string $handle The field handle.
+	 * @param string|array   The posted field value.
+	 */
+	public function setRawPostContent($handle, $value)
+	{
+		$this->_rawPostContent[$handle] = $value;
 	}
 
 	/**
@@ -1099,6 +1126,16 @@ abstract class BaseElementModel extends BaseModel
 			'rgt'           => AttributeType::Number,
 			'level'         => AttributeType::Number,
 		);
+	}
+
+	/**
+	 * Creates the content model associated with this element.
+	 *
+	 * @return ContentModel The content model associated with this element
+	 */
+	protected function createContent()
+	{
+		return craft()->content->createContent($this);
 	}
 
 	// Private Methods

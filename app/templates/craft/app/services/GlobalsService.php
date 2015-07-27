@@ -257,7 +257,7 @@ class GlobalsService extends BaseApplicationComponent
 
 			if (!$globalSetRecord)
 			{
-				throw new Exception(Craft::t('No global set exists with the ID “{id}”', array('id' => $globalSet->id)));
+				throw new Exception(Craft::t('No global set exists with the ID “{id}”.', array('id' => $globalSet->id)));
 			}
 
 			$oldSet = GlobalSetModel::populateModel($globalSetRecord);
@@ -294,7 +294,7 @@ class GlobalsService extends BaseApplicationComponent
 
 					// Save the new one
 					$fieldLayout = $globalSet->getFieldLayout();
-					craft()->fields->saveLayout($fieldLayout, false);
+					craft()->fields->saveLayout($fieldLayout);
 
 					// Update the set record/model with the new layout ID
 					$globalSet->fieldLayoutId = $fieldLayout->id;
@@ -379,23 +379,70 @@ class GlobalsService extends BaseApplicationComponent
 	 *
 	 * @param GlobalSetModel $globalSet
 	 *
+	 * @throws \CDbException
+	 * @throws \Exception
 	 * @return bool
 	 */
 	public function saveContent(GlobalSetModel $globalSet)
 	{
-		if (craft()->elements->saveElement($globalSet))
+		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+
+		try
+		{
+			// Fire an 'onBeforeSaveGlobalContent' event
+			$event = new Event($this, array(
+				'globalSet' => $globalSet
+			));
+
+			$this->onBeforeSaveGlobalContent($event);
+
+			// Is the event giving us the go-ahead?
+			if ($event->performAction)
+			{
+				$success = craft()->elements->saveElement($globalSet);
+
+				// If it didn't work, rollback the transaction in case something changed in onBeforeSaveGlobalContent
+				if (!$success)
+				{
+					if ($transaction !== null)
+					{
+						$transaction->rollback();
+					}
+
+					return false;
+				}
+			}
+			else
+			{
+				$success = false;
+			}
+
+			// Commit the transaction regardless of whether we saved the user, in case something changed
+			// in onBeforeSaveGlobalContent
+			if ($transaction !== null)
+			{
+				$transaction->commit();
+			}
+		}
+		catch (\Exception $e)
+		{
+			if ($transaction !== null)
+			{
+				$transaction->rollback();
+			}
+
+			throw $e;
+		}
+
+		if ($success)
 		{
 			// Fire an 'onSaveGlobalContent' event
 			$this->onSaveGlobalContent(new Event($this, array(
 				'globalSet' => $globalSet
 			)));
+		}
 
-			return true;
-		}
-		else
-		{
-			return false;
-		}
+		return $success;
 	}
 
 	/**
@@ -408,5 +455,17 @@ class GlobalsService extends BaseApplicationComponent
 	public function onSaveGlobalContent(Event $event)
 	{
 		$this->raiseEvent('onSaveGlobalContent', $event);
+	}
+
+	/**
+	 * Fires an 'onBeforeSaveGlobalContent' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onBeforeSaveGlobalContent(Event $event)
+	{
+		$this->raiseEvent('onBeforeSaveGlobalContent', $event);
 	}
 }

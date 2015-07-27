@@ -82,22 +82,18 @@ class DateTime extends \DateTime
 	 *  - Unix timestamps
 	 *
 	 * @param string|array $date
-	 * @param stirng|null  $timezone The [PHP timezone identifier](http://php.net/manual/en/timezones.php),
-	 *                               if not specified in $date. Defaults to 'UTC'.
+	 * @param string|null  $timezone            The [PHP timezone identifier](http://php.net/manual/en/timezones.php)
+	 *                                          that $date is set to, if not already specified in $date. Defaults to 'UTC'.
+	 * @param bool         $setToSystemTimeZone Whether to set the resulting DateTime object to the system timezone.
 	 *
 	 * @return DateTime|null|false
 	 */
-	public static function createFromString($date, $timezone = null)
+	public static function createFromString($date, $timezone = null, $setToSystemTimeZone = true)
 	{
 		// Was this a date/time-picker?
 		if (is_array($date) && (isset($date['date']) || isset($date['time'])))
 		{
 			$dt = $date;
-
-			if (!$timezone)
-			{
-				$timezone = craft()->getTimeZone();
-			}
 
 			if (empty($dt['date']) && empty($dt['time']))
 			{
@@ -112,7 +108,24 @@ class DateTime extends \DateTime
 				$date = $dt['date'];
 				$format = $dateFormatter->getDatepickerPhpFormat();
 
-				// Check for a two-digit year
+				// Valid separators are either '-', '.' or '/'.
+				if (mb_strpos($format, '.') !== false)
+				{
+					$separator = '.';
+				}
+				else if (mb_strpos($format, '-') !== false)
+				{
+					$separator = '-';
+				}
+				else
+				{
+					$separator = '/';
+				}
+
+				// Ensure that the submitted date is using the locale’s separator
+				$date = str_replace(array('-', '.', '/'), $separator, $date);
+
+				// Check for a two-digit year as well
 				$altFormat = str_replace('Y', 'y', $format);
 
 				if (static::createFromFormat($altFormat, $date) !== false)
@@ -126,7 +139,7 @@ class DateTime extends \DateTime
 				$format = '';
 
 				// Default to the current date
-				$current = new DateTime('now', new \DateTimeZone($timezone));
+				$current = new DateTime('now', new \DateTimeZone($timezone ?: self::UTC));
 				$date .= $current->month().'/'.$current->day().'/'.$current->year();
 				$format .= 'n/j/Y';
 			}
@@ -200,7 +213,14 @@ class DateTime extends \DateTime
 			$date   .= ' '.$timezone;
 		}
 
-		return static::createFromFormat('!'.$format, $date);
+		$dt = static::createFromFormat('!'.$format, $date);
+
+		if ($dt !== false && $setToSystemTimeZone)
+		{
+			$dt->setTimezone(new \DateTimeZone(craft()->getTimeZone()));
+		}
+
+		return $dt;
 	}
 
 	/**
@@ -351,7 +371,23 @@ class DateTime extends \DateTime
 		$dateFormatter = $localeData->getDateFormatter();
 		$format = $dateFormatter->getTimepickerPhpFormat();
 
-		return $this->format($format);
+		$time = $this->format($format);
+
+		// Replace "AM" and "PM" with the localized versions
+		$localeData = craft()->i18n->getLocaleData();
+		$amName = $localeData->getAMName();
+		$pmName = $localeData->getPMName();
+
+		if ($amName != 'AM' || $pmName != 'PM')
+		{
+			$time = str_replace(
+				array('am', 'AM', 'pm', 'PM'),
+				array($amName, $amName, $pmName, $pmName),
+				$time
+			);
+		}
+
+		return $time;
 	}
 
 	/**
@@ -427,12 +463,27 @@ class DateTime extends \DateTime
 	}
 
 	/**
-	 * Returns a nicely formatted date string for given Datetime string.
+	 * Returns a nicely formatted date string.
 	 *
 	 * @return string
 	 */
 	public function nice()
 	{
 		return DateTimeHelper::nice($this->getTimestamp());
+	}
+
+	/**
+	 * Returns a UI-facing timestamp.
+	 *
+	 * - If the date/time is from today, only the time will be retuned in a localized format (e.g. “10:00 AM”).
+	 * - If the date/time is from yesterday, “Yesterday” will be returned.
+	 * - If the date/time is from the last 7 days, the name of the day will be returned (e.g. “Monday”).
+	 * - Otherwise, the date will be returned in a localized format (e.g. “12/2/2014”).
+	 *
+	 * @return string
+	 */
+	public function uiTimestamp()
+	{
+		return DateTimeHelper::uiTimestamp($this);
 	}
 }

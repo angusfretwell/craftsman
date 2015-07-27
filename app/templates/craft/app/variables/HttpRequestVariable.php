@@ -337,4 +337,48 @@ class HttpRequestVariable
 		return craft()->request->getCsrfToken();
 	}
 
+	/**
+	 * Returns part of the request URL that is after the question mark.
+	 *
+	 * @return string The part of the request URL that is after the question mark.
+	 */
+	public function getQueryString()
+	{
+		return craft()->request->getQueryString();
+	}
+
+	/**
+	 * Returns the request’s query string, without the p= parameter.
+	 *
+	 * @return string The query string.
+	 */
+	public function getQueryStringWithoutPath()
+	{
+		return craft()->request->getQueryStringWithoutPath();
+	}
+
+	/**
+	 * Retrieves the best guess of the client’s actual IP address taking into account numerous HTTP proxy headers due to
+	 * variations in how different ISPs handle IP addresses in headers between hops.
+	 *
+	 * Considering any of these server vars besides REMOTE_ADDR can be spoofed, this method should not be used when you
+	 * need a trusted source for the IP address. Use `$_SERVER['REMOTE_ADDR']` instead.
+	 *
+	 * @return string The IP address.
+	 */
+	public function getIpAddress()
+	{
+		return craft()->request->getIpAddress();
+	}
+
+	/**
+	 * Returns whether the client is running "Windows", "Mac", "Linux" or "Other", based on the
+	 * browser's UserAgent string.
+	 *
+	 * @return string The OS the client is running.
+	 */
+	public function getClientOs()
+	{
+		return craft()->request->getClientOs();
+	}
 }

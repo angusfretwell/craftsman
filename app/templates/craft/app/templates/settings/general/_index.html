@@ -28,13 +28,12 @@
 			warning: (craft.config.isSystemOn is sameas(true) ? configWarning('isSystemOn')),
 			id: 'on',
 			name: 'on',
-			on: info.on,
-			onLabel: "On"|t,
-			offLabel: "Off"|t
+			on: info.on
 		}) }}
 
 		{{ forms.textField({
 			label: "Site Name"|t,
+			warning: (craft.config.siteName ? configWarning('siteName')),
 			id: 'siteName',
 			name: 'siteName',
 			value: info.siteName,
@@ -56,6 +55,7 @@
 
 		{{ forms.selectField({
 			label: "Timezone"|t,
+			warning: (craft.config.timezone ? configWarning('timezone')),
 			id: 'timezone',
 			name: 'timezone',
 			value: info.timezone,

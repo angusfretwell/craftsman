@@ -1,46 +1,11 @@
 <?php
-/**
- * PHPUnit
+/*
+ * This file is part of PHPUnit.
  *
- * Copyright (c) 2001-2014, Sebastian Bergmann <sebastian@phpunit.de>.
- * All rights reserved.
+ * (c) Sebastian Bergmann <sebastian@phpunit.de>
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- *   * Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- *
- *   * Redistributions in binary form must reproduce the above copyright
- *     notice, this list of conditions and the following disclaimer in
- *     the documentation and/or other materials provided with the
- *     distribution.
- *
- *   * Neither the name of Sebastian Bergmann nor the names of his
- *     contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
- *
- * @package    PHPUnit
- * @subpackage TextUI
- * @author     Sebastian Bergmann <sebastian@phpunit.de>
- * @copyright  2001-2014 Sebastian Bergmann <sebastian@phpunit.de>
- * @license    http://www.opensource.org/licenses/BSD-3-Clause  The BSD 3-Clause License
- * @link       http://www.phpunit.de/
- * @since      File available since Release 3.0.0
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
 /**
@@ -50,7 +15,7 @@
  * @package    PHPUnit
  * @subpackage TextUI
  * @author     Sebastian Bergmann <sebastian@phpunit.de>
- * @copyright  2001-2014 Sebastian Bergmann <sebastian@phpunit.de>
+ * @copyright  Sebastian Bergmann <sebastian@phpunit.de>
  * @license    http://www.opensource.org/licenses/BSD-3-Clause  The BSD 3-Clause License
  * @link       http://www.phpunit.de/
  * @since      Class available since Release 3.0.0
@@ -75,8 +40,9 @@ class PHPUnit_TextUI_Command
      * @var array
      */
     protected $longOptions = array(
-      'colors' => null,
+      'colors==' => null,
       'bootstrap=' => null,
+      'columns=' => null,
       'configuration=' => null,
       'coverage-clover=' => null,
       'coverage-crap4j=' => null,
@@ -109,6 +75,7 @@ class PHPUnit_TextUI_Command
       'disallow-test-output' => null,
       'enforce-time-limit' => null,
       'disallow-todo-tests' => null,
+      'strict-global-state' => null,
       'strict' => null,
       'tap' => null,
       'testdox' => null,
@@ -278,43 +245,44 @@ class PHPUnit_TextUI_Command
 
         foreach ($this->options[0] as $option) {
             switch ($option[0]) {
-                case '--colors': {
-                    $this->arguments['colors'] = true;
-                    }
-                break;
+                case '--colors':
+                    $this->arguments['colors'] = $option[1] ?: PHPUnit_TextUI_ResultPrinter::COLOR_AUTO;
+                    break;
 
-                case '--bootstrap': {
+                case '--bootstrap':
                     $this->arguments['bootstrap'] = $option[1];
+                    break;
+
+                case '--columns':
+                    if (is_numeric($option[1])) {
+                        $this->arguments['columns'] = (int) $option[1];
+                    } elseif ($option[1] == 'max') {
+                        $this->arguments['columns'] = 'max';
                     }
-                break;
+                    break;
 
                 case 'c':
-                case '--configuration': {
+                case '--configuration':
                     $this->arguments['configuration'] = $option[1];
-                    }
-                break;
+                    break;
 
-                case '--coverage-clover': {
+                case '--coverage-clover':
                     $this->arguments['coverageClover'] = $option[1];
-                    }
-                break;
+                    break;
 
-                case '--coverage-crap4j': {
+                case '--coverage-crap4j':
                     $this->arguments['coverageCrap4J'] = $option[1];
-                    }
-                break;
+                    break;
 
-                case '--coverage-html': {
+                case '--coverage-html':
                     $this->arguments['coverageHtml'] = $option[1];
-                    }
-                break;
+                    break;
 
-                case '--coverage-php': {
+                case '--coverage-php':
                     $this->arguments['coveragePHP'] = $option[1];
-                    }
-                break;
+                    break;
 
-                case '--coverage-text': {
+                case '--coverage-text':
                     if ($option[1] === null) {
                         $option[1] = 'php://stdout';
                     }
@@ -322,15 +290,13 @@ class PHPUnit_TextUI_Command
                     $this->arguments['coverageText'] = $option[1];
                     $this->arguments['coverageTextShowUncoveredFiles'] = false;
                     $this->arguments['coverageTextShowOnlySummary'] = false;
-                    }
-                break;
+                    break;
 
-                case '--coverage-xml': {
+                case '--coverage-xml':
                     $this->arguments['coverageXml'] = $option[1];
-                    }
-                break;
+                    break;
 
-                case 'd': {
+                case 'd':
                     $ini = explode('=', $option[1]);
 
                     if (isset($ini[0])) {
@@ -340,213 +306,181 @@ class PHPUnit_TextUI_Command
                             ini_set($ini[0], true);
                         }
                     }
-                    }
-                break;
+                    break;
 
-                case '--debug': {
+                case '--debug':
                     $this->arguments['debug'] = true;
-                    }
-                break;
+                    break;
 
                 case 'h':
-                case '--help': {
+                case '--help':
                     $this->showHelp();
                     exit(PHPUnit_TextUI_TestRunner::SUCCESS_EXIT);
-                    }
                 break;
 
-                case '--filter': {
+                case '--filter':
                     $this->arguments['filter'] = $option[1];
-                    }
-                break;
+                    break;
 
-                case '--testsuite': {
+                case '--testsuite':
                     $this->arguments['testsuite'] = $option[1];
-                    }
-                break;
+                    break;
 
-                case '--group': {
+                case '--group':
                     $this->arguments['groups'] = explode(',', $option[1]);
-                    }
-                break;
+                    break;
 
-                case '--exclude-group': {
+                case '--exclude-group':
                     $this->arguments['excludeGroups'] = explode(
-                        ',', $option[1]
+                        ',',
+                        $option[1]
                     );
-                    }
-                break;
+                    break;
 
-                case '--test-suffix': {
+                case '--test-suffix':
                     $this->arguments['testSuffixes'] = explode(
-                        ',', $option[1]
+                        ',',
+                        $option[1]
                     );
-                    }
-                break;
+                    break;
 
-                case '--include-path': {
+                case '--include-path':
                     $includePath = $option[1];
-                    }
-                break;
+                    break;
 
-                case '--list-groups': {
+                case '--list-groups':
                     $this->arguments['listGroups'] = true;
-                    }
-                break;
+                    break;
 
-                case '--printer': {
+                case '--printer':
                     $this->arguments['printer'] = $option[1];
-                    }
-                break;
+                    break;
 
-                case '--loader': {
+                case '--loader':
                     $this->arguments['loader'] = $option[1];
-                    }
-                break;
+                    break;
 
-                case '--log-json': {
+                case '--log-json':
                     $this->arguments['jsonLogfile'] = $option[1];
-                    }
-                break;
+                    break;
 
-                case '--log-junit': {
+                case '--log-junit':
                     $this->arguments['junitLogfile'] = $option[1];
-                    }
-                break;
+                    break;
 
-                case '--log-tap': {
+                case '--log-tap':
                     $this->arguments['tapLogfile'] = $option[1];
-                    }
-                break;
+                    break;
 
-                case '--process-isolation': {
+                case '--process-isolation':
                     $this->arguments['processIsolation'] = true;
-                    }
-                break;
+                    break;
 
-                case '--repeat': {
+                case '--repeat':
                     $this->arguments['repeat'] = (int) $option[1];
-                    }
-                break;
+                    break;
 
-                case '--stderr': {
+                case '--stderr':
                     $this->arguments['stderr'] = true;
-                    }
-                break;
+                    break;
 
-                case '--stop-on-error': {
+                case '--stop-on-error':
                     $this->arguments['stopOnError'] = true;
-                    }
-                break;
+                    break;
 
-                case '--stop-on-failure': {
+                case '--stop-on-failure':
                     $this->arguments['stopOnFailure'] = true;
-                    }
-                break;
+                    break;
 
-                case '--stop-on-incomplete': {
+                case '--stop-on-incomplete':
                     $this->arguments['stopOnIncomplete'] = true;
-                    }
-                break;
+                    break;
 
-                case '--stop-on-risky': {
+                case '--stop-on-risky':
                     $this->arguments['stopOnRisky'] = true;
-                    }
-                break;
+                    break;
 
-                case '--stop-on-skipped': {
+                case '--stop-on-skipped':
                     $this->arguments['stopOnSkipped'] = true;
-                    }
-                break;
+                    break;
 
-                case '--tap': {
-                    $this->arguments['printer'] = new PHPUnit_Util_Log_TAP;
-                    }
-                break;
+                case '--tap':
+                    $this->arguments['printer'] = 'PHPUnit_Util_Log_TAP';
+                    break;
 
-                case '--testdox': {
-                    $this->arguments['printer'] = new PHPUnit_Util_TestDox_ResultPrinter_Text;
-                    }
-                break;
+                case '--testdox':
+                    $this->arguments['printer'] = 'PHPUnit_Util_TestDox_ResultPrinter_Text';
+                    break;
 
-                case '--testdox-html': {
+                case '--testdox-html':
                     $this->arguments['testdoxHTMLFile'] = $option[1];
-                    }
-                break;
+                    break;
 
-                case '--testdox-text': {
+                case '--testdox-text':
                     $this->arguments['testdoxTextFile'] = $option[1];
-                    }
-                break;
+                    break;
 
-                case '--no-configuration': {
+                case '--no-configuration':
                     $this->arguments['useDefaultConfiguration'] = false;
-                    }
-                break;
+                    break;
 
-                case '--no-globals-backup': {
+                case '--no-globals-backup':
                     $this->arguments['backupGlobals'] = false;
-                    }
-                break;
+                    break;
 
-                case '--static-backup': {
+                case '--static-backup':
                     $this->arguments['backupStaticAttributes'] = true;
-                    }
-                break;
+                    break;
 
                 case 'v':
-                case '--verbose': {
+                case '--verbose':
                     $this->arguments['verbose'] = true;
-                    }
-                break;
+                    break;
 
-                case '--version': {
+                case '--version':
                     $this->printVersionString();
                     exit(PHPUnit_TextUI_TestRunner::SUCCESS_EXIT);
-                    }
                 break;
 
-                case '--report-useless-tests': {
+                case '--report-useless-tests':
                     $this->arguments['reportUselessTests'] = true;
-                    }
-                break;
+                    break;
 
-                case '--strict-coverage': {
+                case '--strict-coverage':
                     $this->arguments['strictCoverage'] = true;
-                    }
-                break;
+                    break;
 
-                case '--disallow-test-output': {
+                case '--strict-global-state':
+                    $this->arguments['disallowChangesToGlobalState'] = true;
+                    break;
+
+                case '--disallow-test-output':
                     $this->arguments['disallowTestOutput'] = true;
-                    }
-                break;
+                    break;
 
-                case '--enforce-time-limit': {
+                case '--enforce-time-limit':
                     $this->arguments['enforceTimeLimit'] = true;
-                    }
-                break;
+                    break;
 
-                case '--disallow-todo-tests': {
+                case '--disallow-todo-tests':
                     $this->arguments['disallowTodoAnnotatedTests'] = true;
-                    }
-                break;
+                    break;
 
-                case '--strict': {
+                case '--strict':
                     $this->arguments['reportUselessTests']         = true;
                     $this->arguments['strictCoverage']             = true;
                     $this->arguments['disallowTestOutput']         = true;
                     $this->arguments['enforceTimeLimit']           = true;
                     $this->arguments['disallowTodoAnnotatedTests'] = true;
-                    }
-                break;
+                    $this->arguments['deprecatedStrictModeOption'] = true;
+                    break;
 
                 case '--selfupdate':
-                case '--self-update': {
+                case '--self-update':
                     $this->handleSelfUpdate();
-                    }
-                break;
+                    break;
 
-                default: {
+                default:
                     $optionName = str_replace('--', '', $option[0]);
 
                     if (isset($this->longOptions[$optionName])) {
@@ -557,7 +491,6 @@ class PHPUnit_TextUI_Command
 
                     if (isset($handler) && is_callable(array($this, $handler))) {
                         $this->$handler($option[1]);
-                    }
                     }
             }
         }
@@ -592,15 +525,6 @@ class PHPUnit_TextUI_Command
                 'include_path',
                 $includePath . PATH_SEPARATOR . ini_get('include_path')
             );
-        }
-
-        if (isset($this->arguments['bootstrap'])) {
-            $this->handleBootstrap($this->arguments['bootstrap']);
-        }
-
-        if (isset($this->arguments['printer']) &&
-            is_string($this->arguments['printer'])) {
-            $this->arguments['printer'] = $this->handlePrinter($this->arguments['printer']);
         }
 
         if ($this->arguments['loader'] !== null) {
@@ -646,18 +570,20 @@ class PHPUnit_TextUI_Command
 
             $configuration->handlePHPConfiguration();
 
-            if (!isset($this->arguments['bootstrap']) && isset($phpunit['bootstrap'])) {
+            /**
+             * Issue #1216
+             */
+            if (isset($this->arguments['bootstrap'])) {
+                $this->handleBootstrap($this->arguments['bootstrap']);
+            } elseif (isset($phpunit['bootstrap'])) {
                 $this->handleBootstrap($phpunit['bootstrap']);
             }
 
             /**
              * Issue #657
              */
-            if (isset($phpunit['stderr']) && $phpunit['stderr'] == true) {
-                $this->arguments['printer'] = new PHPUnit_TextUI_ResultPrinter(
-                    'php://stderr',
-                    isset($this->arguments['verbose']) ? $this->arguments['verbose'] : false
-                );
+            if (isset($phpunit['stderr']) && ! isset($this->arguments['stderr'])) {
+                $this->arguments['stderr'] = $phpunit['stderr'];
             }
 
             if (isset($phpunit['printerClass'])) {
@@ -668,7 +594,8 @@ class PHPUnit_TextUI_Command
                 }
 
                 $this->arguments['printer'] = $this->handlePrinter(
-                    $phpunit['printerClass'], $file
+                    $phpunit['printerClass'],
+                    $file
                 );
             }
 
@@ -680,7 +607,8 @@ class PHPUnit_TextUI_Command
                 }
 
                 $this->arguments['loader'] = $this->handleLoader(
-                    $phpunit['testSuiteLoaderClass'], $file
+                    $phpunit['testSuiteLoaderClass'],
+                    $file
                 );
             }
 
@@ -698,6 +626,13 @@ class PHPUnit_TextUI_Command
                     $this->arguments['test'] = $testSuite;
                 }
             }
+        } elseif (isset($this->arguments['bootstrap'])) {
+            $this->handleBootstrap($this->arguments['bootstrap']);
+        }
+
+        if (isset($this->arguments['printer']) &&
+            is_string($this->arguments['printer'])) {
+            $this->arguments['printer'] = $this->handlePrinter($this->arguments['printer']);
         }
 
         if (isset($this->arguments['test']) && is_string($this->arguments['test']) && substr($this->arguments['test'], -5, 5) == '.phpt') {
@@ -791,7 +726,9 @@ class PHPUnit_TextUI_Command
                     return $printerClass;
                 }
 
-                return $class->newInstance();
+                $outputStream = isset($this->arguments['stderr']) ? 'php://stderr' : null;
+
+                return $class->newInstance($outputStream);
             }
         }
 
@@ -876,11 +813,11 @@ class PHPUnit_TextUI_Command
             unlink($caFile);
             unlink($tempFilename);
             print " done\n\n" . $e->getMessage() . "\n";
-            exit(PHPUnit_TextUI_TestRunner::EXCEPTION_EXIT);
+            exit(2);
         }
 
         print " done\n";
-        exit(PHPUnit_TextUI_TestRunner::SUCCESS_EXIT);
+        exit(0);
     }
 
     /**
@@ -926,16 +863,18 @@ Test Execution Options:
 
   --report-useless-tests    Be strict about tests that do not test anything.
   --strict-coverage         Be strict about unintentionally covered code.
+  --strict-global-state     Be strict about changes to global state
   --disallow-test-output    Be strict about output during tests.
   --enforce-time-limit      Enforce time limit based on test size.
   --disallow-todo-tests     Disallow @todo-annotated tests.
-  --strict                  Run tests in strict mode (enables all of the above).
 
   --process-isolation       Run each test in a separate PHP process.
   --no-globals-backup       Do not backup and restore \$GLOBALS for each test.
   --static-backup           Backup and restore static attributes for each test.
 
-  --colors                  Use colors in output.
+  --colors=<flag>           Use colors in output ("never", "auto" or "always").
+  --columns <n>             Number of columns to use for progress output.
+  --columns max             Use maximum number of columns for progress output.
   --stderr                  Write to STDERR instead of STDOUT.
   --stop-on-error           Stop execution upon first error.
   --stop-on-failure         Stop execution upon first error or failure.

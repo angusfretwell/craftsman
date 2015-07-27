@@ -186,7 +186,36 @@ class UserModel extends BaseElementModel
 	 */
 	public function getStatus()
 	{
-		return $this->getAttribute('status');
+		if ($this->locked)
+		{
+			return UserStatus::Locked;
+		}
+
+		if ($this->suspended)
+		{
+			return UserStatus::Suspended;
+		}
+
+		if ($this->archived)
+		{
+			return UserStatus::Archived;
+		}
+
+		if ($this->pending)
+		{
+			return UserStatus::Pending;
+		}
+
+		return UserStatus::Active;
+	}
+
+	/**
+	 * Sets a user's status to active.
+	 */
+	public function setActive()
+	{
+		$this->pending = false;
+		$this->archived = false;
 	}
 
 	/**
@@ -200,7 +229,8 @@ class UserModel extends BaseElementModel
 	{
 		if ($this->photo)
 		{
-			return UrlHelper::getResourceUrl('userphotos/'.$this->username.'/'.$size.'/'.$this->photo);
+			$username = AssetsHelper::cleanAssetName($this->username, false);
+			return UrlHelper::getResourceUrl('userphotos/'.$username.'/'.$size.'/'.$this->photo);
 		}
 	}
 
@@ -220,6 +250,16 @@ class UserModel extends BaseElementModel
 		}
 
 		return $url;
+	}
+
+	/**
+	 * @inheritDoc BaseElementModel::isEditable()
+	 *
+	 * @return bool
+	 */
+	public function isEditable()
+	{
+		return craft()->userSession->checkPermission('editUsers');
 	}
 
 	/**
@@ -300,10 +340,16 @@ class UserModel extends BaseElementModel
 	{
 		if ($this->status == UserStatus::Locked)
 		{
-			$cooldownEnd = clone $this->lockoutDate;
-			$cooldownEnd->add(new DateInterval(craft()->config->get('cooldownDuration')));
+			// There was an old bug that where a user's lockoutDate could be null if they've
+			// passed their cooldownDuration already, but there account status is still locked.
+			// If that's the case, just let it return null as if they are past the cooldownDuration.
+			if ($this->lockoutDate)
+			{
+				$cooldownEnd = clone $this->lockoutDate;
+				$cooldownEnd->add(new DateInterval(craft()->config->get('cooldownDuration')));
 
-			return $cooldownEnd;
+				return $cooldownEnd;
+			}
 		}
 	}
 
@@ -371,7 +417,7 @@ class UserModel extends BaseElementModel
 			{
 				if (!$user->getRemainingCooldownTime())
 				{
-					craft()->users->activateUser($user);
+					craft()->users->unlockUser($user);
 				}
 			}
 		}
@@ -415,15 +461,19 @@ class UserModel extends BaseElementModel
 
 		return array_merge(parent::defineAttributes(), array(
 			'username'                   => array(AttributeType::String, 'maxLength' => 100, 'required' => $requireUsername),
-			'photo'                      => AttributeType::String,
+			'photo'                      => array(AttributeType::String, 'maxLength' => 100),
 			'firstName'                  => AttributeType::String,
 			'lastName'                   => AttributeType::String,
 			'email'                      => array(AttributeType::Email, 'required' => !$requireUsername),
 			'password'                   => AttributeType::String,
 			'preferredLocale'            => AttributeType::Locale,
+			'weekStartDay'               => array(AttributeType::Number, 'default' => 0),
 			'admin'                      => AttributeType::Bool,
 			'client'                     => AttributeType::Bool,
-			'status'                     => array(AttributeType::Enum, 'values' => array(UserStatus::Active, UserStatus::Locked, UserStatus::Suspended, UserStatus::Pending, UserStatus::Archived), 'default' => UserStatus::Pending),
+			'locked'                     => AttributeType::Bool,
+			'suspended'                  => AttributeType::Bool,
+			'pending'                    => AttributeType::Bool,
+			'archived'                   => AttributeType::Bool,
 			'lastLoginDate'              => AttributeType::DateTime,
 			'invalidLoginCount'          => AttributeType::Number,
 			'lastInvalidLoginDate'       => AttributeType::DateTime,

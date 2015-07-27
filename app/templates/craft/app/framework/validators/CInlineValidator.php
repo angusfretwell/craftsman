@@ -68,6 +68,7 @@ class CInlineValidator extends CValidator
 	 * @param CModel $object the data object being validated
 	 * @param string $attribute the name of the attribute to be validated.
 	 * @return string the client-side validation script.
+	 * @see CActiveForm::enableClientValidation
 	 * @since 1.1.9
 	 */
 	public function clientValidateAttribute($object,$attribute)

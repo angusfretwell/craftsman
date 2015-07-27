@@ -68,8 +68,7 @@ class CEmailValidator extends CValidator
 	protected function validateAttribute($object,$attribute)
 	{
 		$value=$object->$attribute;
-		if($this->allowEmpty && $this->isEmpty($value))
-			return;
+
 		if(!$this->validateValue($value))
 		{
 			$message=$this->message!==null?$this->message:Yii::t('yii','{attribute} is not a valid email address.');
@@ -87,6 +86,9 @@ class CEmailValidator extends CValidator
 	 */
 	public function validateValue($value)
 	{
+		if($this->allowEmpty && $this->isEmpty($value))
+			return true;
+
 		if(is_string($value) && $this->validateIDN)
 			$value=$this->encodeIDN($value);
 		// make sure string length is limited to avoid DOS attacks
@@ -105,6 +107,7 @@ class CEmailValidator extends CValidator
 	 * @param CModel $object the data object being validated
 	 * @param string $attribute the name of the attribute to be validated.
 	 * @return string the client-side validation script.
+	 * @see CActiveForm::enableClientValidation
 	 * @since 1.1.7
 	 */
 	public function clientValidateAttribute($object,$attribute)
@@ -174,9 +177,7 @@ if(".($this->allowEmpty ? "jQuery.trim(value)!='' && " : '').$condition.") {
 	 */
 	protected function mxSort($a, $b)
 	{
-		if($a['pri']==$b['pri'])
-			return 0;
-		return ($a['pri']<$b['pri'])?-1:1;
+		return $a['pri']-$b['pri'];
 	}
 
 	/**

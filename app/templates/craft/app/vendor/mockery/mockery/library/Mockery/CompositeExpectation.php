@@ -20,7 +20,7 @@
 
 namespace Mockery;
 
-class CompositeExpectation
+class CompositeExpectation implements ExpectationInterface
 {
 
     /**
@@ -39,6 +39,14 @@ class CompositeExpectation
     public function add($expectation)
     {
         $this->_expectations[] = $expectation;
+    }
+
+    /**
+     * @param mixed ...
+     */
+    public function andReturn()
+    {
+        return $this->__call(__FUNCTION__, func_get_args());
     }
 
     /**
@@ -94,6 +102,7 @@ class CompositeExpectation
      * Starts a new expectation addition on the first mock which is the primary
      * target outside of a demeter chain
      *
+     * @param mixed ...
      * @return \Mockery\Expectation
      */
     public function shouldReceive()
@@ -119,5 +128,4 @@ class CompositeExpectation
         $return .= implode(', ', $parts) . ']';
         return $return;
     }
-
 }

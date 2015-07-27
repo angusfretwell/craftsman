@@ -337,79 +337,196 @@ class DbHelper
 	}
 
 	/**
-	 * Parses a service param value to a DbCommand where condition.
+	 * Returns the maximum number of bytes a given textual column type can hold for a given database.
 	 *
-	 * @param string       $key
-	 * @param string|array $values
-	 * @param array        &$params
+	 * @param        $columnType The textual column type to check.
+	 * @param string $database   The type of database to use.
+	 *
+	 * @return int The storage capacity of the column type in bytes.
+	 */
+	public static function getTextualColumnStorageCapacity($columnType, $database = 'mysql')
+	{
+		switch ($database)
+		{
+			case 'mysql':
+			{
+				switch ($columnType)
+				{
+					case ColumnType::TinyText:
+					{
+						// 255 bytes
+						return 255;
+					}
+
+					case ColumnType::Text:
+					{
+						// 65k
+						return 65535;
+					}
+
+					case ColumnType::MediumText:
+					{
+						// 16MB
+						return 16777215;
+					}
+
+					case ColumnType::LongText:
+					{
+						// 4GB
+						return 4294967295;
+					}
+				}
+
+				break;
+			}
+		}
+	}
+
+	/**
+	 * Given a length of a piece of content, returns the underlying database column type to use for saving.
+	 *
+	 * @param $contentLength
+	 *
+	 * @return string
+	 */
+	public static function getTextualColumnTypeByContentLength($contentLength)
+	{
+		if ($contentLength <= static::getTextualColumnStorageCapacity(ColumnType::TinyText))
+		{
+			return ColumnType::Varchar;
+		}
+		else if ($contentLength <= static::getTextualColumnStorageCapacity(ColumnType::Text))
+		{
+			return ColumnType::Text;
+		}
+		else if ($contentLength <= static::getTextualColumnStorageCapacity(ColumnType::MediumText))
+		{
+			return ColumnType::MediumText;
+		}
+		else
+		{
+			return ColumnType::LongText;
+		}
+	}
+
+	/**
+	 * Escapes commas and asterisks in a string so they are not treated as special characters in
+	 * {@link DbHelper::parseParam()}.
+	 *
+	 * @param string $value The param value.
+	 *
+	 * @return string The escaped param value.
+	 */
+	public static function escapeParam($value)
+	{
+		return str_replace(array(',', '*'), array('\,', '\*'), $value);
+	}
+
+	/**
+	 * Parses a query param value and returns a {@link \CDbCommand::where()}-compatible condition.
+	 *
+	 * If the `$value` is a string, it will automatically be converted to an array, split on any commas within the
+	 * string (via {@link ArrayHelper::stringToArray()}). If that is not desired behavior, you can escape the comma
+	 * with a backslash before it.
+	 *
+	 * The first value can be set to either `'and'` or `'or'` to define whether *all* of the values must match, or
+	 * *any*. If it’s neither `'and'` nor `'or'`, then `'or'` will be assumed.
+	 *
+	 * Values can begin with the operators `'not '`, `'!='`, `'<='`, `'>='`, `'<'`, `'>'`, or `'='`. If they don’t,
+	 * `'='` will be assumed.
+	 *
+	 * Values can also be set to either `':empty:'` or `':notempty:'` if you want to search for empty or non-empty
+	 * database values. (An “empty” value is either NULL or an empty string of text).
+	 *
+	 * @param string       $column  The database column that the param is targeting.
+	 * @param string|array $value   The param value(s).
+	 * @param array        &$params The {@link \CDbCommand::$params} array.
 	 *
 	 * @return mixed
 	 */
-	public static function parseParam($key, $values, &$params)
+	public static function parseParam($column, $value, &$params)
 	{
-		// Need to do a strict check here in case $values = true
-		if ($values === 'not ')
+		// Need to do a strict check here in case $value = true
+		if ($value === 'not ')
 		{
 			return '';
 		}
 
 		$conditions = array();
 
-		$values = ArrayHelper::stringToArray($values);
+		$value = ArrayHelper::stringToArray($value);
 
-		if (!count($values))
+		if (!count($value))
 		{
 			return '';
 		}
 
-		$firstVal = StringHelper::toLowerCase(ArrayHelper::getFirstValue($values));
+		$firstVal = StringHelper::toLowerCase(ArrayHelper::getFirstValue($value));
 
 		if ($firstVal == 'and' || $firstVal == 'or')
 		{
-			$join = array_shift($values);
+			$join = array_shift($value);
 		}
 		else
 		{
 			$join = 'or';
 		}
 
-		foreach ($values as $value)
+		foreach ($value as $val)
 		{
-			if ($value === null)
-			{
-				$value = ':empty:';
-			}
-			else if (StringHelper::toLowerCase($value) == ':notempty:')
-			{
-				$value = 'not :empty:';
-			}
+			static::_normalizeEmptyValue($val);
+			$operator = static::_parseParamOperator($val);
 
-			$operator = static::_parseParamOperator($value);
-
-			if (StringHelper::toLowerCase($value) == ':empty:')
+			if (StringHelper::toLowerCase($val) == ':empty:')
 			{
 				if ($operator == '=')
 				{
-					$conditions[] = array('or', $key.' is null', $key.' = ""');
+					$conditions[] = array('or', $column.' is null', $column.' = ""');
 				}
 				else
 				{
-					$conditions[] = array('and', $key.' is not null', $key.' != ""');
+					$conditions[] = array('and', $column.' is not null', $column.' != ""');
 				}
 			}
 			else
 			{
-				// Find a unique param name
-				$paramKey = ':'.str_replace('.', '', $key);
-				$i = 1;
-				while (isset($params[$paramKey.$i]))
+				// Trim any whitespace from the value
+				$val = trim($val);
+
+				// This could be a LIKE condition
+				if ($operator == '=' || $operator == '!=')
 				{
-					$i++;
+					$val = preg_replace('/^\*|(?<!\\\)\*$/', '%', $val, -1, $count);
+					$like = (bool) $count;
+				}
+				else
+				{
+					$like = false;
 				}
 
-				$param = $paramKey.$i;
-				$params[$param] = trim($value);
-				$conditions[] = $key.$operator.$param;
+				// Unescape any asterisks
+				$val = str_replace('\*', '*', $val);
+
+				if ($like)
+				{
+					$conditions[] = array(($operator == '=' ? 'like' : 'not like'), $column, $val);
+				}
+				else
+				{
+					// Find a unique param name
+					$paramKey = ':'.str_replace('.', '', $column);
+					$i = 1;
+
+					while (isset($params[$paramKey.$i]))
+					{
+						$i++;
+					}
+
+					$param = $paramKey.$i;
+					$params[$param] = $val;
+
+					$conditions[] = $column.$operator.$param;
+				}
 			}
 		}
 
@@ -427,60 +544,88 @@ class DbHelper
 	/**
 	 * Normalizes date params and then sends them off to parseParam().
 	 *
-	 * @param string                $key
-	 * @param string|array|DateTime $values
+	 * @param string                $column
+	 * @param string|array|DateTime $value
 	 * @param array                 &$params
 	 *
 	 * @return mixed
 	 */
-	public static function parseDateParam($key, $values, &$params)
+	public static function parseDateParam($column, $value, &$params)
 	{
 		$normalizedValues = array();
 
-		$values = ArrayHelper::stringToArray($values);
+		$value = ArrayHelper::stringToArray($value);
 
-		if (!count($values))
+		if (!count($value))
 		{
 			return '';
 		}
 
-		if ($values[0] == 'and' || $values[0] == 'or')
+		if ($value[0] == 'and' || $value[0] == 'or')
 		{
-			$normalizedValues[] = $values[0];
-			array_shift($values);
+			$normalizedValues[] = $value[0];
+			array_shift($value);
 		}
 
-		foreach ($values as $value)
+		foreach ($value as $val)
 		{
-			if (is_string($value))
+			// Is this an empty value?
+			static::_normalizeEmptyValue($val);
+
+			if ($val == ':empty:' || $val == 'not :empty:')
 			{
-				$operator = static::_parseParamOperator($value);
+				$normalizedValues[] = $val;
+
+				// Sneak out early
+				continue;
+			}
+
+			if (is_string($val))
+			{
+				$operator = static::_parseParamOperator($val);
 			}
 			else
 			{
 				$operator = '=';
 			}
 
-			if (!$value instanceof \DateTime)
+			if (!$val instanceof \DateTime)
 			{
-				$value = DateTime::createFromString($value, craft()->getTimeZone());
+				$val = DateTime::createFromString($val, craft()->getTimeZone());
 			}
 
-			$normalizedValues[] = $operator.DateTimeHelper::formatTimeForDb($value->getTimestamp());
+			$normalizedValues[] = $operator.DateTimeHelper::formatTimeForDb($val->getTimestamp());
 		}
 
-		return static::parseParam($key, $normalizedValues, $params);
+		return static::parseParam($column, $normalizedValues, $params);
 	}
 
 	// Private Methods
 	// =========================================================================
 
 	/**
+	 * Normalizes “empty” values.
+	 *
+	 * @param string &$value The param value.
+	 */
+	private static function _normalizeEmptyValue(&$value)
+	{
+		if ($value === null)
+		{
+			$value = ':empty:';
+		}
+		else if (StringHelper::toLowerCase($value) == ':notempty:')
+		{
+			$value = 'not :empty:';
+		}
+	}
+
+	/**
 	 * Extracts the operator from a DB param and returns it.
 	 *
-	 * @param string &$value
+	 * @param string &$value Te param value.
 	 *
-	 * @return string
+	 * @return string The operator.
 	 */
 	private static function _parseParamOperator(&$value)
 	{

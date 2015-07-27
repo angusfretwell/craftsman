@@ -120,22 +120,15 @@ class DateFieldType extends BaseFieldType
 	}
 
 	/**
-	 * @inheritDoc IFieldType::prepValue()
+	 * @inheritDoc IFieldType::prepValueFromPost()
 	 *
 	 * @param mixed $value
 	 *
-	 * @return DateTime
+	 * @return mixed
 	 */
-	public function prepValue($value)
+	public function prepValueFromPost($value)
 	{
-		if ($value)
-		{
-			// Set it to the system timezone
-			$timezone = craft()->getTimeZone();
-			$value->setTimezone(new \DateTimeZone($timezone));
-
-			return $value;
-		}
+		return DateTime::createFromString($value, craft()->getTimeZone());
 	}
 
 	/**

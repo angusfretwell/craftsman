@@ -71,7 +71,7 @@ final class Imagine extends AbstractImagine
 
         try {
             $pixel = new \ImagickPixel((string) $color);
-            $pixel->setColorValue(\Imagick::COLOR_ALPHA, number_format(round($color->getAlpha() / 100, 2), 1));
+            $pixel->setColorValue(\Imagick::COLOR_ALPHA, $color->getAlpha() / 100);
 
             $imagick = new \Imagick();
             $imagick->newImage($width, $height, $pixel);
@@ -155,7 +155,7 @@ final class Imagine extends AbstractImagine
             case \Imagick::COLORSPACE_GRAY:
                 return new Grayscale();
             default:
-                throw new NotSupportedException('Only RGB and CMYK colorspace are curently supported');
+                throw new NotSupportedException('Only RGB and CMYK colorspace are currently supported');
         }
     }
 

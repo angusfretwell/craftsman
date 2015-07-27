@@ -14,6 +14,8 @@
 
 {% set canPublish = currentUser.can('publishEntries'~permissionSuffix) %}
 
+{% hook "cp.entries.edit" %}
+
 
 {% block main %}
 	<form id="entry-form" method="post" accept-charset="UTF-8" data-saveshortcut data-saveshortcut-redirect="{{ continueEditingUrl }}" data-confirm-unload>
@@ -40,22 +42,12 @@
 			<div class="item" data-position="right" data-colspan="1">
 
 				{% if showPreviewBtn %}
-					{% if shareUrl is defined %}
-						<div id="view-btns" class="btngroup">
-					{% endif %}
-							<div id="livepreview-btn" class="btn big" data-icon="view">
-								{{ "Live Preview"|t }}
-								<div id="livepreview-spinner" class="spinner hidden"></div>
-							</div>
-					{% if shareUrl is defined %}
-							<a href="{{ shareUrl }}" id="share-btn" class="btn big" data-icon="share" title="{{ 'View this entry on your website'|t }}" target="_blank"></a>
-						</div>
-					{% endif %}
+					{% include "_includes/previewbtns" %}
 				{% endif %}
 
 				{% if craft.isLocalized() and section.getLocales() | length > 1 %}
 					<ul id="locales" class="pane">
-						{% set parentIdParam = craft.request.getParam('parentId') %}
+						{% set parentIdParam = craft.request.getParam('parentId.0') ?: craft.request.getParam('parentId') %}
 						{% for localeId in localeIds %}
 							{% set localeName = craft.i18n.getLocaleById(localeId).name %}
 							<li{% if localeId == entry.locale %} class="sel"{% endif %}>
@@ -104,25 +96,30 @@
 								disabled: isVersion
 							}) }}
 
-							{% if section.type == 'structure' and parentOptions|length > 1 %}
-								{{ forms.selectField({
+							{% if parentOptionCriteria is defined %}
+								{{ forms.elementSelectField({
 									label: "Parent Entry"|t,
 									id: 'parentId',
 									name: 'parentId',
-									options: parentOptions,
-									value: parentId,
-									disabled: isVersion
+									elementType: elementType,
+									selectionLabel: "Choose"|t,
+									sources: ['section:'~section.id],
+									criteria: parentOptionCriteria,
+									limit: 1,
+									elements: (parent is defined and parent ? [parent])
 								}) }}
 							{% endif %}
 
-							{% if CraftEdition >= CraftClient %}
-								{{ forms.selectField({
+							{% if CraftEdition == CraftPro and currentUser.can('editPeerEntries'~permissionSuffix) %}
+								{{ forms.elementSelectField({
 									label: "Author"|t,
 									id: 'author',
 									name: 'author',
-									options: authorOptions,
-									value: entry.authorId,
-									disabled: isVersion
+									elementType: userElementType,
+									selectionLabel: "Choose"|t,
+									criteria: authorOptionCriteria,
+									limit: 1,
+									elements: (author is defined and author ? [author])
 								}) }}
 							{% endif %}
 
@@ -176,7 +173,7 @@
 
 					</div><!--/pane-->
 
-					{% if isVersion and entry.revisionNotes %}
+					{% if entry.revisionNotes %}
 						<div class="pane">
 							<h6>{{ "Version Notes"|t }}</h6>
 							<p class="light">{{ entry.revisionNotes }}</p>
@@ -184,6 +181,9 @@
 					{% endif %}
 
 				{% endif %}
+
+				{# Give plugins a chance to add other panes here #}
+				{% hook "cp.entries.edit.right-pane" %}
 
 				{# Action buttons #}
 
@@ -256,13 +256,16 @@
 										<div class="btn submit menubtn"></div>
 										<div class="menu">
 											<ul>
-												<li><a class="formsubmit" data-redirect="{{ continueEditingUrl }}">{{ "Save and continue editing"|t }}</a></li>
+												<li><a class="formsubmit" data-redirect="{{ continueEditingUrl }}">
+													{{ "Save and continue editing"|t }}
+													{{ forms.optionShortcutLabel('S') }}
+												</a></li>
 
 												{% set nextEntryParams = [] %}
 												{% if showEntryTypes %}
 													{% set nextEntryParams = nextEntryParams|merge(['typeId={type.id}']) %}
 												{% endif %}
-												{% if section.type == 'structure' and parentOptions|length > 1 %}
+												{% if section.type == 'structure' %}
 													{% set nextEntryParams = nextEntryParams|merge(['parentId={parent.id}']) %}
 												{% endif %}
 
@@ -273,15 +276,19 @@
 												{% if CraftEdition >= CraftClient %}
 													<li><a class="formsubmit" data-action="entryRevisions/saveDraft" data-redirect="{{ baseCpEditUrl }}/drafts/{draftId}">{{ 'Save as a draft'|t }}</a></li>
 												{% endif %}
+
+												{% if not isSingle and entry.id %}
+													<li><a class="formsubmit" data-param="entryId" data-value="" data-redirect="{{ continueEditingUrl }}">{{ "Save as a new entry"|t }}</a></li>
+												{% endif %}
 											</ul>
 										</div>
 									</div>
 								</td>
-								{% if CraftEdition >= CraftClient and section.enableVersioning %}
-									<td>
+								<td>
+									{% if CraftEdition >= CraftClient and section.enableVersioning %}
 										<input type="text" name="revisionNotes" class="fullwidth textline" placeholder="{{ 'Notes about your changes'|t }}" autocomplete="off">
-									</td>
-								{% endif %}
+									{% endif %}
+								</td>
 							</tr>
 						</table>
 					{% else %}

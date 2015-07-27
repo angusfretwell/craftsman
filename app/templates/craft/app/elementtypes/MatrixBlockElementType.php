@@ -93,32 +93,41 @@ class MatrixBlockElementType extends BaseElementType
 	}
 
 	/**
-	 * @inheritDoc IElementType::getContentFieldColumnsForElementsQuery()
+	 * @inheritDoc IElementType::getFieldsForElementsQuery()
 	 *
 	 * @param ElementCriteriaModel $criteria
 	 *
-	 * @return array
+	 * @return FieldModel[]
 	 */
-	public function getContentFieldColumnsForElementsQuery(ElementCriteriaModel $criteria)
+	public function getFieldsForElementsQuery(ElementCriteriaModel $criteria)
 	{
-		$columns = array();
+		$blockTypes = craft()->matrix->getBlockTypesByFieldId($criteria->fieldId);
 
-		foreach (craft()->matrix->getBlockTypesByFieldId($criteria->fieldId) as $blockType)
+		// Preload all of the fields up front to save ourselves some DB queries, and discard
+		$contexts = array();
+
+		foreach ($blockTypes as $blockType)
+		{
+			$contexts[] = 'matrixBlockType:'.$blockType->id;
+		}
+
+		craft()->fields->getAllFields(null, $contexts);
+
+		// Now assemble the actual fields list
+		$fields = array();
+
+		foreach ($blockTypes as $blockType)
 		{
 			$fieldColumnPrefix = 'field_'.$blockType->handle.'_';
 
 			foreach ($blockType->getFields() as $field)
 			{
-				$fieldType = $field->getFieldType();
-
-				if ($fieldType && $fieldType->defineContentAttribute())
-				{
-					$columns[] = array('handle' => $field->handle, 'column' => $fieldColumnPrefix.$field->handle);
-				}
+				$field->columnPrefix = $fieldColumnPrefix;
+				$fields[] = $field;
 			}
 		}
 
-		return $columns;
+		return $fields;
 	}
 
 	/**

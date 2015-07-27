@@ -1,8 +1,8 @@
 @charset "UTF-8";
 /* RTL stuff */
 #graphic { display: block; position: absolute; top: 50%; left: 50%; background-repeat: no-repeat; background-position: 50% 50%; }
-body.ltr #graphic { margin: -48px 0 0 -24px; }
-body.rtl #graphic { margin: -48px -24px 0 0; }
+body.ltr #graphic { margin: -48px 0 0 -24px ; }
+body.rtl #graphic { margin: -48px -24px 0 0 ; }
 
 #graphic.error { background-image: url(../images/error.png); }
 

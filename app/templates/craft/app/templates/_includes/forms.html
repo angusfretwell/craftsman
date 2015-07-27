@@ -151,7 +151,7 @@
 
 {% macro checkboxField(config) %}
 	{% set instructions = config.instructions is defined ? config.instructions -%}
-	<div class="field checkbox{% if config.first is defined and config.first %} first{% endif %}{% if instructions %} has-instructions{% endif %}"{% if config.id is defined and config.id %} id="{{ config.id }}-field"{% endif %}>
+	<div class="field checkboxfield{% if config.first is defined and config.first %} first{% endif %}{% if instructions %} has-instructions{% endif %}"{% if config.id is defined and config.id %} id="{{ config.id }}-field"{% endif %}>
 		{{ _self.checkbox(config) }}
 		{% if instructions %}
 			<div class="instructions">{{ instructions|md }}</div>
@@ -183,4 +183,24 @@
 {% macro editableTableField(config) %}
 	{% set input %}{% include "_includes/forms/editableTable" with config only %}{% endset %}
 	{{ _self.field(config, input) }}
+{% endmacro %}
+
+
+{% macro elementSelectField(config) %}
+	{{ _self.field(config, _self.elementSelect(config)) }}
+{% endmacro %}
+
+
+{# Other #}
+
+
+{% macro optionShortcutLabel(key, shift, alt) %}
+	{%- spaceless %}
+		{% switch craft.request.getClientOs() %}
+			{% case 'Mac' %}
+				<span class="shortcut">{{ (alt ? '⌥') ~ (shift ? '⇧') ~ '⌘' ~ key }}</span>
+			{% default %}
+				<span class="shortcut">{{ 'Ctrl+' ~ (alt ? 'Alt+') ~ (shift ? 'Shift+') ~ key }}</span>
+		{% endswitch %}
+	{% endspaceless -%}
 {% endmacro %}

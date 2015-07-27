@@ -120,6 +120,18 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	}
 
 	/**
+	 * @inheritDoc IElementType::getAvailableActions()
+	 *
+	 * @param string|null $source
+	 *
+	 * @return array|null
+	 */
+	public function getAvailableActions($source = null)
+	{
+		return array();
+	}
+
+	/**
 	 * @inheritDoc IElementType::defineSearchableAttributes()
 	 *
 	 * @return array
@@ -140,46 +152,77 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	 * @param array                $viewState
 	 * @param null|string          $sourceKey
 	 * @param null|string          $context
+	 * @param bool                 $includeContainer
+	 * @param bool                 $showCheckboxes
 	 *
 	 * @return string
 	 */
-	public function getIndexHtml($criteria, $disabledElementIds, $viewState, $sourceKey, $context)
+	public function getIndexHtml($criteria, $disabledElementIds, $viewState, $sourceKey, $context, $includeContainer, $showCheckboxes)
 	{
 		$variables = array(
 			'viewMode'            => $viewState['mode'],
 			'context'             => $context,
 			'elementType'         => new ElementTypeVariable($this),
 			'disabledElementIds'  => $disabledElementIds,
+			'collapsedElementIds' => craft()->request->getParam('collapsedElementIds'),
+			'showCheckboxes'      => $showCheckboxes,
 		);
+
+		// Special case for sorting by structure
+		if (isset($viewState['order']) && $viewState['order'] == 'structure')
+		{
+			$source = $this->getSource($sourceKey, $context);
+
+			if (isset($source['structureId']))
+			{
+				$criteria->order = 'lft asc';
+				$variables['structure'] = craft()->structures->getStructureById($source['structureId']);
+
+				// Are they allowed to make changes to this structure?
+				if ($context == 'index' && $variables['structure'] && !empty($source['structureEditable']))
+				{
+					$variables['structureEditable'] = true;
+
+					// Let StructuresController know that this user can make changes to the structure
+					craft()->userSession->authorize('editStructure:'.$variables['structure']->id);
+				}
+			}
+			else
+			{
+				unset($viewState['order']);
+			}
+		}
+		else if (!empty($viewState['order']) && $viewState['order'] == 'score')
+		{
+			$criteria->order = 'score';
+		}
+		else
+		{
+			$sortableAttributes = $this->defineSortableAttributes();
+
+			if ($sortableAttributes)
+			{
+				$order = (!empty($viewState['order']) && isset($sortableAttributes[$viewState['order']])) ? $viewState['order'] : array_shift(array_keys($sortableAttributes));
+				$sort  = (!empty($viewState['sort']) && in_array($viewState['sort'], array('asc', 'desc'))) ? $viewState['sort'] : 'asc';
+
+				// Combine them, accounting for the possibility that $order could contain multiple values,
+				// and be defensive about the possibility that the first value actually has "asc" or "desc"
+
+				// typeId             => typeId [sort]
+				// typeId, title      => typeId [sort], title
+				// typeId, title desc => typeId [sort], title desc
+				// typeId desc        => typeId [sort]
+
+				$criteria->order = preg_replace('/^(.*?)(?:\s+(?:asc|desc))?(,.*)?$/i', "$1 {$sort}$2", $order);
+			}
+		}
 
 		switch ($viewState['mode'])
 		{
 			case 'table':
 			{
-				// Make sure the attribute is actually allowed
+				// Get the table columns
 				$variables['attributes'] = $this->defineTableAttributes($sourceKey);
-
-				// Ordering by an attribute?
-				if (!empty($viewState['order']) && in_array($viewState['order'], array_keys($variables['attributes'])))
-				{
-					$criteria->order = $viewState['order'].' '.$viewState['sort'];
-					$variables['order'] = $viewState['order'];
-					$variables['sort'] = $viewState['sort'];
-				}
-
-				break;
-			}
-
-			case 'structure':
-			{
-				$source = $this->getSource($sourceKey, $context);
-
-				$variables['structure']           = craft()->structures->getStructureById($source['structureId']);
-				$variables['collapsedElementIds'] = isset($viewState['collapsedElementIds']) ? $viewState['collapsedElementIds'] : array();
-				$variables['newChildUrl']         = (isset($source['newChildUrl']) ? $source['newChildUrl'] : null);
-
-				$criteria->offset = 0;
-				$criteria->limit = null;
 
 				break;
 			}
@@ -187,14 +230,24 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 
 		$variables['elements'] = $criteria->find();
 
-		$template = '_elements/'.$viewState['mode'].'view/'.(!$criteria->offset ? 'container' : 'elements');
+		$template = '_elements/'.$viewState['mode'].'view/'.($includeContainer ? 'container' : 'elements');
 		return craft()->templates->render($template, $variables);
+	}
+
+	/**
+	 * @inheritDoc IElementType::defineSortableAttributes()
+	 *
+	 * @retrun array
+	 */
+	public function defineSortableAttributes()
+	{
+		return $this->defineTableAttributes();
 	}
 
 	/**
 	 * @inheritDoc IElementType::defineTableAttributes()
 	 *
-	 * @param null $source
+	 * @param string|null $source
 	 *
 	 * @return array
 	 */
@@ -251,23 +304,17 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 					return '';
 				}
 			}
-			case 'dateCreated':
-			case 'dateUpdated':
-			{
-				$date = $element->$attribute;
 
-				if ($date)
-				{
-					return $date->localeDate();
-				}
-				else
-				{
-					return '';
-				}
-			}
 			default:
 			{
-				return $element->$attribute;
+				$value = $element->$attribute;
+
+				if ($value instanceof DateTime)
+				{
+					return '<span title="'.$value->localeDate().' '.$value->localeTime().'">'.$value->uiTimestamp().'</span>';
+				}
+
+				return HtmlHelper::encode($value);
 			}
 		}
 	}
@@ -298,26 +345,48 @@ abstract class BaseElementType extends BaseComponentType implements IElementType
 	}
 
 	/**
+	 * @inheritDoc IElementType::getFieldsForElementsQuery()
+	 *
+	 * @param ElementCriteriaModel $criteria
+	 *
+	 * @return FieldModel[]
+	 */
+	public function getFieldsForElementsQuery(ElementCriteriaModel $criteria)
+	{
+		$contentService = craft()->content;
+		$originalFieldContext = $contentService->fieldContext;
+		$contentService->fieldContext = 'global';
+
+		$fields = craft()->fields->getAllFields();
+
+		$contentService->fieldContext = $originalFieldContext;
+
+		return $fields;
+	}
+
+	/**
 	 * @inheritDoc IElementType::getContentFieldColumnsForElementsQuery()
 	 *
 	 * @param ElementCriteriaModel $criteria
 	 *
+	 * @deprecated Deprecated in 2.3. Element types should implement {@link getFieldsForElementsQuery()} instead.
 	 * @return array
 	 */
 	public function getContentFieldColumnsForElementsQuery(ElementCriteriaModel $criteria)
 	{
-		$contentService = craft()->content;
 		$columns = array();
+		$fields = $this->getFieldsForElementsQuery($criteria);
 
-		$originalFieldContext = $contentService->fieldContext;
-		$contentService->fieldContext = 'global';
-
-		foreach (craft()->fields->getFieldsWithContent() as $field)
+		foreach ($fields as $field)
 		{
-			$columns[] = array('handle' => $field->handle, 'column' => 'field_'.$field->handle);
+			if ($field->hasContentColumn())
+			{
+				$columns[] = array(
+					'handle' => $field->handle,
+					'column' => ($field->columnPrefix ? $field->columnPrefix : 'field_') . $field->handle
+				);
+			}
 		}
-
-		$contentService->fieldContext = $originalFieldContext;
 
 		return $columns;
 	}

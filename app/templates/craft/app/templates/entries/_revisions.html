@@ -15,7 +15,7 @@
 		<ul class="padded">
 			{% for draft in drafts %}
 				<li><a{% if entry.getClassHandle() == 'EntryDraft' and draft.draftId == draftId %} class="sel"{% endif %} href="{{ url(baseUrl~'drafts/'~draft.draftId) }}">
-					{{ draft.name }}
+					{{ draft.name|t }}
 					<span class="light">{{ "by {creator}"|t({ creator: draft.creator }) }}</span>
 				</a></li>
 			{% endfor %}
@@ -30,7 +30,7 @@
 				{% for version in versions %}
 					<li><a{% if entry.getClassHandle() == 'EntryVersion' and version.versionId == versionId %} class="sel"{% endif %} href="{{ url(baseUrl~'versions/'~version.versionId) }}">
 						{{ "Version {num}"|t({ num: version.num }) }}
-						<span class="light">{{ "by {creator} on {date}"|t({ creator: version.creator, date: version.dateCreated.localeDate() }) }}</span>
+						<span class="light">{{ version.dateCreated.uiTimestamp() }}, {{ version.creator }}</span>
 					</a></li>
 				{% endfor %}
 			</ul>

@@ -285,6 +285,31 @@ class SearchService extends BaseApplicationComponent
 			$cleanKeywords = ' '.$cleanKeywords.' ';
 		}
 
+		$cleanKeywordsLength = strlen($cleanKeywords);
+
+		$maxDbColumnSize = DbHelper::getTextualColumnStorageCapacity(ColumnType::Text);
+
+		// Give ourselves 10% wiggle room.
+		$maxDbColumnSize = ceil($maxDbColumnSize * 0.9);
+
+		if ($cleanKeywordsLength > $maxDbColumnSize)
+		{
+			// Time to truncate.
+			$cleanKeywords = mb_strcut($cleanKeywords, 0, $maxDbColumnSize);
+
+			// Make sure we don't cut off a word in the middle.
+			if ($cleanKeywords[mb_strlen($cleanKeywords) - 1] !== ' ')
+			{
+				$position = mb_strrpos($cleanKeywords, ' ');
+
+				if ($position)
+				{
+					$cleanKeywords = mb_substr($cleanKeywords, 0, $position + 1);
+				}
+			}
+
+		}
+
 		// Insert/update the row in searchindex
 		craft()->db->createCommand()->insertOrUpdate('searchindex', $keyColumns, array(
 			'keywords' => $cleanKeywords
@@ -553,10 +578,12 @@ class SearchService extends BaseApplicationComponent
 		{
 			$keywords = $this->_normalizeTerm($term->term);
 
-			if ($keywords !== false && $keywords !== null)
+			// Make sure that it didn't result in an empty string (e.g. if they entered '&')
+			// unless it's meant to search for *anything* (e.g. if they entered 'attribute:*').
+			if ($keywords !== '' || $term->subLeft)
 			{
 				// Create fulltext clause from term
-				if ($this->_isFulltextTerm($keywords) && !$term->subLeft && !$term->exact && !$term->exclude)
+				if ($keywords !== '' && $this->_isFulltextTerm($keywords) && !$term->subLeft && !$term->exact && !$term->exclude)
 				{
 					if ($term->subRight)
 					{

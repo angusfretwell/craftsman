@@ -170,7 +170,7 @@ class TagsService extends BaseApplicationComponent
 
 			if (!$tagGroupRecord)
 			{
-				throw new Exception(Craft::t('No tag group exists with the ID “{id}”', array('id' => $tagGroup->id)));
+				throw new Exception(Craft::t('No tag group exists with the ID “{id}”.', array('id' => $tagGroup->id)));
 			}
 
 			$oldTagGroup = TagGroupModel::populateModel($tagGroupRecord);
@@ -201,7 +201,7 @@ class TagsService extends BaseApplicationComponent
 
 				// Save the new one
 				$fieldLayout = $tagGroup->getFieldLayout();
-				craft()->fields->saveLayout($fieldLayout, false);
+				craft()->fields->saveLayout($fieldLayout);
 
 				// Update the tag group record/model with the new layout ID
 				$tagGroup->fieldLayoutId = $fieldLayout->id;
@@ -336,7 +336,7 @@ class TagsService extends BaseApplicationComponent
 
 			if (!$tagRecord)
 			{
-				throw new Exception(Craft::t('No tag exists with the ID “{id}”', array('id' => $tag->id)));
+				throw new Exception(Craft::t('No tag exists with the ID “{id}”.', array('id' => $tag->id)));
 			}
 		}
 		else
@@ -345,23 +345,6 @@ class TagsService extends BaseApplicationComponent
 		}
 
 		$tagRecord->groupId = $tag->groupId;
-
-		// See if we can find another tag with tha same name
-		$criteria = craft()->elements->getCriteria(ElementType::Tag);
-		$criteria->groupId = $tag->groupId;
-		$criteria->search  = 'name::"'.$tag->name.'"';
-		$criteria->id      = ($isNewTag ? null : 'not '.$tag->id);
-		$matchingTag = $criteria->first();
-
-		if ($matchingTag)
-		{
-			// The name needs to be 100% identical for validation to take care of this.
-			$tagRecord->name = $matchingTag->name;
-		}
-		else
-		{
-			$tagRecord->name = $tag->name;
-		}
 
 		$tagRecord->validate();
 		$tag->addErrors($tagRecord->getErrors());
@@ -372,16 +355,33 @@ class TagsService extends BaseApplicationComponent
 		}
 
 		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+
 		try
 		{
 			// Fire an 'onBeforeSaveTag' event
-			$this->onBeforeSaveTag(new Event($this, array(
+			$event = new Event($this, array(
 				'tag'      => $tag,
 				'isNewTag' => $isNewTag
-			)));
+			));
 
-			if (craft()->elements->saveElement($tag, false))
+			$this->onBeforeSaveTag($event);
+
+			// Is the event giving us the go-ahead?
+			if ($event->performAction)
 			{
+				$success = craft()->elements->saveElement($tag, false);
+
+				// If it didn't work, rollback the transaction in case something changed in onBeforeSaveTag
+				if (!$success)
+				{
+					if ($transaction !== null)
+					{
+						$transaction->rollback();
+					}
+
+					return false;
+				}
+
 				// Now that we have an element ID, save it on the other stuff
 				if ($isNewTag)
 				{
@@ -389,15 +389,17 @@ class TagsService extends BaseApplicationComponent
 				}
 
 				$tagRecord->save(false);
-
-				if ($transaction !== null)
-				{
-					$transaction->commit();
-				}
 			}
 			else
 			{
-				return false;
+				$success = false;
+			}
+
+			// Commit the transaction regardless of whether we saved the tag, in case something changed
+			// in onBeforeSaveTag
+			if ($transaction !== null)
+			{
+				$transaction->commit();
 			}
 		}
 		catch (\Exception $e)
@@ -410,23 +412,24 @@ class TagsService extends BaseApplicationComponent
 			throw $e;
 		}
 
-		// If we've made it here, everything has been successful so far.
-
-		// Fire an 'onSaveTag' event
-		$this->onSaveTag(new Event($this, array(
-			'tag'      => $tag,
-			'isNewTag' => $isNewTag
-		)));
-
-		if ($this->hasEventHandler('onSaveTagContent'))
+		if ($success)
 		{
-			// Fire an 'onSaveTagContent' event (deprecated)
-			$this->onSaveTagContent(new Event($this, array(
-				'tag' => $tag
+			// Fire an 'onSaveTag' event
+			$this->onSaveTag(new Event($this, array(
+				'tag'      => $tag,
+				'isNewTag' => $isNewTag
 			)));
+
+			if ($this->hasEventHandler('onSaveTagContent'))
+			{
+				// Fire an 'onSaveTagContent' event (deprecated)
+				$this->onSaveTagContent(new Event($this, array(
+					'tag' => $tag
+				)));
+			}
 		}
 
-		return true;
+		return $success;
 	}
 
 	// Events

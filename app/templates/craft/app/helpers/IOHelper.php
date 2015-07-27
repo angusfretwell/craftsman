@@ -183,12 +183,19 @@ class IOHelper
 	 * @param string $path           The path to test.
 	 * @param bool   $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related).
 	 *
-	 * @return string The real file or folder path.
+	 * @return string|false The real file or folder path, or `false `if the file doesn’t exist.
 	 */
 	public static function getRealPath($path, $suppressErrors = false)
 	{
 		$path = static::normalizePathSeparators($path);
 		$path = $suppressErrors ? @realpath($path) : realpath($path);
+
+		// realpath() should just return false if the file doesn't exist, but seeing one case where
+		// it's returning an empty string instead
+		if (!$path)
+		{
+			return false;
+		}
 
 		if ($suppressErrors ? @is_dir($path) : is_dir($path))
 		{
@@ -776,25 +783,25 @@ class IOHelper
 
 					try
 					{
-						Craft::log('Trying to write to file at '.$path.' using LOCK_EX.', LogLevel::Info, true);
+						Craft::log('Trying to write to file at '.$path.' using LOCK_EX.', LogLevel::Info);
 						if (static::_writeToFile($path, $contents, true, $append, $suppressErrors))
 						{
 							// Restore quickly.
 							restore_error_handler();
 
 							// Cache the file lock info to use LOCK_EX for 2 months.
-							Craft::log('Successfully wrote to file at '.$path.' using LOCK_EX. Saving in cache.', LogLevel::Info, true);
+							Craft::log('Successfully wrote to file at '.$path.' using LOCK_EX. Saving in cache.', LogLevel::Info);
 							craft()->cache->set('useWriteFileLock', 'yes', 5184000);
 							return true;
 						}
 						else
 						{
 							// Try again without the lock flag.
-							Craft::log('Trying to write to file at '.$path.' without LOCK_EX.', LogLevel::Info, true);
+							Craft::log('Trying to write to file at '.$path.' without LOCK_EX.', LogLevel::Info);
 							if (static::_writeToFile($path, $contents, false, $append, $suppressErrors))
 							{
 								// Cache the file lock info to not use LOCK_EX for 2 months.
-								Craft::log('Successfully wrote to file at '.$path.' without LOCK_EX. Saving in cache.', LogLevel::Info, true);
+								Craft::log('Successfully wrote to file at '.$path.' without LOCK_EX. Saving in cache.', LogLevel::Info);
 								craft()->cache->set('useWriteFileLock', 'no', 5184000);
 								return true;
 							}
@@ -806,11 +813,11 @@ class IOHelper
 						restore_error_handler();
 
 						// Try again without the lock flag.
-						Craft::log('Trying to write to file at '.$path.' without LOCK_EX.', LogLevel::Info, true);
+						Craft::log('Trying to write to file at '.$path.' without LOCK_EX.', LogLevel::Info);
 						if (static::_writeToFile($path, $contents, false, $append, $suppressErrors))
 						{
 							// Cache the file lock info to not use LOCK_EX for 2 months.
-							Craft::log('Successfully wrote to file at '.$path.' without LOCK_EX. Saving in cache.', LogLevel::Info, true);
+							Craft::log('Successfully wrote to file at '.$path.' without LOCK_EX. Saving in cache.', LogLevel::Info);
 							craft()->cache->set('useWriteFileLock', 'no', 5184000);
 							return true;
 						}
@@ -824,7 +831,6 @@ class IOHelper
 					// If cache says use LOCK_X and this is not a noFileLock request.
 					if ($useFileLock == 'yes' && !$noFileLock)
 					{
-						Craft::log('Cache says use LOCK_EX. Writing to '.$path.'.', LogLevel::Info);
 						// Write with LOCK_EX
 						if (static::_writeToFile($path, $contents, true, $append, $suppressErrors))
 						{
@@ -833,7 +839,6 @@ class IOHelper
 					}
 					else
 					{
-						Craft::log('Cache says not to use LOCK_EX. Writing to '.$path.'.', LogLevel::Info);
 						// Write without LOCK_EX
 						if (static::_writeToFile($path, $contents, false, $append, $suppressErrors))
 						{
@@ -1435,7 +1440,7 @@ class IOHelper
 			'pdf'         => array('label' => Craft::t('PDF'),         'extensions' => array('pdf')),
 			'photoshop'   => array('label' => Craft::t('Photoshop'),   'extensions' => array('psd','psb')),
 			'php'         => array('label' => Craft::t('PHP'),         'extensions' => array('php')),
-			'powerpoint'  => array('label' => Craft::t('PowerPoint'),  'extensions' => array('ppt','pptx','pps','pptm','potx')),
+			'powerpoint'  => array('label' => Craft::t('PowerPoint'),  'extensions' => array('pps','ppsm','ppsx','ppt','pptm','pptx','potx')),
 			'text'        => array('label' => Craft::t('Text'),        'extensions' => array('txt','text')),
 			'video'       => array('label' => Craft::t('Video'),       'extensions' => array('avchd','asf','asx','avi','flv','fla','mov','m4v','mng','mpeg','mpg','m1s','mp2v','m2v','m2s','mp4','mkv','qt','flv','mp4','ogg','ogv','rm','wmv','webm')),
 			'word'        => array('label' => Craft::t('Word'),        'extensions' => array('doc','docx','dot','docm','dotm')),
@@ -1485,13 +1490,13 @@ class IOHelper
 	/**
 	 * Cleans a filename.
 	 *
-	 * @param string $fileName
-	 * @param bool   $onlyAlphaNumeric
-	 * @param string $separator
+	 * @param string $fileName  The filename to clean.
+	 * @param bool   $onlyAscii Whether to only allow ASCII characters in the filename.
+	 * @param string $separator The separator to use for any whitespace. Defaults to '-'.
 	 *
 	 * @return mixed
 	 */
-	public static function cleanFilename($fileName, $onlyAlphaNumeric = false, $separator = '-')
+	public static function cleanFilename($fileName, $onlyAscii = false, $separator = '-')
 	{
 		$disallowedChars = array('â€”', 'â€“', '&#8216;', '&#8217;', '&#8220;', '&#8221;', '&#8211;', '&#8212;', '+', '%', '^', '~', '?', '[', ']', '/', '\\', '=', '<', '>', ':', ';', ',', '\'', '"', '&', '$', '#', '*', '(', ')', '|', '~', '`', '!', '{', '}');
 
@@ -1509,7 +1514,7 @@ class IOHelper
 		// Nuke any trailing or leading .-_
 		$fileName = trim($fileName, '.-_');
 
-		$fileName = ($onlyAlphaNumeric) ? preg_replace('/[^a-zA-Z0-9]/', '', $fileName) : $fileName;
+		$fileName = ($onlyAscii) ? StringHelper::asciiString($fileName) : $fileName;
 
 		return $fileName;
 	}

@@ -79,6 +79,9 @@ class AssetsFieldType extends BaseElementFieldType
 			$fileKindOptions[] = array('value' => $value, 'label' => $kind['label']);
 		}
 
+		$namespace = craft()->templates->getNamespace();
+		$isMatrix = (strncmp($namespace, 'types[Matrix][blockTypes][', 26) === 0);
+
 		return craft()->templates->render('_components/fieldtypes/Assets/settings', array(
 			'folderOptions'     => $folderOptions,
 			'sourceOptions'     => $sourceOptions,
@@ -86,6 +89,7 @@ class AssetsFieldType extends BaseElementFieldType
 			'settings'          => $this->getSettings(),
 			'type'              => $this->getName(),
 			'fileKindOptions'   => $fileKindOptions,
+			'isMatrix'          => $isMatrix,
 		));
 	}
 
@@ -145,12 +149,17 @@ class AssetsFieldType extends BaseElementFieldType
 						move_uploaded_file($file->getTempName(), $tempPath);
 						$response = craft()->assets->insertFileByLocalPath($tempPath, $file->getName(), $targetFolderId);
 						$fileIds[] = $response->getDataItem('fileId');
+						IOHelper::deleteFile($tempPath, true);
 					}
 
 					if (is_array($value) && is_array($fileIds))
 					{
 						$fileIds = array_merge($value, $fileIds);
 					}
+
+					// Make it look like the actual POST data contained these file IDs as well,
+					// so they make it into entry draft/version data
+					$this->element->setRawPostContent($this->model->handle, $fileIds);
 
 					return $fileIds;
 				}
@@ -170,14 +179,13 @@ class AssetsFieldType extends BaseElementFieldType
 		$handle = $this->model->handle;
 		$elementFiles = $this->element->{$handle};
 
-		if (is_object($elementFiles))
+		if ($elementFiles instanceof ElementCriteriaModel)
 		{
 			$elementFiles = $elementFiles->find();
 		}
 
 		if (is_array($elementFiles) && count($elementFiles))
 		{
-
 			$fileIds = array();
 
 			foreach ($elementFiles as $elementFile)
@@ -198,10 +206,6 @@ class AssetsFieldType extends BaseElementFieldType
 			}
 			else
 			{
-				$targetFolderId = $this->_resolveSourcePathToFolderId(
-					$settings->defaultUploadLocationSource,
-					$settings->defaultUploadLocationSubpath);
-
 				// Find the files with temp sources and just move those.
 				$criteria =array(
 					'id' => array_merge(array('in'), $fileIds),
@@ -214,6 +218,14 @@ class AssetsFieldType extends BaseElementFieldType
 				foreach ($filesInTempSource as $file)
 				{
 					$filesToMove[] = $file->id;
+				}
+
+				// If we have some files to move, make sure the folder exists.
+				if (!empty($filesToMove))
+				{
+					$targetFolderId = $this->_resolveSourcePathToFolderId(
+						$settings->defaultUploadLocationSource,
+						$settings->defaultUploadLocationSubpath);
 				}
 			}
 
@@ -331,7 +343,9 @@ class AssetsFieldType extends BaseElementFieldType
 
 		if ($settings->useSingleFolder)
 		{
-			$folderPath = 'folder:'.$this->_determineUploadFolderId($settings).':single';
+			$folderId = $this->_determineUploadFolderId($settings);
+			craft()->userSession->authorize('uploadToAssetSource:'.$folderId);
+			$folderPath = 'folder:'.$folderId.':single';
 
 			return array($folderPath);
 		}
@@ -407,7 +421,7 @@ class AssetsFieldType extends BaseElementFieldType
 
 		foreach ($pathParts as &$part)
 		{
-			$part = IOHelper::cleanFilename($part);
+			$part = IOHelper::cleanFilename($part, craft()->config->get('convertFilenamesToAscii'));
 		}
 
 		$subpath = join('/', $pathParts);

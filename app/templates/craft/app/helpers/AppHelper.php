@@ -25,9 +25,9 @@ class AppHelper
 	// =========================================================================
 
 	/**
-	 * Returns whether Craft is running on the dev server bundled with PHP 5.4+
+	 * Returns whether Craft is running on the dev server bundled with PHP 5.4+.
 	 *
-\	 * @return bool
+	 * @return bool Whether Craft is running on the PHP Dev Server.
 	 */
 	public static function isPhpDevServer()
 	{
@@ -47,9 +47,9 @@ class AppHelper
 	}
 
 	/**
-	 * Returns an array of all known Craft editions.
+	 * Returns an array of all known Craft editions’ IDs.
 	 *
-	 * @return array
+	 * @return array All the known Craft editions’ IDs.
 	 */
 	public static function getEditions()
 	{
@@ -59,9 +59,9 @@ class AppHelper
 	/**
 	 * Returns the name of the given Craft edition.
 	 *
-	 * @param int $edition
+	 * @param int $edition An edition’s ID.
 	 *
-	 * @return string
+	 * @return string The edition’s name.
 	 */
 	public static function getEditionName($edition)
 	{
@@ -85,9 +85,9 @@ class AppHelper
 	/**
 	 * Returns whether an edition is valid.
 	 *
-	 * @param mixed $edition
+	 * @param mixed $edition An edition’s ID (or is it?)
 	 *
-	 * @return bool
+	 * @return bool Whether $edition is a valid edition ID.
 	 */
 	public static function isValidEdition($edition)
 	{
@@ -95,13 +95,61 @@ class AppHelper
 	}
 
 	/**
+	 * Retrieves a boolean PHP config setting and normalizes it to an actual bool.
+	 *
+	 * @param string $var The PHP config setting to retrieve.
+	 * @return bool Whether it is set to the php.ini equivelant of `true`.
+	 */
+	public static function getPhpConfigValueAsBool($var)
+	{
+		$value = ini_get($var);
+
+		// Supposedly “On” values will always be normalized to '1' but who can trust PHP...
+		return ($value == '1' || strtolower($value) == 'on');
+	}
+
+	/**
+	 * Retrieves a PHP config setting that represents a filesize and normalizes it to bytes.
+	 *
+	 * @param string $var The PHP config setting to retrieve.
+	 * @param int The size in bytes.
+	 */
+	public static function getPhpConfigValueInBytes($var)
+	{
+		$value = ini_get($var);
+
+		return static::_normalizePhpConfigValueToBytes($value);
+	}
+
+	// Deprecated Methods
+	// -------------------------------------------------------------------------
+
+	/**
 	 * Return a byte value from a size string formatted the way PHP likes it (for example - 64M).
 	 *
-	 * @param string $value
+	 * @param string $value The size string.
 	 *
-	 * @return int
+	 * @deprecated Deprecated in 2.3. Use {@link getPhpConfigValueInBytes()} instead.
+	 * @return int The size in bytes.
 	 */
 	public static function getByteValueFromPhpSizeString($value)
+	{
+		craft()->deprecator->log('AppHelper::getByteValueFromPhpSizeString()', 'AppHelper::getByteValueFromPhpSizeString() has been deprecated. Use getPhpConfigValueInBytes() instead.');
+		return static::_normalizePhpConfigValueToBytes($value);
+	}
+
+	// Private Methods
+	// =========================================================================
+
+	/**
+	 * Normalizes a PHP config value into bytes.
+	 *
+	 * Used by getPhpConfigValueInBytes() and getByteValueFromPhpSizeString() so long as we have to keep the latter around.
+	 *
+	 * @param mixed $var
+	 * @return int
+	 */
+	private static function _normalizePhpConfigValueToBytes($value)
 	{
 		$matches = array();
 

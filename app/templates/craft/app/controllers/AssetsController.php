@@ -8,12 +8,13 @@ namespace Craft;
  * Note that all actions in the controller except {@link actionGenerateTransform} require an authenticated Craft session
  * via {@link BaseController::allowAnonymous}.
  *
- * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
- * @package   craft.app.controllers
- * @since     1.0
+ * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright  Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license    http://buildwithcraft.com/license Craft License Agreement
+ * @see        http://buildwithcraft.com
+ * @package    craft.app.controllers
+ * @since      1.0
+ * @deprecated This class will have several breaking changes in Craft 3.0.
  */
 class AssetsController extends BaseController
 {
@@ -117,14 +118,122 @@ class AssetsController extends BaseController
 		move_uploaded_file($_FILES['files']['tmp_name'][0], $fileLocation);
 
 		$response = craft()->assets->insertFileByLocalPath($fileLocation, $fileName, $targetFolderId, AssetConflictResolution::KeepBoth);
+
+		IOHelper::deleteFile($fileLocation, true);
+
+		if ($response->isError())
+		{
+			$this->returnErrorJson($response->getAttribute('errorMessage'));
+		}
+
 		$fileId = $response->getDataItem('fileId');
 
 		// Render and return
 		$element = craft()->elements->getElementById($fileId);
 		$html = craft()->templates->render('_elements/element', array('element' => $element));
-		$css = craft()->templates->getHeadHtml();
+		$headHtml = craft()->templates->getHeadHtml();
 
-		$this->returnJson(array('html' => $html, 'css' => $css));
+		$this->returnJson(array('html' => $html, 'headHtml' => $headHtml));
+	}
+
+	/**
+	 * Replace a file
+	 *
+	 * @throws Exception
+	 * @return null
+	 */
+	public function actionReplaceFile()
+	{
+		$this->requireAjaxRequest();
+		$fileId = craft()->request->getPost('fileId');
+
+		try
+		{
+			if (empty($_FILES['replaceFile']) || !isset($_FILES['replaceFile']['error']) || $_FILES['replaceFile']['error'] != 0)
+			{
+				throw new Exception(Craft::t('The upload failed.'));
+			}
+
+			$existingFile = craft()->assets->getFileById($fileId);
+
+			if (!$existingFile)
+			{
+				throw new Exception(Craft::t('The file to be replaced cannot be found.'));
+			}
+
+			$targetFolderId = $existingFile->folderId;
+
+			try
+			{
+				$this->_checkUploadPermissions($targetFolderId);
+			}
+			catch (Exception $e)
+			{
+				$this->returnErrorJson($e->getMessage());
+			}
+
+			// Fire an 'onBeforeReplaceFile' event
+			$event = new Event($this, array(
+				'asset' => $existingFile
+			));
+
+			craft()->assets->onBeforeReplaceFile($event);
+
+			// Is the event preventing this from happening?
+			if (!$event->performAction)
+			{
+				throw new Exception(Craft::t('The file could not be replaced.'));
+			}
+
+			$fileName = AssetsHelper::cleanAssetName($_FILES['replaceFile']['name']);
+			$fileLocation = AssetsHelper::getTempFilePath(pathinfo($fileName, PATHINFO_EXTENSION));
+			move_uploaded_file($_FILES['replaceFile']['tmp_name'], $fileLocation);
+
+			$response = craft()->assets->insertFileByLocalPath($fileLocation, $fileName, $targetFolderId, AssetConflictResolution::KeepBoth);
+			$insertedFileId = $response->getDataItem('fileId');
+
+			$newFile = craft()->assets->getFileById($insertedFileId);
+
+			if ($newFile && $existingFile)
+			{
+				$source = craft()->assetSources->populateSourceType($newFile->getSource());
+
+				if (StringHelper::toLowerCase($existingFile->filename) == StringHelper::toLowerCase($fileName))
+				{
+					$filenameToUse = $existingFile->filename;
+				}
+				else
+				{
+					// If the file uploaded had to resolve a conflict, grab the final filename
+					if ($response->getDataItem('filename'))
+					{
+						$filenameToUse = $response->getDataItem('filename');
+					}
+					else
+					{
+						$filenameToUse = $fileName;
+					}
+				}
+
+				$source->replaceFile($existingFile, $newFile, $filenameToUse);
+				IOHelper::deleteFile($fileLocation, true);
+			}
+			else
+			{
+				throw new Exception(Craft::t('Something went wrong with the replace operation.'));
+			}
+		}
+		catch (Exception $exception)
+		{
+			$this->returnErrorJson($exception->getMessage());
+		}
+
+		// Fire an 'onReplaceFile' event
+		craft()->assets->onReplaceFile(new Event($this, array(
+			'asset' => $existingFile
+		)));
+
+		$this->returnJson(array('success' => true, 'fileId' => $fileId));
 	}
 
 	/**
@@ -163,7 +272,6 @@ class AssetsController extends BaseController
 		$this->requireLogin();
 		$this->requireAjaxRequest();
 		$folderId = craft()->request->getRequiredPost('folderId');
-		$response = craft()->assets->deleteFolderById($folderId);
 
 		try
 		{
@@ -173,6 +281,8 @@ class AssetsController extends BaseController
 		{
 			$this->returnErrorJson($e->getMessage());
 		}
+
+		$response = craft()->assets->deleteFolderById($folderId);
 
 		$this->returnJson($response->getResponseData());
 
@@ -341,7 +451,7 @@ class AssetsController extends BaseController
 		$output = array();
 		foreach ($transforms as $transform)
 		{
-			$output[] = (object) array('id' => $transform->id, 'handle' => $transform->handle, 'name' => $transform->name);
+			$output[] = (object) array('id' => $transform->id, 'handle' => HtmlHelper::encode($transform->handle), 'name' => HtmlHelper::encode($transform->name));
 		}
 
 		$this->returnJson($output);

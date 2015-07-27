@@ -204,9 +204,9 @@
   <exec executable="php">
    <arg value="composer.phar"/>
    <arg value="require"/>
-   <arg value="phpunit/dbunit:1.3.*"/>
-   <arg value="phpunit/phpunit-selenium:1.3.*"/>
-   <arg value="phpunit/php-invoker:1.1.*"/>
+   <arg value="phpunit/dbunit:~1.3"/>
+   <arg value="phpunit/phpunit-selenium:~1.4"/>
+   <arg value="phpunit/php-invoker:~1.1"/>
   </exec>
 
   <move file="${basedir}/composer.json.bak" tofile="${basedir}/composer.json"/>
@@ -223,7 +223,7 @@
 
   <copy file="${basedir}/vendor/phpunit/php-file-iterator/LICENSE" tofile="${basedir}/build/phar/php-file-iterator/LICENSE"/>
   <copy todir="${basedir}/build/phar/php-file-iterator">
-   <fileset dir="${basedir}/vendor/phpunit/php-file-iterator/File">
+   <fileset dir="${basedir}/vendor/phpunit/php-file-iterator/src">
     <include name="**/*.php" />
     <exclude name="**/Autoload.*" />
    </fileset>
@@ -247,9 +247,8 @@
 
   <copy file="${basedir}/vendor/phpunit/php-token-stream/LICENSE" tofile="${basedir}/build/phar/php-token-stream/LICENSE"/>
   <copy todir="${basedir}/build/phar/php-token-stream">
-   <fileset dir="${basedir}/vendor/phpunit/php-token-stream/PHP">
+   <fileset dir="${basedir}/vendor/phpunit/php-token-stream/src">
     <include name="**/*.php" />
-    <exclude name="**/Autoload.*" />
    </fileset>
   </copy>
 
@@ -290,6 +289,21 @@
    </fileset>
   </copy>
 
+  <copy file="${basedir}/vendor/sebastian/recursion-context/LICENSE" tofile="${basedir}/build/phar/sebastian-recursion-context/LICENSE"/>
+  <copy todir="${basedir}/build/phar/sebastian-recursion-context">
+   <fileset dir="${basedir}/vendor/sebastian/recursion-context/src">
+    <include name="**/*.php" />
+    <exclude name="**/autoload.php" />
+   </fileset>
+  </copy>
+
+  <copy file="${basedir}/vendor/sebastian/global-state/LICENSE" tofile="${basedir}/build/phar/sebastian-global-state/LICENSE"/>
+  <copy todir="${basedir}/build/phar/sebastian-global-state">
+   <fileset dir="${basedir}/vendor/sebastian/global-state/src">
+    <include name="**/*.php" />
+   </fileset>
+  </copy>
+
   <copy file="${basedir}/vendor/sebastian/version/LICENSE" tofile="${basedir}/build/phar/sebastian-version/LICENSE"/>
   <copy todir="${basedir}/build/phar/sebastian-version">
    <fileset dir="${basedir}/vendor/sebastian/version/src">
@@ -298,16 +312,9 @@
    </fileset>
   </copy>
 
-  <copy file="${basedir}/vendor/ocramius/lazy-map/LICENSE" tofile="${basedir}/build/phar/ocramius-lazy-map/LICENSE"/>
-  <copy todir="${basedir}/build/phar/ocramius-lazy-map">
-   <fileset dir="${basedir}/vendor/ocramius/lazy-map/src">
-    <include name="**/*.php" />
-   </fileset>
-  </copy>
-
-  <copy file="${basedir}/vendor/ocramius/instantiator/LICENSE" tofile="${basedir}/build/phar/instantiator/LICENSE"/>
-  <copy todir="${basedir}/build/phar/ocramius-instantiator">
-   <fileset dir="${basedir}/vendor/ocramius/instantiator/src">
+  <copy file="${basedir}/vendor/doctrine/instantiator/LICENSE" tofile="${basedir}/build/phar/doctrine-instantiator/LICENSE"/>
+  <copy todir="${basedir}/build/phar/doctrine-instantiator">
+   <fileset dir="${basedir}/vendor/doctrine/instantiator/src">
     <include name="**/*.php" />
    </fileset>
   </copy>
@@ -340,6 +347,20 @@
     <exclude name="**/Autoload.*" />
    </fileset>
   </copy>
+
+  <copy file="${basedir}/vendor/phpdocumentor/reflection-docblock/LICENSE" tofile="${basedir}/build/phar/phpdocumentor-reflection-docblock/LICENSE"/>
+  <copy todir="${basedir}/build/phar/phpdocumentor-reflection-docblock">
+   <fileset dir="${basedir}/vendor/phpdocumentor/reflection-docblock/src">
+    <include name="**/*.php" />
+   </fileset>
+  </copy>
+
+  <copy file="${basedir}/vendor/phpspec/prophecy/LICENSE" tofile="${basedir}/build/phar/phpspec-prophecy/LICENSE"/>
+  <copy todir="${basedir}/build/phar/phpspec-prophecy">
+   <fileset dir="${basedir}/vendor/phpspec/prophecy/src">
+    <include name="**/*.php" />
+   </fileset>
+  </copy>
  </target>
 
  <target name="phar-build">
@@ -356,13 +377,12 @@
 
   <exec executable="phpab">
    <arg value="--all" />
+   <arg value="--static" />
    <arg value="--phar" />
    <arg value="--output" />
    <arg path="${basedir}/build/phpunit-${_version}.phar" />
    <arg value="--template" />
    <arg path="${basedir}/build/phar-autoload.php.in" />
-   <arg value="--indent" />
-   <arg value="            " />
    <arg path="${basedir}/build/phar" />
   </exec>
 

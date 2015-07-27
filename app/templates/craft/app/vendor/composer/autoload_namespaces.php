@@ -6,14 +6,13 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
+    'phpDocumentor' => array($vendorDir . '/phpdocumentor/reflection-docblock/src'),
     'Twig_' => array($vendorDir . '/twig/twig/lib'),
-    'Symfony\\Component\\Yaml\\' => array($vendorDir . '/symfony/yaml'),
-    'Symfony\\Component\\EventDispatcher\\' => array($vendorDir . '/symfony/event-dispatcher'),
     'SimplePie' => array($vendorDir . '/simplepie/simplepie/library'),
+    'Prophecy\\' => array($vendorDir . '/phpspec/prophecy/src'),
     'Mockery' => array($vendorDir . '/mockery/mockery/library'),
-    'LazyMap\\' => array($vendorDir . '/ocramius/lazy-map/src'),
-    'Instantiator\\' => array($vendorDir . '/ocramius/instantiator/src'),
     'Imagine' => array($vendorDir . '/imagine/imagine/lib'),
     'Guzzle\\Tests' => array($vendorDir . '/guzzle/guzzle/tests'),
     'Guzzle' => array($vendorDir . '/guzzle/guzzle/src'),
+    'Doctrine\\Instantiator\\' => array($vendorDir . '/doctrine/instantiator/src'),
 );

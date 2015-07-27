@@ -18,7 +18,7 @@ namespace Craft;
  *                                     from $fromEmail.
  * @property array  $cc                The recipients that should be CC’d on the email. Each element of this array
  *                                     should be a nested array containing the keys 'name' and 'email'.
- * @property array  $bcc               The recipients that should be CC’d on the email. Each element of this array
+ * @property array  $bcc               The recipients that should be BCC’d on the email. Each element of this array
  *                                     should be a nested array containing the keys 'name' and 'email'.
  * @property array  $stringAttachments Any strings of text which should be attached to the email as files. Each element
  *                                     of this array should be a nested array containing the keys 'string' (the contents
@@ -69,7 +69,6 @@ class EmailModel extends BaseModel
 	 * @param string $encoding File encoding (see $Encoding).
 	 * @param string $type     File extension (MIME) type.
 	 *
-	 * @throws phpmailerException
 	 * @return bool
 	 */
 	public function addAttachment($path, $name = '', $encoding = 'base64', $type = 'application/octet-stream')

@@ -1,48 +1,16 @@
 <?php
-/**
- * PHPUnit
+/*
+ * This file is part of the PHPUnit_MockObject package.
  *
- * Copyright (c) 2010-2014, Sebastian Bergmann <sebastian@phpunit.de>.
- * All rights reserved.
+ * (c) Sebastian Bergmann <sebastian@phpunit.de>
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- *   * Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- *
- *   * Redistributions in binary form must reproduce the above copyright
- *     notice, this list of conditions and the following disclaimer in
- *     the documentation and/or other materials provided with the
- *     distribution.
- *
- *   * Neither the name of Sebastian Bergmann nor the names of his
- *     contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
- *
- * @package    PHPUnit_MockObject
- * @author     Sebastian Bergmann <sebastian@phpunit.de>
- * @copyright  2010-2014 Sebastian Bergmann <sebastian@phpunit.de>
- * @license    http://www.opensource.org/licenses/BSD-3-Clause  The BSD 3-Clause License
- * @link       http://github.com/sebastianbergmann/phpunit-mock-objects
- * @since      File available since Release 1.0.0
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
-use Instantiator\Instantiator;
+use Doctrine\Instantiator\Instantiator;
+use Doctrine\Instantiator\Exception\InvalidArgumentException as InstantiatorInvalidArgumentException;
+use Doctrine\Instantiator\Exception\UnexpectedValueException as InstantiatorUnexpectedValueException;
 
 if (!function_exists('trait_exists')) {
     function trait_exists($traitname, $autoload = true)
@@ -56,7 +24,7 @@ if (!function_exists('trait_exists')) {
  *
  * @package    PHPUnit_MockObject
  * @author     Sebastian Bergmann <sebastian@phpunit.de>
- * @copyright  2010-2014 Sebastian Bergmann <sebastian@phpunit.de>
+ * @copyright  Sebastian Bergmann <sebastian@phpunit.de>
  * @license    http://www.opensource.org/licenses/BSD-3-Clause  The BSD 3-Clause License
  * @version    Release: @package_version@
  * @link       http://github.com/sebastianbergmann/phpunit-mock-objects
@@ -73,87 +41,87 @@ class PHPUnit_Framework_MockObject_Generator
      * @var array
      */
     protected $blacklistedMethodNames = array(
-      '__CLASS__' => TRUE,
-      '__DIR__' => TRUE,
-      '__FILE__' => TRUE,
-      '__FUNCTION__' => TRUE,
-      '__LINE__' => TRUE,
-      '__METHOD__' => TRUE,
-      '__NAMESPACE__' => TRUE,
-      '__TRAIT__' => TRUE,
-      '__clone' => TRUE,
-      '__halt_compiler' => TRUE,
-      'abstract' => TRUE,
-      'and' => TRUE,
-      'array' => TRUE,
-      'as' => TRUE,
-      'break' => TRUE,
-      'callable' => TRUE,
-      'case' => TRUE,
-      'catch' => TRUE,
-      'class' => TRUE,
-      'clone' => TRUE,
-      'const' => TRUE,
-      'continue' => TRUE,
-      'declare' => TRUE,
-      'default' => TRUE,
-      'die' => TRUE,
-      'do' => TRUE,
-      'echo' => TRUE,
-      'else' => TRUE,
-      'elseif' => TRUE,
-      'empty' => TRUE,
-      'enddeclare' => TRUE,
-      'endfor' => TRUE,
-      'endforeach' => TRUE,
-      'endif' => TRUE,
-      'endswitch' => TRUE,
-      'endwhile' => TRUE,
-      'eval' => TRUE,
-      'exit' => TRUE,
-      'expects' => TRUE,
-      'extends' => TRUE,
-      'final' => TRUE,
-      'for' => TRUE,
-      'foreach' => TRUE,
-      'function' => TRUE,
-      'global' => TRUE,
-      'goto' => TRUE,
-      'if' => TRUE,
-      'implements' => TRUE,
-      'include' => TRUE,
-      'include_once' => TRUE,
-      'instanceof' => TRUE,
-      'insteadof' => TRUE,
-      'interface' => TRUE,
-      'isset' => TRUE,
-      'list' => TRUE,
-      'namespace' => TRUE,
-      'new' => TRUE,
-      'or' => TRUE,
-      'print' => TRUE,
-      'private' => TRUE,
-      'protected' => TRUE,
-      'public' => TRUE,
-      'require' => TRUE,
-      'require_once' => TRUE,
-      'return' => TRUE,
-      'static' => TRUE,
-      'switch' => TRUE,
-      'throw' => TRUE,
-      'trait' => TRUE,
-      'try' => TRUE,
-      'unset' => TRUE,
-      'use' => TRUE,
-      'var' => TRUE,
-      'while' => TRUE,
-      'xor' => TRUE
+      '__CLASS__' => true,
+      '__DIR__' => true,
+      '__FILE__' => true,
+      '__FUNCTION__' => true,
+      '__LINE__' => true,
+      '__METHOD__' => true,
+      '__NAMESPACE__' => true,
+      '__TRAIT__' => true,
+      '__clone' => true,
+      '__halt_compiler' => true,
+      'abstract' => true,
+      'and' => true,
+      'array' => true,
+      'as' => true,
+      'break' => true,
+      'callable' => true,
+      'case' => true,
+      'catch' => true,
+      'class' => true,
+      'clone' => true,
+      'const' => true,
+      'continue' => true,
+      'declare' => true,
+      'default' => true,
+      'die' => true,
+      'do' => true,
+      'echo' => true,
+      'else' => true,
+      'elseif' => true,
+      'empty' => true,
+      'enddeclare' => true,
+      'endfor' => true,
+      'endforeach' => true,
+      'endif' => true,
+      'endswitch' => true,
+      'endwhile' => true,
+      'eval' => true,
+      'exit' => true,
+      'expects' => true,
+      'extends' => true,
+      'final' => true,
+      'for' => true,
+      'foreach' => true,
+      'function' => true,
+      'global' => true,
+      'goto' => true,
+      'if' => true,
+      'implements' => true,
+      'include' => true,
+      'include_once' => true,
+      'instanceof' => true,
+      'insteadof' => true,
+      'interface' => true,
+      'isset' => true,
+      'list' => true,
+      'namespace' => true,
+      'new' => true,
+      'or' => true,
+      'print' => true,
+      'private' => true,
+      'protected' => true,
+      'public' => true,
+      'require' => true,
+      'require_once' => true,
+      'return' => true,
+      'static' => true,
+      'switch' => true,
+      'throw' => true,
+      'trait' => true,
+      'try' => true,
+      'unset' => true,
+      'use' => true,
+      'var' => true,
+      'while' => true,
+      'xor' => true
     );
 
     /**
      * @var boolean
      */
-    protected $soapLoaded = NULL;
+    protected $soapLoaded = null;
 
     /**
      * Returns a mock object for the specified class.
@@ -174,7 +142,7 @@ class PHPUnit_Framework_MockObject_Generator
      * @throws PHPUnit_Framework_MockObject_RuntimeException
      * @since  Method available since Release 1.0.0
      */
-    public function getMock($type, $methods = array(), array $arguments = array(), $mockClassName = '', $callOriginalConstructor = TRUE, $callOriginalClone = TRUE, $callAutoload = TRUE, $cloneArguments = TRUE, $callOriginalMethods = FALSE, $proxyTarget = NULL)
+    public function getMock($type, $methods = array(), array $arguments = array(), $mockClassName = '', $callOriginalConstructor = true, $callOriginalClone = true, $callAutoload = true, $cloneArguments = true, $callOriginalMethods = false, $proxyTarget = null)
     {
         if (!is_array($type) && !is_string($type)) {
             throw PHPUnit_Util_InvalidArgumentHelper::factory(1, 'array or string');
@@ -194,73 +162,73 @@ class PHPUnit_Framework_MockObject_Generator
 
         if (is_array($type)) {
             $type = array_unique(array_map(
-              function ($type) {
-                  if ($type === 'Traversable' ||
+                function ($type) {
+                    if ($type === 'Traversable' ||
                       $type === '\\Traversable' ||
                       $type === '\\Iterator') {
-                      return 'Iterator';
-                  }
+                        return 'Iterator';
+                    }
 
-                  return $type;
-              },
-              $type
+                    return $type;
+                },
+                $type
             ));
         }
 
-        if (NULL !== $methods) {
+        if (null !== $methods) {
             foreach ($methods as $method) {
                 if (!preg_match('~[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*~', $method)) {
                     throw new PHPUnit_Framework_Exception(
-                      sprintf(
-                        'Cannot stub or mock method with invalid name "%s"',
-                        $method
-                      )
+                        sprintf(
+                            'Cannot stub or mock method with invalid name "%s"',
+                            $method
+                        )
                     );
                 }
             }
 
             if ($methods != array_unique($methods)) {
                 throw new PHPUnit_Framework_MockObject_RuntimeException(
-                  sprintf(
-                    'Cannot stub or mock using a method list that contains duplicates: "%s"',
-                    implode(', ', $methods)
-                  )
+                    sprintf(
+                        'Cannot stub or mock using a method list that contains duplicates: "%s"',
+                        implode(', ', $methods)
+                    )
                 );
             }
         }
 
-        if ($mockClassName != '' && class_exists($mockClassName, FALSE)) {
+        if ($mockClassName != '' && class_exists($mockClassName, false)) {
             $reflect = new ReflectionClass($mockClassName);
 
             if (!$reflect->implementsInterface("PHPUnit_Framework_MockObject_MockObject")) {
                 throw new PHPUnit_Framework_MockObject_RuntimeException(
-                  sprintf(
-                    'Class "%s" already exists.',
-                    $mockClassName
-                  )
+                    sprintf(
+                        'Class "%s" already exists.',
+                        $mockClassName
+                    )
                 );
             }
         }
 
         $mock = $this->generate(
-          $type,
-          $methods,
-          $mockClassName,
-          $callOriginalClone,
-          $callAutoload,
-          $cloneArguments,
-          $callOriginalMethods
+            $type,
+            $methods,
+            $mockClassName,
+            $callOriginalClone,
+            $callAutoload,
+            $cloneArguments,
+            $callOriginalMethods
         );
 
         return $this->getObject(
-          $mock['code'],
-          $mock['mockClassName'],
-          $type,
-          $callOriginalConstructor,
-          $callAutoload,
-          $arguments,
-          $callOriginalMethods,
-          $proxyTarget
+            $mock['code'],
+            $mock['mockClassName'],
+            $type,
+            $callOriginalConstructor,
+            $callAutoload,
+            $arguments,
+            $callOriginalMethods,
+            $proxyTarget
         );
     }
 
@@ -275,7 +243,7 @@ class PHPUnit_Framework_MockObject_Generator
      * @param  object       $proxyTarget
      * @return object
      */
-    protected function getObject($code, $className, $type = '', $callOriginalConstructor = FALSE, $callAutoload = FALSE, array $arguments = array(), $callOriginalMethods = FALSE, $proxyTarget = NULL)
+    protected function getObject($code, $className, $type = '', $callOriginalConstructor = false, $callAutoload = false, array $arguments = array(), $callOriginalMethods = false, $proxyTarget = null)
     {
         $this->evalClass($code, $className);
 
@@ -289,8 +257,22 @@ class PHPUnit_Framework_MockObject_Generator
                 $object = $class->newInstanceArgs($arguments);
             }
         } else {
-            $instantiator = new Instantiator;
-            $object       = $instantiator->instantiate($className);
+            try {
+                $instantiator = new Instantiator;
+                $object       = $instantiator->instantiate($className);
+            } catch (InstantiatorUnexpectedValueException $exception) {
+                if ($exception->getPrevious()) {
+                    $exception = $exception->getPrevious();
+                }
+
+                throw new PHPUnit_Framework_MockObject_RuntimeException(
+                    $exception->getMessage()
+                );
+            } catch (InstantiatorInvalidArgumentException $exception) {
+                throw new PHPUnit_Framework_MockObject_RuntimeException(
+                    $exception->getMessage()
+                );
+            }
         }
 
         if ($callOriginalMethods) {
@@ -315,7 +297,7 @@ class PHPUnit_Framework_MockObject_Generator
      */
     protected function evalClass($code, $className)
     {
-        if (!class_exists($className, FALSE)) {
+        if (!class_exists($className, false)) {
             eval($code);
         }
     }
@@ -338,7 +320,7 @@ class PHPUnit_Framework_MockObject_Generator
      * @throws PHPUnit_Framework_MockObject_RuntimeException
      * @throws PHPUnit_Framework_Exception
      */
-    public function getMockForAbstractClass($originalClassName, array $arguments = array(), $mockClassName = '', $callOriginalConstructor = TRUE, $callOriginalClone = TRUE, $callAutoload = TRUE, $mockedMethods = array(), $cloneArguments = TRUE)
+    public function getMockForAbstractClass($originalClassName, array $arguments = array(), $mockClassName = '', $callOriginalConstructor = true, $callOriginalClone = true, $callAutoload = true, $mockedMethods = array(), $cloneArguments = true)
     {
         if (!is_string($originalClassName)) {
             throw PHPUnit_Util_InvalidArgumentHelper::factory(1, 'string');
@@ -353,29 +335,29 @@ class PHPUnit_Framework_MockObject_Generator
             $reflector = new ReflectionClass($originalClassName);
             $methods   = $mockedMethods;
 
-            foreach ($reflector->getMethods() as $method) {
-                if ($method->isAbstract() && !in_array($method->getName(), $methods)) {
+            foreach ($reflector->getMethods(ReflectionMethod::IS_ABSTRACT) as $method) {
+                if (!in_array($method->getName(), $methods)) {
                     $methods[] = $method->getName();
                 }
             }
 
             if (empty($methods)) {
-                $methods = NULL;
+                $methods = null;
             }
 
             return $this->getMock(
-              $originalClassName,
-              $methods,
-              $arguments,
-              $mockClassName,
-              $callOriginalConstructor,
-              $callOriginalClone,
-              $callAutoload,
-              $cloneArguments
+                $originalClassName,
+                $methods,
+                $arguments,
+                $mockClassName,
+                $callOriginalConstructor,
+                $callOriginalClone,
+                $callAutoload,
+                $cloneArguments
             );
         } else {
             throw new PHPUnit_Framework_MockObject_RuntimeException(
-              sprintf('Class "%s" does not exist.', $originalClassName)
+                sprintf('Class "%s" does not exist.', $originalClassName)
             );
         }
     }
@@ -398,7 +380,7 @@ class PHPUnit_Framework_MockObject_Generator
      * @throws PHPUnit_Framework_MockObject_RuntimeException
      * @throws PHPUnit_Framework_Exception
      */
-    public function getMockForTrait($traitName, array $arguments = array(), $mockClassName = '', $callOriginalConstructor = TRUE, $callOriginalClone = TRUE, $callAutoload = TRUE, $mockedMethods = array(), $cloneArguments = TRUE)
+    public function getMockForTrait($traitName, array $arguments = array(), $mockClassName = '', $callOriginalConstructor = true, $callOriginalClone = true, $callAutoload = true, $mockedMethods = array(), $cloneArguments = true)
     {
         if (!is_string($traitName)) {
             throw PHPUnit_Util_InvalidArgumentHelper::factory(1, 'string');
@@ -410,34 +392,36 @@ class PHPUnit_Framework_MockObject_Generator
 
         if (!trait_exists($traitName, $callAutoload)) {
             throw new PHPUnit_Framework_MockObject_RuntimeException(
-              sprintf(
-                'Trait "%s" does not exist.',
-                $traitName
-              )
+                sprintf(
+                    'Trait "%s" does not exist.',
+                    $traitName
+                )
             );
         }
 
         $className = $this->generateClassName(
-          $traitName, '', 'Trait_'
+            $traitName,
+            '',
+            'Trait_'
         );
 
         $templateDir   = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'Generator' .
                          DIRECTORY_SEPARATOR;
         $classTemplate = new Text_Template(
-                           $templateDir . 'trait_class.tpl'
-                         );
+            $templateDir . 'trait_class.tpl'
+        );
 
         $classTemplate->setVar(
-          array(
+            array(
             'prologue'   => 'abstract ',
             'class_name' => $className['className'],
             'trait_name' => $traitName
-          )
+            )
         );
 
         $this->evalClass(
-          $classTemplate->render(),
-          $className['className']
+            $classTemplate->render(),
+            $className['className']
         );
 
         return $this->getMockForAbstractClass($className['className'], $arguments, $mockClassName, $callOriginalConstructor, $callOriginalClone, $callAutoload, $mockedMethods, $cloneArguments);
@@ -457,7 +441,7 @@ class PHPUnit_Framework_MockObject_Generator
      * @throws PHPUnit_Framework_MockObject_RuntimeException
      * @throws PHPUnit_Framework_Exception
      */
-    public function getObjectForTrait($traitName, array $arguments = array(), $traitClassName = '', $callOriginalConstructor = TRUE, $callOriginalClone = TRUE, $callAutoload = TRUE)
+    public function getObjectForTrait($traitName, array $arguments = array(), $traitClassName = '', $callOriginalConstructor = true, $callOriginalClone = true, $callAutoload = true)
     {
         if (!is_string($traitName)) {
             throw PHPUnit_Util_InvalidArgumentHelper::factory(1, 'string');
@@ -469,34 +453,36 @@ class PHPUnit_Framework_MockObject_Generator
 
         if (!trait_exists($traitName, $callAutoload)) {
             throw new PHPUnit_Framework_MockObject_RuntimeException(
-              sprintf(
-                'Trait "%s" does not exist.',
-                $traitName
-              )
+                sprintf(
+                    'Trait "%s" does not exist.',
+                    $traitName
+                )
             );
         }
 
         $className = $this->generateClassName(
-          $traitName, $traitClassName, 'Trait_'
+            $traitName,
+            $traitClassName,
+            'Trait_'
         );
 
         $templateDir   = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'Generator' .
                          DIRECTORY_SEPARATOR;
         $classTemplate = new Text_Template(
-                           $templateDir . 'trait_class.tpl'
-                         );
+            $templateDir . 'trait_class.tpl'
+        );
 
         $classTemplate->setVar(
-          array(
+            array(
             'prologue'   => '',
             'class_name' => $className['className'],
             'trait_name' => $traitName
-          )
+            )
         );
 
         return $this->getObject(
-          $classTemplate->render(),
-          $className['className']
+            $classTemplate->render(),
+            $className['className']
         );
     }
 
@@ -510,7 +496,7 @@ class PHPUnit_Framework_MockObject_Generator
      * @param  boolean      $callOriginalMethods
      * @return array
      */
-    public function generate($type, array $methods = NULL, $mockClassName = '', $callOriginalClone = TRUE, $callAutoload = TRUE, $cloneArguments = TRUE, $callOriginalMethods = FALSE)
+    public function generate($type, array $methods = null, $mockClassName = '', $callOriginalClone = true, $callAutoload = true, $cloneArguments = true, $callOriginalMethods = false)
     {
         if (is_array($type)) {
             sort($type);
@@ -518,11 +504,11 @@ class PHPUnit_Framework_MockObject_Generator
 
         if ($mockClassName == '') {
             $key = md5(
-              is_array($type) ? join('_', $type) : $type .
-              serialize($methods) .
-              serialize($callOriginalClone) .
-              serialize($cloneArguments) .
-              serialize($callOriginalMethods)
+                is_array($type) ? join('_', $type) : $type .
+                serialize($methods) .
+                serialize($callOriginalClone) .
+                serialize($cloneArguments) .
+                serialize($callOriginalMethods)
             );
 
             if (isset(self::$cache[$key])) {
@@ -531,13 +517,13 @@ class PHPUnit_Framework_MockObject_Generator
         }
 
         $mock = $this->generateMock(
-          $type,
-          $methods,
-          $mockClassName,
-          $callOriginalClone,
-          $callAutoload,
-          $cloneArguments,
-          $callOriginalMethods
+            $type,
+            $methods,
+            $mockClassName,
+            $callOriginalClone,
+            $callAutoload,
+            $cloneArguments,
+            $callOriginalMethods
         );
 
         if (isset($key)) {
@@ -557,12 +543,12 @@ class PHPUnit_Framework_MockObject_Generator
      */
     public function generateClassFromWsdl($wsdlFile, $className, array $methods = array(), array $options = array())
     {
-        if ($this->soapLoaded === NULL) {
+        if ($this->soapLoaded === null) {
             $this->soapLoaded = extension_loaded('soap');
         }
 
         if ($this->soapLoaded) {
-            $options = array_merge($options, array('cache_wsdl'=>FALSE));
+            $options = array_merge($options, array('cache_wsdl' => WSDL_CACHE_NONE));
             $client   = new SoapClient($wsdlFile, $options);
             $_methods = array_unique($client->__getFunctions());
             unset($client);
@@ -572,8 +558,8 @@ class PHPUnit_Framework_MockObject_Generator
             $templateDir    = dirname(__FILE__) . DIRECTORY_SEPARATOR .
                               'Generator' . DIRECTORY_SEPARATOR;
             $methodTemplate = new Text_Template(
-                                $templateDir . 'wsdl_method.tpl'
-                              );
+                $templateDir . 'wsdl_method.tpl'
+            );
             $methodsBuffer  = '';
 
             foreach ($_methods as $method) {
@@ -583,13 +569,13 @@ class PHPUnit_Framework_MockObject_Generator
 
                 if (empty($methods) || in_array($name, $methods)) {
                     $args    = explode(
-                                 ',',
-                                 substr(
-                                   $method,
-                                   $nameEnd + 1,
-                                   strpos($method, ')') - $nameEnd - 1
-                                 )
-                               );
+                        ',',
+                        substr(
+                            $method,
+                            $nameEnd + 1,
+                            strpos($method, ')') - $nameEnd - 1
+                        )
+                    );
                     $numArgs = count($args);
 
                     for ($i = 0; $i < $numArgs; $i++) {
@@ -597,10 +583,10 @@ class PHPUnit_Framework_MockObject_Generator
                     }
 
                     $methodTemplate->setVar(
-                      array(
+                        array(
                         'method_name' => $name,
                         'arguments'   => join(', ', $args)
-                      )
+                        )
                     );
 
                     $methodsBuffer .= $methodTemplate->render();
@@ -616,32 +602,32 @@ class PHPUnit_Framework_MockObject_Generator
             $optionsBuffer .= ')';
 
             $classTemplate = new Text_Template(
-              $templateDir . 'wsdl_class.tpl'
+                $templateDir . 'wsdl_class.tpl'
             );
 
             $namespace = '';
 
-            if (strpos($className, '\\') !== FALSE) {
+            if (strpos($className, '\\') !== false) {
                 $parts     = explode('\\', $className);
                 $className = array_pop($parts);
                 $namespace = 'namespace ' . join('\\', $parts) . ';' . "\n\n";
             }
 
             $classTemplate->setVar(
-              array(
+                array(
                 'namespace'  => $namespace,
                 'class_name' => $className,
                 'wsdl'       => $wsdlFile,
                 'options'    => $optionsBuffer,
                 'methods'    => $methodsBuffer
-              )
+                )
             );
 
             return $classTemplate->render();
         } else {
             throw new PHPUnit_Framework_MockObject_RuntimeException(
-              'The SOAP extension is required to generate a mock object ' .
-              'from WSDL.'
+                'The SOAP extension is required to generate a mock object ' .
+                'from WSDL.'
             );
         }
     }
@@ -662,36 +648,40 @@ class PHPUnit_Framework_MockObject_Generator
         $templateDir   = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'Generator' .
                          DIRECTORY_SEPARATOR;
         $classTemplate = new Text_Template(
-                           $templateDir . 'mocked_class.tpl'
-                         );
+            $templateDir . 'mocked_class.tpl'
+        );
 
         $additionalInterfaces = array();
         $cloneTemplate        = '';
-        $isClass              = FALSE;
-        $isInterface          = FALSE;
+        $isClass              = false;
+        $isInterface          = false;
 
         $mockClassName = $this->generateClassName(
-          $type, $mockClassName, 'Mock_'
+            $type,
+            $mockClassName,
+            'Mock_'
         );
 
         if (is_array($type)) {
             foreach ($type as $_type) {
                 if (!interface_exists($_type, $callAutoload)) {
                     throw new PHPUnit_Framework_Exception(
-                      sprintf(
-                        'Interface "%s" does not exist.', $_type
-                      )
+                        sprintf(
+                            'Interface "%s" does not exist.',
+                            $_type
+                        )
                     );
                 }
 
                 $additionalInterfaces[] = $_type;
 
-                foreach (get_class_methods($_type) as $method) {
+                foreach ($this->getClassMethods($_type) as $method) {
                     if (in_array($method, $methods)) {
                         throw new PHPUnit_Framework_Exception(
-                          sprintf(
-                            'Duplicate method "%s" not allowed.', $method
-                          )
+                            sprintf(
+                                'Duplicate method "%s" not allowed.',
+                                $method
+                            )
                         );
                     }
 
@@ -701,10 +691,10 @@ class PHPUnit_Framework_MockObject_Generator
         }
 
         if (class_exists($mockClassName['fullClassName'], $callAutoload)) {
-            $isClass = TRUE;
+            $isClass = true;
         } else {
             if (interface_exists($mockClassName['fullClassName'], $callAutoload)) {
-                $isInterface = TRUE;
+                $isInterface = true;
             }
         }
 
@@ -721,17 +711,17 @@ class PHPUnit_Framework_MockObject_Generator
             }
 
             $cloneTemplate = new Text_Template(
-              $templateDir . 'mocked_clone.tpl'
+                $templateDir . 'mocked_clone.tpl'
             );
         } else {
             $class = new ReflectionClass($mockClassName['fullClassName']);
 
             if ($class->isFinal()) {
                 throw new PHPUnit_Framework_Exception(
-                  sprintf(
-                    'Class "%s" is declared "final" and cannot be mocked.',
-                    $mockClassName['fullClassName']
-                  )
+                    sprintf(
+                        'Class "%s" is declared "final" and cannot be mocked.',
+                        $mockClassName['fullClassName']
+                    )
                 );
             }
 
@@ -741,17 +731,17 @@ class PHPUnit_Framework_MockObject_Generator
                 if (!$cloneMethod->isFinal()) {
                     if ($callOriginalClone && !$isInterface) {
                         $cloneTemplate = new Text_Template(
-                          $templateDir . 'unmocked_clone.tpl'
+                            $templateDir . 'unmocked_clone.tpl'
                         );
                     } else {
                         $cloneTemplate = new Text_Template(
-                          $templateDir . 'mocked_clone.tpl'
+                            $templateDir . 'mocked_clone.tpl'
                         );
                     }
                 }
             } else {
                 $cloneTemplate = new Text_Template(
-                  $templateDir . 'mocked_clone.tpl'
+                    $templateDir . 'mocked_clone.tpl'
                 );
             }
         }
@@ -762,7 +752,7 @@ class PHPUnit_Framework_MockObject_Generator
 
         if (is_array($methods) && empty($methods) &&
             ($isClass || $isInterface)) {
-            $methods = get_class_methods($mockClassName['fullClassName']);
+            $methods = $this->getClassMethods($mockClassName['fullClassName']);
         }
 
         if (!is_array($methods)) {
@@ -777,7 +767,7 @@ class PHPUnit_Framework_MockObject_Generator
                 !$class->implementsInterface('Iterator') &&
                 !$class->implementsInterface('IteratorAggregate')) {
                 $additionalInterfaces[] = 'Iterator';
-                $methods = array_merge($methods, get_class_methods('Iterator'));
+                $methods = array_merge($methods, $this->getClassMethods('Iterator'));
             }
 
             foreach ($methods as $methodName) {
@@ -786,22 +776,28 @@ class PHPUnit_Framework_MockObject_Generator
 
                     if ($this->canMockMethod($method)) {
                         $mockedMethods .= $this->generateMockedMethodDefinitionFromExisting(
-                          $templateDir,
-                          $method,
-                          $cloneArguments,
-                          $callOriginalMethods
+                            $templateDir,
+                            $method,
+                            $cloneArguments,
+                            $callOriginalMethods
                         );
                     }
                 } catch (ReflectionException $e) {
                     $mockedMethods .= $this->generateMockedMethodDefinition(
-                      $templateDir, $mockClassName['fullClassName'], $methodName, $cloneArguments
+                        $templateDir,
+                        $mockClassName['fullClassName'],
+                        $methodName,
+                        $cloneArguments
                     );
                 }
             }
         } else {
             foreach ($methods as $methodName) {
                 $mockedMethods .= $this->generateMockedMethodDefinition(
-                  $templateDir, $mockClassName['fullClassName'], $methodName, $cloneArguments
+                    $templateDir,
+                    $mockClassName['fullClassName'],
+                    $methodName,
+                    $cloneArguments
                 );
             }
         }
@@ -817,19 +813,19 @@ class PHPUnit_Framework_MockObject_Generator
         }
 
         $classTemplate->setVar(
-          array(
+            array(
             'prologue'          => isset($prologue) ? $prologue : '',
             'epilogue'          => isset($epilogue) ? $epilogue : '',
             'class_declaration' => $this->generateMockClassDeclaration(
-                                     $mockClassName,
-                                     $isInterface,
-                                     $additionalInterfaces
-                                   ),
+                $mockClassName,
+                $isInterface,
+                $additionalInterfaces
+            ),
             'clone'             => $cloneTemplate,
             'mock_class_name'   => $mockClassName['className'],
             'mocked_methods'    => $mockedMethods,
             'method'            => $method
-          )
+            )
         );
 
         return array(
@@ -869,7 +865,7 @@ class PHPUnit_Framework_MockObject_Generator
             do {
                 $className = $prefix . $type . '_' .
                              substr(md5(microtime()), 0, 8);
-            } while (class_exists($className, FALSE));
+            } while (class_exists($className, false));
         }
 
         return array(
@@ -895,9 +891,9 @@ class PHPUnit_Framework_MockObject_Generator
 
         if ($isInterface) {
             $buffer .= sprintf(
-              "%s implements %s",
-              $mockClassName['className'],
-              $interfaces
+                "%s implements %s",
+                $mockClassName['className'],
+                $interfaces
             );
 
             if (!in_array($mockClassName['originalClassName'], $additionalInterfaces)) {
@@ -911,11 +907,11 @@ class PHPUnit_Framework_MockObject_Generator
             }
         } else {
             $buffer .= sprintf(
-              "%s extends %s%s implements %s",
-              $mockClassName['className'],
-              !empty($mockClassName['namespaceName']) ? $mockClassName['namespaceName'] . '\\' : '',
-              $mockClassName['originalClassName'],
-              $interfaces
+                "%s extends %s%s implements %s",
+                $mockClassName['className'],
+                !empty($mockClassName['namespaceName']) ? $mockClassName['namespaceName'] . '\\' : '',
+                $mockClassName['originalClassName'],
+                $interfaces
             );
         }
 
@@ -950,16 +946,16 @@ class PHPUnit_Framework_MockObject_Generator
         }
 
         return $this->generateMockedMethodDefinition(
-          $templateDir,
-          $method->getDeclaringClass()->getName(),
-          $method->getName(),
-          $cloneArguments,
-          $modifier,
-          $this->getMethodParameters($method),
-          $this->getMethodParameters($method, TRUE),
-          $reference,
-          $callOriginalMethods,
-          $method->isStatic()
+            $templateDir,
+            $method->getDeclaringClass()->getName(),
+            $method->getName(),
+            $cloneArguments,
+            $modifier,
+            $this->getMethodParameters($method),
+            $this->getMethodParameters($method, true),
+            $reference,
+            $callOriginalMethods,
+            $method->isStatic()
         );
     }
 
@@ -976,21 +972,21 @@ class PHPUnit_Framework_MockObject_Generator
      * @param  boolean $static
      * @return string
      */
-    protected function generateMockedMethodDefinition($templateDir, $className, $methodName, $cloneArguments = TRUE, $modifier = 'public', $arguments_decl = '', $arguments_call = '', $reference = '', $callOriginalMethods = FALSE, $static = FALSE)
+    protected function generateMockedMethodDefinition($templateDir, $className, $methodName, $cloneArguments = true, $modifier = 'public', $arguments_decl = '', $arguments_call = '', $reference = '', $callOriginalMethods = false, $static = false)
     {
         if ($static) {
             $templateFile = 'mocked_static_method.tpl';
         } else {
             $templateFile = sprintf(
-              '%s_method.tpl',
-              $callOriginalMethods ? 'proxied' : 'mocked'
+                '%s_method.tpl',
+                $callOriginalMethods ? 'proxied' : 'mocked'
             );
         }
 
         $template = new Text_Template($templateDir . $templateFile);
 
         $template->setVar(
-          array(
+            array(
             'arguments_decl'  => $arguments_decl,
             'arguments_call'  => $arguments_call,
             'arguments_count' => !empty($arguments_call) ? count(explode(',', $arguments_call)) : 0,
@@ -999,7 +995,7 @@ class PHPUnit_Framework_MockObject_Generator
             'modifier'        => $modifier,
             'reference'       => $reference,
             'clone_arguments' => $cloneArguments ? 'TRUE' : 'FALSE'
-          )
+            )
         );
 
         return $template->render();
@@ -1013,11 +1009,12 @@ class PHPUnit_Framework_MockObject_Generator
     {
         if ($method->isConstructor() ||
             $method->isFinal() ||
+            $method->isPrivate() ||
             isset($this->blacklistedMethodNames[$method->getName()])) {
-            return FALSE;
+            return false;
         }
 
-        return TRUE;
+        return true;
     }
 
     /**
@@ -1029,7 +1026,7 @@ class PHPUnit_Framework_MockObject_Generator
      * @throws PHPUnit_Framework_MockObject_RuntimeException
      * @since  Method available since Release 2.0.0
      */
-    protected function getMethodParameters(ReflectionMethod $method, $forCall = FALSE)
+    protected function getMethodParameters(ReflectionMethod $method, $forCall = false)
     {
         $parameters = array();
 
@@ -1041,6 +1038,14 @@ class PHPUnit_Framework_MockObject_Generator
              */
             if ($name === '$' || $name === '$...') {
                 $name = '$arg' . $i;
+            }
+
+            if ($this->isVariadic($parameter)) {
+                if ($forCall) {
+                    continue;
+                } else {
+                    $name = '...' . $name;
+                }
             }
 
             $default   = '';
@@ -1058,27 +1063,29 @@ class PHPUnit_Framework_MockObject_Generator
                         $class = $parameter->getClass();
                     } catch (ReflectionException $e) {
                         throw new PHPUnit_Framework_MockObject_RuntimeException(
-                          sprintf(
-                            'Cannot mock %s::%s() because a class or ' .
-                            'interface used in the signature is not loaded',
-                            $method->getDeclaringClass()->getName(),
-                            $method->getName()
-                          ),
-                          0,
-                          $e
+                            sprintf(
+                                'Cannot mock %s::%s() because a class or ' .
+                                'interface used in the signature is not loaded',
+                                $method->getDeclaringClass()->getName(),
+                                $method->getName()
+                            ),
+                            0,
+                            $e
                         );
                     }
 
-                    if ($class !== NULL) {
+                    if ($class !== null) {
                         $typeHint = $class->getName() . ' ';
                     }
                 }
 
-                if ($parameter->isDefaultValueAvailable()) {
-                    $value   = $parameter->getDefaultValue();
-                    $default = ' = ' . var_export($value, TRUE);
-                } elseif ($parameter->isOptional()) {
-                    $default = ' = null';
+                if (!$this->isVariadic($parameter)) {
+                    if ($parameter->isDefaultValueAvailable()) {
+                        $value = $parameter->getDefaultValue();
+                        $default = ' = ' . var_export($value, true);
+                    } elseif ($parameter->isOptional()) {
+                        $default = ' = null';
+                    }
                 }
             }
 
@@ -1093,20 +1100,31 @@ class PHPUnit_Framework_MockObject_Generator
     }
 
     /**
-     * @param  ReflectionClass $class
+     * @param  ReflectionParameter $parameter
      * @return boolean
-     * @since  Method available since Release 2.0.8
+     * @since  Method available since Release 2.2.1
      */
-    private function isInternalClass(ReflectionClass $class)
+    private function isVariadic(ReflectionParameter $parameter)
     {
-        while ($class) {
-            if ($class->isInternal()) {
-                return true;
-            }
+        return method_exists('ReflectionParameter', 'isVariadic') && $parameter->isVariadic();
+    }
 
-            $class = $class->getParentClass();
+    /**
+     * @param  string $className
+     * @return array
+     * @since  Method available since Release 2.3.2
+     */
+    private function getClassMethods($className)
+    {
+        $class   = new ReflectionClass($className);
+        $methods = array();
+
+        foreach ($class->getMethods() as $method) {
+            if ($method->isPublic() || $method->isAbstract()) {
+                $methods[] = $method->getName();
+            }
         }
 
-        return false;
+        return $methods;
     }
 }

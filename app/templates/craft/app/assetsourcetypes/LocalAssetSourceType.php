@@ -11,7 +11,7 @@ namespace Craft;
  * @see        http://buildwithcraft.com
  * @package    craft.app.assetsourcetypes
  * @since      1.0
- * @deprecated This class will most likely be removed in Craft 3.0.
+ * @deprecated This class will be removed in Craft 3.0.
  */
 class LocalAssetSourceType extends BaseAssetSourceType
 {
@@ -178,7 +178,8 @@ class LocalAssetSourceType extends BaseAssetSourceType
 
 			if ($fileModel->kind == 'image')
 			{
-				list ($width, $height) = getimagesize($indexEntryModel->uri);
+				list ($width, $height) = ImageHelper::getImageSize($indexEntryModel->uri);
+
 				$fileModel->width = $width;
 				$fileModel->height = $height;
 			}
@@ -465,16 +466,32 @@ class LocalAssetSourceType extends BaseAssetSourceType
 			{
 				$transforms = craft()->assetTransforms->getAllCreatedTransformsForFile($file);
 
+				$destination = clone $file;
+				$destination->filename = $fileName;
+
 				// Move transforms
 				foreach ($transforms as $index)
 				{
-					$this->copyTransform($file, $targetFolder, $index, $index);
-					$this->deleteSourceFile($file->getFolder()->path.craft()->assetTransforms->getTransformSubpath($file, $index));
+					// For each file, we have to have both the source and destination
+					// for both files and transforms, so we can reliably move them
+					$destinationIndex = clone $index;
+
+					if (!empty($index->filename))
+					{
+						$destinationIndex->filename = $fileName;
+						craft()->assetTransforms->storeTransformIndexData($destinationIndex);
+					}
+
+					$from = $file->getFolder()->path.craft()->assetTransforms->getTransformSubpath($file, $index);
+					$to   = $targetFolder->path.craft()->assetTransforms->getTransformSubpath($destination, $destinationIndex);
+
+					$this->copySourceFile($from, $to);
+					$this->deleteSourceFile($from);
 				}
 			}
 			else
 			{
-				craft()->assetTransforms->deleteCreatedTransformsForFile($file);
+				craft()->assetTransforms->deleteAllTransformData($file);
 			}
 		}
 
@@ -495,6 +512,11 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 */
 	protected function copySourceFile($sourceUri, $targetUri)
 	{
+		if ($sourceUri == $targetUri)
+		{
+			return true;
+		}
+
 		return IOHelper::copyFile($this->getSourceFileSystemPath().$sourceUri, $this->getSourceFileSystemPath().$targetUri, true);
 	}
 

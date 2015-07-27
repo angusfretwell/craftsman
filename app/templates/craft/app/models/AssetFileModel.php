@@ -147,10 +147,39 @@ class AssetFileModel extends BaseElementModel
 	{
 		$source = $this->getSource();
 
-		if ($source)
+		if ($source->id)
 		{
 			return $source->getFieldLayout();
 		}
+		else
+		{
+			$folder = $this->getFolder();
+
+			if (preg_match('/field_([0-9]+)/', $folder->name, $matches))
+			{
+				$fieldId = $matches[1];
+				$field = craft()->fields->getFieldById($fieldId);
+				$settings = $field->settings;
+
+				if ($settings['useSingleFolder'])
+				{
+					$sourceId = $settings['singleUploadLocationSource'];
+				}
+				else
+				{
+					$sourceId = $settings['defaultUploadLocationSource'];
+				}
+
+				$source = craft()->assetSources->getSourceById($sourceId);
+
+				if ($source)
+				{
+					return $source->getFieldLayout();
+				}
+			}
+		}
+
+		return null;
 	}
 
 	/**
@@ -172,7 +201,7 @@ class AssetFileModel extends BaseElementModel
 	{
 		if ($this->kind == 'image')
 		{
-			$img = '<img src="'.$this->url.'" width="'.$this->getWidth().'" height="'.$this->getHeight().'" alt="'.$this->title.'" />';
+			$img = '<img src="'.$this->url.'" width="'.$this->getWidth().'" height="'.$this->getHeight().'" alt="'.HtmlHelper::encode($this->title).'" />';
 			return TemplateHelper::getRaw($img);
 		}
 	}
@@ -234,7 +263,9 @@ class AssetFileModel extends BaseElementModel
 	{
 		if ($this->hasThumb())
 		{
-			return UrlHelper::getResourceUrl('assetthumbs/'.$this->id.'/'.$size);
+			return UrlHelper::getResourceUrl('assetthumbs/'.$this->id.'/'.$size, array(
+				craft()->resources->dateParam => $this->dateModified->getTimestamp()
+			));
 		}
 		else
 		{
@@ -268,15 +299,18 @@ class AssetFileModel extends BaseElementModel
 	 */
 	public function hasThumb()
 	{
-		if ($this->kind == 'image' && $this->_getHeight() && $this->_getWidth())
+		if ($this->kind == 'image')
 		{
-			// Gd doesn't process bitmaps
-			if ($this->getExtension() == 'bmp' && craft()->images->isGd())
+			if ($this->_getHeight() && $this->_getWidth())
 			{
-				return false;
-			}
+				// Gd doesn't process bitmaps
+				if (in_array($this->getExtension(), array('svg', 'bmp')) && craft()->images->isGd())
+				{
+					return false;
+				}
 
-			return true;
+				return true;
+			}
 		}
 
 		return false;
@@ -310,6 +344,11 @@ class AssetFileModel extends BaseElementModel
 
 	public function getHeight($transform = null)
 	{
+		if ($transform && !ImageHelper::isImageManipulatable($this->getExtension()))
+		{
+			return $this->_getDimension('height', null);
+		}
+
 		return $this->_getDimension('height', $transform);
 	}
 
@@ -322,6 +361,11 @@ class AssetFileModel extends BaseElementModel
 	 */
 	public function getWidth($transform = null)
 	{
+		if ($transform && !ImageHelper::isImageManipulatable($this->getExtension()))
+		{
+			return $this->_getDimension('width', null);
+		}
+
 		return $this->_getDimension('width', $transform);
 	}
 

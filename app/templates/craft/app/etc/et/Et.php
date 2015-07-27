@@ -75,6 +75,12 @@ class Et
 			'localEdition'      => craft()->getEdition(),
 			'userEmail'         => craft()->userSession->getUser()->email,
 			'track'             => CRAFT_TRACK,
+			'serverInfo'        => array(
+				'extensions'    => get_loaded_extensions(),
+				'phpVersion'    => PHP_VERSION,
+				'mySqlVersion'  => craft()->db->getServerVersion(),
+				'proc'          => function_exists('proc_open') ? 1 : 0,
+			),
 		));
 
 		$this->_userAgent = 'Craft/'.craft()->getVersion().'.'.craft()->getBuild();
@@ -181,8 +187,11 @@ class Et
 				);
 
 				$request = $client->post($this->_endpoint, $options);
-
 				$request->setBody($data, 'application/json');
+
+				// Potentially long-running request, so close session to prevent session blocking on subsequent requests.
+				craft()->session->close();
+
 				$response = $request->send();
 
 				if ($response->isSuccessful())

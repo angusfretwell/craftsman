@@ -22,10 +22,8 @@ Craft.UpdateInfo = Garnish.Base.extend(
 
 	allowAutoUpdates: null,
 
-	init: function(allowAutoUpdates)
+	init: function()
 	{
-		this.allowAutoUpdates = allowAutoUpdates;
-
 		var $graphic = $('#graphic'),
 			$status = $('#status');
 
@@ -68,6 +66,8 @@ Craft.UpdateInfo = Garnish.Base.extend(
 						$status.remove();
 
 						this.appUpdateInfo = response.app;
+						this.allowAutoUpdates = response.allowAutoUpdates;
+
 						this.showAvailableUpdates();
 					}, this));
 				}
@@ -87,47 +87,43 @@ Craft.UpdateInfo = Garnish.Base.extend(
 			$buttonContainer = $('<div class="buttons"/>').appendTo($headerPane);
 
 		// Is a manual update required?
-		if (this.appUpdateInfo.manualUpdateRequired)
+		var manualUpdateRequired = (!this.allowAutoUpdates || this.appUpdateInfo.manualUpdateRequired);
+
+		if (manualUpdateRequired)
 		{
 			this.$downloadBtn = $('<div class="btn submit">'+Craft.t('Download')+'</div>').appendTo($buttonContainer);
 		}
 		else
 		{
-			if (this.allowAutoUpdates)
-			{
-				var $btnGroup = $('<div class="btngroup submit"/>').appendTo($buttonContainer),
-					$updateBtn = $('<div class="btn submit">'+Craft.t('Update')+'</div>').appendTo($btnGroup),
-					$menuBtn = $('<div class="btn submit menubtn"/>').appendTo($btnGroup),
-					$menu = $('<div class="menu" data-align="right"/>').appendTo($btnGroup),
-					$menuUl = $('<ul/>').appendTo($menu),
-					$downloadLi = $('<li/>').appendTo($menuUl);
+			var $btnGroup = $('<div class="btngroup submit"/>').appendTo($buttonContainer),
+				$updateBtn = $('<div class="btn submit">'+Craft.t('Update')+'</div>').appendTo($btnGroup),
+				$menuBtn = $('<div class="btn submit menubtn"/>').appendTo($btnGroup),
+				$menu = $('<div class="menu" data-align="right"/>').appendTo($btnGroup),
+				$menuUl = $('<ul/>').appendTo($menu),
+				$downloadLi = $('<li/>').appendTo($menuUl);
 
-				this.$downloadBtn = $('<a>'+Craft.t('Download')+'</a>').appendTo($downloadLi);
+			this.$downloadBtn = $('<a>'+Craft.t('Download')+'</a>').appendTo($downloadLi);
 
-				new Garnish.MenuBtn($menuBtn);
-			}
+			new Garnish.MenuBtn($menuBtn);
 		}
 
-		if (this.allowAutoUpdates)
+		// Has the license been updated?
+		if (this.appUpdateInfo.licenseUpdated)
 		{
-			// Has the license been updated?
-			if (this.appUpdateInfo.licenseUpdated)
-			{
-				this.addListener(this.$downloadBtn, 'click', 'showLicenseForm');
+			this.addListener(this.$downloadBtn, 'click', 'showLicenseForm');
 
-				if (!this.appUpdateInfo.manualUpdateRequired)
-				{
-					this.addListener($updateBtn, 'click', 'showLicenseForm');
-				}
+			if (!manualUpdateRequired)
+			{
+				this.addListener($updateBtn, 'click', 'showLicenseForm');
 			}
-			else
-			{
-				this.addListener(this.$downloadBtn, 'click', 'downloadThat');
+		}
+		else
+		{
+			this.addListener(this.$downloadBtn, 'click', 'downloadThat');
 
-				if (!this.appUpdateInfo.manualUpdateRequired)
-				{
-					this.addListener($updateBtn, 'click', 'autoUpdateThat');
-				}
+			if (!manualUpdateRequired)
+			{
+				this.addListener($updateBtn, 'click', 'autoUpdateThat');
 			}
 		}
 
@@ -195,6 +191,7 @@ Craft.UpdateInfo = Garnish.Base.extend(
 			{
 				heading += ' <span class="light">' +
 					Craft.t('build {build}', { build: release.build }) +
+					' - ' + release.localizedDate +
 					'</span>';
 			}
 

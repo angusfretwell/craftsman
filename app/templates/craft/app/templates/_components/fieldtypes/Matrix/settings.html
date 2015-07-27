@@ -8,18 +8,20 @@
 				<h5>{{ "Block Types"|t }}</h5>
 			</div>
 			<div class="items">
-				{% for blockType in settings.getBlockTypes() %}
-					<div class="matrixconfigitem mci-blocktype{% if blockType.hasFieldErrors %} error{% endif %}" data-id="{{ blockType.id }}"{% if blockType.hasErrors() %} data-errors="{{ blockType.getErrors() | json_encode }}"{% endif %}>
-						<div class="name">{% if blockType.name %}{{ blockType.name }}{% else %}&nbsp;{% endif %}</div>
-						<div class="handle code">{% if blockType.handle %}{{ blockType.handle }}{% else %}&nbsp;{% endif %}</div>
-						<div class="actions">
-							<a class="move icon" title="{{ 'Reorder'|t }}" role="button"></a>
-							<a class="settings icon{% if blockType.hasErrors() %} error{% endif %}" title="{{ 'Settings'|t }}" role="button"></a>
+				<div class="blocktypes">
+					{% for blockType in settings.getBlockTypes() %}
+						<div class="matrixconfigitem mci-blocktype{% if blockType.hasFieldErrors %} error{% endif %}" data-id="{{ blockType.id }}"{% if blockType.hasErrors() %} data-errors="{{ blockType.getErrors() | json_encode }}"{% endif %}>
+							<div class="name">{% if blockType.name %}{{ blockType.name }}{% else %}&nbsp;{% endif %}</div>
+							<div class="handle code">{% if blockType.handle %}{{ blockType.handle }}{% else %}&nbsp;{% endif %}</div>
+							<div class="actions">
+								<a class="move icon" title="{{ 'Reorder'|t }}" role="button"></a>
+								<a class="settings icon{% if blockType.hasErrors() %} error{% endif %}" title="{{ 'Settings'|t }}" role="button"></a>
+							</div>
+							<input class="hidden" name="blockTypes[{{ blockType.id }}][name]" value="{{ blockType.name }}">
+							<input class="hidden" name="blockTypes[{{ blockType.id }}][handle]" value="{{ blockType.handle }}">
 						</div>
-						<input class="hidden" name="blockTypes[{{ blockType.id }}][name]" value="{{ blockType.name }}">
-						<input class="hidden" name="blockTypes[{{ blockType.id }}][handle]" value="{{ blockType.handle }}">
-					</div>
-				{% endfor %}
+					{% endfor %}
+				</div>
 				<div class="btn add icon">{{ "New block type"|t }}</div>
 			</div>
 		</div>
@@ -34,7 +36,9 @@
 					<div data-id="{{ blockType.id }}" class="hidden">
 						{% for field in blockType.getFields() %}
 							<div class="matrixconfigitem mci-field{% if field.hasErrors() %} error{% endif %}" data-id="{{ field.id }}">
-								<div class="name{% if field.required %} required{% endif %}">{{ field.name }}&nbsp;</div>
+								<div class="name{% if field.required %} required{% endif %}">
+									{%- if field.name and field.name != '__blank__' %}{{ field.name }}{% else %}<em class="light">{{ '(blank)'|t }}</em>{% endif -%}
+								&nbsp;</div>
 								<div class="handle code">{{ field.handle }}&nbsp;</div>
 								<div class="actions">
 									<a class="move icon" title="{{ 'Reorder'|t }}" role="button"></a>
@@ -62,10 +66,8 @@
 									label: "Name"|t,
 									id: fieldId~'-name',
 									name: 'blockTypes['~blockType.id~'][fields]['~fieldId~'][name]',
-									value: field.name,
+									value: (field.name != '__blank__' ? field.name),
 									errors: field.getErrors('name'),
-									required: true,
-									translatable: true,
 									autofocus: true
 								}) }}
 
@@ -78,6 +80,15 @@
 									value: field.handle,
 									errors: field.getErrors('handle'),
 									required: true,
+								}) }}
+
+								{{ forms.textareaField({
+									label: "Instructions"|t,
+									id: fieldId~'-instructions',
+									class: 'nicetext',
+									name: 'blockTypes['~blockType.id~'][fields]['~fieldId~'][instructions]',
+									value: field.instructions,
+									errors: field.getErrors('instructions'),
 								}) }}
 
 								{{ forms.checkboxField({
@@ -133,7 +144,7 @@
 	</div>
 {% endset %}
 
-<div class="matrix-configurator">
+<div id="matrix-configurator" class="matrix-configurator">
 	{{ forms.field({
 		label: "Configuration"|t,
 		instructions: "Define the types of blocks that can be created within this Matrix field, as well as the fields each block type is made up of."|t,

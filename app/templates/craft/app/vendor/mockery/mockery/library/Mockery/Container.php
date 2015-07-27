@@ -85,6 +85,8 @@ class Container
      * names or partials - just so long as it's something that can be mocked.
      * I'll refactor it one day so it's easier to follow.
      *
+     * @throws Exception\RuntimeException
+     * @throws Exception
      * @return \Mockery\Mock
      */
     public function mock()
@@ -99,7 +101,7 @@ class Container
             $finalArg = end($args);
             reset($args);
             if (is_callable($finalArg) && is_object($finalArg)) {
-                 $expectationClosure = array_pop($args);
+                $expectationClosure = array_pop($args);
             }
         }
 
@@ -154,7 +156,7 @@ class Container
                     . ' an existing class or interface');
                 }
                 $class = $parts[0];
-                $parts[1] = str_replace(' ','', $parts[1]);
+                $parts[1] = str_replace(' ', '', $parts[1]);
                 $partialMethods = explode(',', strtolower(rtrim($parts[1], ']')));
                 $builder->addTarget($class);
                 $builder->setWhiteListedMethods($partialMethods);
@@ -174,7 +176,10 @@ class Container
                 continue;
             } elseif (is_array($arg) && !empty($arg) && array_keys($arg) !== range(0, count($arg) - 1)) {
                 // if associative array
-                if(array_key_exists(self::BLOCKS, $arg)) $blocks = $arg[self::BLOCKS]; unset($arg[self::BLOCKS]);
+                if (array_key_exists(self::BLOCKS, $arg)) {
+                    $blocks = $arg[self::BLOCKS];
+                }
+                unset($arg[self::BLOCKS]);
                 $quickdefs = array_shift($args);
                 continue;
             } elseif (is_array($arg)) {
@@ -228,7 +233,6 @@ class Container
 
     public function instanceMock()
     {
-
     }
 
     public function getLoader()
@@ -242,8 +246,34 @@ class Container
     }
 
     /**
+     * @param string $method
+     * @return string|null
+     */
+    public function getKeyOfDemeterMockFor($method)
+    {
+        $keys = array_keys($this->_mocks);
+        $match = preg_grep("/__demeter_{$method}$/", $keys);
+        if (count($match) == 1) {
+            $res = array_values($match);
+            if (count($res) > 0) {
+                return $res[0];
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @return array
+     */
+    public function getMocks()
+    {
+        return $this->_mocks;
+    }
+
+    /**
      *  Tear down tasks for this container
      *
+     * @throws \Exception
      * @return void
      */
     public function mockery_teardown()
@@ -263,7 +293,7 @@ class Container
      */
     public function mockery_verify()
     {
-        foreach($this->_mocks as $mock) {
+        foreach ($this->_mocks as $mock) {
             $mock->mockery_verify();
         }
     }
@@ -275,7 +305,7 @@ class Container
      */
     public function mockery_close()
     {
-        foreach($this->_mocks as $mock) {
+        foreach ($this->_mocks as $mock) {
             $mock->mockery_teardown();
         }
         $this->_mocks = array();
@@ -367,7 +397,7 @@ class Container
     public function mockery_getExpectationCount()
     {
         $count = 0;
-        foreach($this->_mocks as $mock) {
+        foreach ($this->_mocks as $mock) {
             $count += $mock->mockery_getExpectationCount();
         }
         return $count;
@@ -416,24 +446,34 @@ class Container
      */
     public function fetchMock($reference)
     {
-        if (isset($this->_mocks[$reference])) return $this->_mocks[$reference];
+        if (isset($this->_mocks[$reference])) {
+            return $this->_mocks[$reference];
+        }
     }
 
     protected function _getInstance($mockName, $constructorArgs = null)
     {
-        $r = new \ReflectionClass($mockName);
-
-        if (null === $r->getConstructor()) {
-            $return = new $mockName;
-            return $return;
-        }
-
         if ($constructorArgs !== null) {
+            $r = new \ReflectionClass($mockName);
             return $r->newInstanceArgs($constructorArgs);
         }
 
-        $return = unserialize(sprintf('O:%d:"%s":0:{}', strlen($mockName), $mockName));
-        return $return;
+        try {
+            $instantiator = new Instantiator;
+            $instance = $instantiator->instantiate($mockName);
+        } catch (\Exception $ex) {
+            $internalMockName = $mockName . '_Internal';
+
+            if (!class_exists($internalMockName)) {
+                eval("class $internalMockName extends $mockName {" .
+                        'public function __construct() {}' .
+                    '}');
+            }
+
+            $instance = new $internalMockName();
+        }
+
+        return $instance;
     }
 
     /**

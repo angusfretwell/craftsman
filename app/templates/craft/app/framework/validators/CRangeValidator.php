@@ -59,7 +59,7 @@ class CRangeValidator extends CValidator
 		{
 			foreach($this->range as $r)
 			{
-				$result=(strcmp($r,$value)===0);
+				$result = $r === '' || $value === '' ? $r === $value : $r == $value;
 				if($result)
 					break;
 			}
@@ -82,6 +82,7 @@ class CRangeValidator extends CValidator
 	 * @param string $attribute the name of the attribute to be validated.
 	 * @throws CException if given {@link range} is not an array
 	 * @return string the client-side validation script.
+	 * @see CActiveForm::enableClientValidation
 	 * @since 1.1.7
 	 */
 	public function clientValidateAttribute($object,$attribute)

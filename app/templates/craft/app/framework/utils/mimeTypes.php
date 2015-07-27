@@ -4,15 +4,13 @@
  *
  * This file contains most commonly used MIME types
  * according to file extension names.
+ * Its content is generated from the apache http mime.types file.
+ * http://svn.apache.org/viewvc/httpd/httpd/trunk/docs/conf/mime.types?view=markup
+ * This file has been placed in the public domain for unlimited redistribution.
  *
- * @author Qiang Xue <qiang.xue@gmail.com>
- * @link http://www.yiiframework.com/
- * @copyright 2008-2013 Yii Software LLC
- * @license http://www.yiiframework.com/license/
+ * This file has been backported form Yii 2.
  */
-
 return array(
-	'123'=>'application/vnd.lotus-1-2-3',
 	'3dml'=>'text/vnd.in3d.3dml',
 	'3ds'=>'image/x-3ds',
 	'3g2'=>'video/3gpp2',
@@ -40,13 +38,11 @@ return array(
 	'air'=>'application/vnd.adobe.air-application-installer-package+zip',
 	'ait'=>'application/vnd.dvb.ait',
 	'ami'=>'application/vnd.amiga.ami',
-	'anx'=>'application/annodex',
 	'apk'=>'application/vnd.android.package-archive',
 	'appcache'=>'text/cache-manifest',
 	'application'=>'application/x-ms-application',
 	'apr'=>'application/vnd.lotus-approach',
 	'arc'=>'application/x-freearc',
-	// 'asc'=>'text/plain', // old
 	'asc'=>'application/pgp-signature',
 	'asf'=>'video/x-ms-asf',
 	'asm'=>'text/x-asm',
@@ -60,8 +56,6 @@ return array(
 	'au'=>'audio/basic',
 	'avi'=>'video/x-msvideo',
 	'aw'=>'application/applixware',
-	'axa'=>'audio/annodex',
-	'axv'=>'video/annodex',
 	'azf'=>'application/vnd.airzip.filesecure.azf',
 	'azs'=>'application/vnd.airzip.filesecure.azs',
 	'azw'=>'application/vnd.amazon.ebook',
@@ -83,7 +77,6 @@ return array(
 	'btif'=>'image/prs.btif',
 	'bz'=>'application/x-bzip',
 	'bz2'=>'application/x-bzip2',
-	// 'c'=>'text/plain', // old
 	'c'=>'text/x-c',
 	'c11amc'=>'application/vnd.cluetrust.cartomobile-config',
 	'c11amz'=>'application/vnd.cluetrust.cartomobile-config-pkg',
@@ -102,9 +95,7 @@ return array(
 	'cbr'=>'application/x-cbr',
 	'cbt'=>'application/x-cbr',
 	'cbz'=>'application/x-cbr',
-	// 'cc'=>'text/plain', // old
 	'cc'=>'text/x-c',
-	'ccad'=>'application/clariscad',
 	'cct'=>'application/x-director',
 	'ccxml'=>'application/ccxml+xml',
 	'cdbcmsg'=>'application/vnd.contact.cmsg',
@@ -128,7 +119,6 @@ return array(
 	'cii'=>'application/vnd.anser-web-certificate-issue-initiation',
 	'cil'=>'application/vnd.ms-artgalry',
 	'cla'=>'application/vnd.claymore',
-	// 'class'=>'application/octet-stream', // old
 	'class'=>'application/java-vm',
 	'clkk'=>'application/vnd.crick.clicker.keyboard',
 	'clkp'=>'application/vnd.crick.clicker.palette',
@@ -199,7 +189,6 @@ return array(
 	'dp'=>'application/vnd.osgi.dp',
 	'dpg'=>'application/vnd.dpgraph',
 	'dra'=>'audio/vnd.dra',
-	'drw'=>'application/drafting',
 	'dsc'=>'text/prs.lines.tag',
 	'dssc'=>'application/dssc+der',
 	'dtb'=>'application/x-dtbook+xml',
@@ -210,9 +199,7 @@ return array(
 	'dvb'=>'video/vnd.dvb.file',
 	'dvi'=>'application/x-dvi',
 	'dwf'=>'model/vnd.dwf',
-	// 'dwg'=>'application/acad', // old
 	'dwg'=>'image/vnd.dwg',
-	// 'dxf'=>'application/dxf', // old
 	'dxf'=>'image/vnd.dxf',
 	'dxp'=>'application/vnd.spotfire.dxp',
 	'dxr'=>'application/x-director',
@@ -240,18 +227,15 @@ return array(
 	'etx'=>'text/x-setext',
 	'eva'=>'application/x-eva',
 	'evy'=>'application/x-envoy',
-	// 'exe'=>'application/octet-stream', // old
 	'exe'=>'application/x-msdownload',
 	'exi'=>'application/exi',
 	'ext'=>'application/vnd.novadigm.ext',
 	'ez'=>'application/andrew-inset',
 	'ez2'=>'application/vnd.ezpix-album',
 	'ez3'=>'application/vnd.ezpix-package',
-	// 'f'=>'text/plain', // old
 	'f'=>'text/x-fortran',
 	'f4v'=>'video/x-f4v',
 	'f77'=>'text/x-fortran',
-	// 'f90'=>'text/plain', // old
 	'f90'=>'text/x-fortran',
 	'fbs'=>'image/vnd.fastbidsheet',
 	'fcdt'=>'application/vnd.adobe.formscentral.fcdt',
@@ -266,7 +250,6 @@ return array(
 	'fh7'=>'image/x-freehand',
 	'fhc'=>'image/x-freehand',
 	'fig'=>'application/x-xfig',
-	// 'flac'=>'audio/flac', // old
 	'flac'=>'audio/x-flac',
 	'fli'=>'video/x-fli',
 	'flo'=>'application/vnd.micrografx.flo',
@@ -321,8 +304,6 @@ return array(
 	'gv'=>'text/vnd.graphviz',
 	'gxf'=>'application/gxf',
 	'gxt'=>'application/vnd.geonext',
-	'gz'=>'application/x-gzip',
-	// 'h'=>'text/plain', // old
 	'h'=>'text/x-c',
 	'h261'=>'video/h261',
 	'h263'=>'video/h263',
@@ -330,7 +311,6 @@ return array(
 	'hal'=>'application/vnd.hal+xml',
 	'hbci'=>'application/vnd.hbci',
 	'hdf'=>'application/x-hdf',
-	// 'hh'=>'text/plain', // old
 	'hh'=>'text/x-c',
 	'hlp'=>'application/winhlp',
 	'hpgl'=>'application/vnd.hp-hpgl',
@@ -367,8 +347,6 @@ return array(
 	'iota'=>'application/vnd.astraea-software.iota',
 	'ipfix'=>'application/ipfix',
 	'ipk'=>'application/vnd.shana.informed.package',
-	'ips'=>'application/x-ipscript',
-	'ipx'=>'application/x-ipix',
 	'irm'=>'application/vnd.ibm.rights-management',
 	'irp'=>'application/vnd.irepository.package+xml',
 	'iso'=>'application/x-iso9660-image',
@@ -389,7 +367,6 @@ return array(
 	'jpgm'=>'video/jpm',
 	'jpgv'=>'video/jpeg',
 	'jpm'=>'video/jpm',
-	// 'js'=>'application/x-javascript', // old
 	'js'=>'application/javascript',
 	'json'=>'application/json',
 	'jsonml'=>'application/jsonml+json',
@@ -416,7 +393,6 @@ return array(
 	'lbd'=>'application/vnd.llamagraphics.life-balance.desktop',
 	'lbe'=>'application/vnd.llamagraphics.life-balance.exchange+xml',
 	'les'=>'application/vnd.hhe.lesson-player',
-	// 'lha'=>'application/octet-stream', // old
 	'lha'=>'application/x-lzh-compressed',
 	'link66'=>'application/vnd.route66.link66+xml',
 	'list'=>'text/plain',
@@ -427,13 +403,10 @@ return array(
 	'lostxml'=>'application/lost+xml',
 	'lrf'=>'application/octet-stream',
 	'lrm'=>'application/vnd.ms-lrm',
-	'lsp'=>'application/x-lisp',
 	'ltf'=>'application/vnd.frogans.ltf',
 	'lvp'=>'audio/vnd.lucent.voice',
 	'lwp'=>'application/vnd.lotus-wordpro',
-	// 'lzh'=>'application/octet-stream', // old
 	'lzh'=>'application/x-lzh-compressed',
-	'm'=>'text/plain',
 	'm13'=>'application/x-msmediaview',
 	'm14'=>'application/x-msmediaview',
 	'm1v'=>'video/mpeg',
@@ -449,7 +422,6 @@ return array(
 	'mads'=>'application/mads+xml',
 	'mag'=>'application/vnd.ecowin.chart',
 	'maker'=>'application/vnd.framemaker',
-	// 'man'=>'application/x-troff-man', // old
 	'man'=>'text/troff',
 	'mar'=>'application/octet-stream',
 	'mathml'=>'application/mathml+xml',
@@ -461,7 +433,6 @@ return array(
 	'mcurl'=>'text/vnd.curl.mcurl',
 	'mdb'=>'application/x-msaccess',
 	'mdi'=>'image/vnd.ms-modi',
-	// 'me'=>'application/x-troff-me', // old
 	'me'=>'text/troff',
 	'mesh'=>'model/mesh',
 	'meta4'=>'application/metalink4+xml',
@@ -475,7 +446,6 @@ return array(
 	'midi'=>'audio/midi',
 	'mie'=>'application/x-mie',
 	'mif'=>'application/vnd.mif',
-	// 'mime'=>'www/mime', // old
 	'mime'=>'message/rfc822',
 	'mj2'=>'video/mj2',
 	'mjp2'=>'video/mj2',
@@ -516,7 +486,6 @@ return array(
 	'mqy'=>'application/vnd.mobius.mqy',
 	'mrc'=>'application/marc',
 	'mrcx'=>'application/marcxml+xml',
-	// 'ms'=>'application/x-troff-ms', // old
 	'ms'=>'text/troff',
 	'mscml'=>'application/mediaservercontrol+xml',
 	'mseed'=>'application/vnd.fdsn.mseed',
@@ -616,7 +585,6 @@ return array(
 	'pct'=>'image/x-pict',
 	'pcurl'=>'application/vnd.curl.pcurl',
 	'pcx'=>'image/x-pcx',
-	// 'pdb'=>'chemical/x-pdb', // old
 	'pdb'=>'application/vnd.palm',
 	'pdf'=>'application/pdf',
 	'pfa'=>'application/x-font-type1',
@@ -639,28 +607,22 @@ return array(
 	'png'=>'image/png',
 	'pnm'=>'image/x-portable-anymap',
 	'portpkg'=>'application/vnd.macports.portpkg',
-	// 'pot'=>'application/mspowerpoint', // old
 	'pot'=>'application/vnd.ms-powerpoint',
 	'potm'=>'application/vnd.ms-powerpoint.template.macroenabled.12',
 	'potx'=>'application/vnd.openxmlformats-officedocument.presentationml.template',
 	'ppam'=>'application/vnd.ms-powerpoint.addin.macroenabled.12',
 	'ppd'=>'application/vnd.cups-ppd',
 	'ppm'=>'image/x-portable-pixmap',
-	// 'pps'=>'application/mspowerpoint', // old
 	'pps'=>'application/vnd.ms-powerpoint',
 	'ppsm'=>'application/vnd.ms-powerpoint.slideshow.macroenabled.12',
 	'ppsx'=>'application/vnd.openxmlformats-officedocument.presentationml.slideshow',
-	// 'ppt'=>'application/mspowerpoint', // old
 	'ppt'=>'application/vnd.ms-powerpoint',
 	'pptm'=>'application/vnd.ms-powerpoint.presentation.macroenabled.12',
 	'pptx'=>'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-	'ppz'=>'application/mspowerpoint',
 	'pqa'=>'application/vnd.palm',
 	'prc'=>'application/x-mobipocket-ebook',
-	// 'pre'=>'application/x-freelance', // old
 	'pre'=>'application/vnd.lotus-freelance',
 	'prf'=>'application/pics-rules',
-	'prt'=>'application/pro_eng',
 	'ps'=>'application/postscript',
 	'psb'=>'application/vnd.3gpp.pic-bw-small',
 	'psd'=>'image/vnd.adobe.photoshop',
@@ -683,11 +645,9 @@ return array(
 	'qxd'=>'application/vnd.quark.quarkxpress',
 	'qxl'=>'application/vnd.quark.quarkxpress',
 	'qxt'=>'application/vnd.quark.quarkxpress',
-	// 'ra'=>'audio/x-realaudio', // old
 	'ra'=>'audio/x-pn-realaudio',
 	'ram'=>'audio/x-pn-realaudio',
 	'rar'=>'application/x-rar-compressed',
-	// 'ras'=>'image/cmu-raster', // old
 	'ras'=>'image/x-cmu-raster',
 	'rcprofile'=>'application/vnd.ipunplugged.rcprofile',
 	'rdf'=>'application/rdf+xml',
@@ -701,7 +661,6 @@ return array(
 	'rl'=>'application/resource-lists+xml',
 	'rlc'=>'image/vnd.fujixerox.edmics-rlc',
 	'rld'=>'application/resource-lists-diff+xml',
-	// 'rm'=>'audio/x-pn-realaudio', // old
 	'rm'=>'application/vnd.rn-realmedia',
 	'rmi'=>'audio/midi',
 	'rmp'=>'audio/x-pn-realaudio-plugin',
@@ -709,17 +668,14 @@ return array(
 	'rmvb'=>'application/vnd.rn-realmedia-vbr',
 	'rnc'=>'application/relax-ng-compact-syntax',
 	'roa'=>'application/rpki-roa',
-	// 'roff'=>'application/x-troff', // old
 	'roff'=>'text/troff',
 	'rp9'=>'application/vnd.cloanto.rp9',
-	'rpm'=>'audio/x-pn-realaudio-plugin',
 	'rpss'=>'application/vnd.nokia.radio-presets',
 	'rpst'=>'application/vnd.nokia.radio-preset',
 	'rq'=>'application/sparql-query',
 	'rs'=>'application/rls-services+xml',
 	'rsd'=>'application/rsd+xml',
 	'rss'=>'application/rss+xml',
-	// 'rtf'=>'text/rtf', // old
 	'rtf'=>'application/rtf',
 	'rtx'=>'text/richtext',
 	's'=>'text/x-asm',
@@ -728,7 +684,6 @@ return array(
 	'sbml'=>'application/sbml+xml',
 	'sc'=>'application/vnd.ibm.secure-container',
 	'scd'=>'application/x-msschedule',
-	// 'scm'=>'application/x-lotusscreencam', // old
 	'scm'=>'application/vnd.lotus-screencam',
 	'scq'=>'application/scvp-cv-request',
 	'scs'=>'application/scvp-cv-response',
@@ -746,7 +701,6 @@ return array(
 	'semd'=>'application/vnd.semd',
 	'semf'=>'application/vnd.semf',
 	'ser'=>'application/java-serialized-object',
-	'set'=>'application/set',
 	'setpay'=>'application/set-payment-initiation',
 	'setreg'=>'application/set-registration-initiation',
 	'sfd-hdstx'=>'application/vnd.hydrostatix.sof-data',
@@ -767,29 +721,22 @@ return array(
 	'sisx'=>'application/vnd.symbian.install',
 	'sit'=>'application/x-stuffit',
 	'sitx'=>'application/x-stuffitx',
-	// 'skd'=>'application/x-koan', // old
 	'skd'=>'application/vnd.koan',
-	// 'skm'=>'application/x-koan', // old
 	'skm'=>'application/vnd.koan',
-	// 'skp'=>'application/x-koan', // old
 	'skp'=>'application/vnd.koan',
-	// 'skt'=>'application/x-koan', // old
 	'skt'=>'application/vnd.koan',
 	'sldm'=>'application/vnd.ms-powerpoint.slide.macroenabled.12',
 	'sldx'=>'application/vnd.openxmlformats-officedocument.presentationml.slide',
 	'slt'=>'application/vnd.epson.salt',
 	'sm'=>'application/vnd.stepmania.stepchart',
 	'smf'=>'application/vnd.stardivision.math',
-	// 'smi'=>'application/smil', // old
 	'smi'=>'application/smil+xml',
-	// 'smil'=>'application/smil', // old
 	'smil'=>'application/smil+xml',
 	'smv'=>'video/x-smv',
 	'smzip'=>'application/vnd.stepmania.package',
 	'snd'=>'audio/basic',
 	'snf'=>'application/x-font-snf',
 	'so'=>'application/octet-stream',
-	'sol'=>'application/solids',
 	'spc'=>'application/x-pkcs7-certificates',
 	'spf'=>'application/vnd.yamaha.smaf-phrase',
 	'spl'=>'application/x-futuresplash',
@@ -809,13 +756,10 @@ return array(
 	'st'=>'application/vnd.sailingtracker.track',
 	'stc'=>'application/vnd.sun.xml.calc.template',
 	'std'=>'application/vnd.sun.xml.draw.template',
-	'step'=>'application/STEP',
 	'stf'=>'application/vnd.wt.stf',
 	'sti'=>'application/vnd.sun.xml.impress.template',
 	'stk'=>'application/hyperstudio',
-	// 'stl'=>'application/SLA', // old
 	'stl'=>'application/vnd.ms-pki.stl',
-	'stp'=>'application/STEP',
 	'str'=>'application/vnd.pg.format',
 	'stw'=>'application/vnd.sun.xml.writer.template',
 	'sub'=>'text/vnd.dvb.subtitle',
@@ -836,7 +780,6 @@ return array(
 	'sxi'=>'application/vnd.sun.xml.impress',
 	'sxm'=>'application/vnd.sun.xml.math',
 	'sxw'=>'application/vnd.sun.xml.writer',
-	// 't'=>'application/x-troff', // old
 	't'=>'text/troff',
 	't3'=>'application/x-t3vm-image',
 	'taglet'=>'application/vnd.mynfc',
@@ -861,13 +804,10 @@ return array(
 	'torrent'=>'application/x-bittorrent',
 	'tpl'=>'application/vnd.groove-tool-template',
 	'tpt'=>'application/vnd.trid.tpt',
-	// 'tr'=>'application/x-troff', // old
 	'tr'=>'text/troff',
 	'tra'=>'application/vnd.trueapp',
 	'trm'=>'application/x-msterminal',
 	'tsd'=>'application/timestamped-data',
-	'tsi'=>'audio/TSP-audio',
-	'tsp'=>'application/dsptype',
 	'tsv'=>'text/tab-separated-values',
 	'ttc'=>'application/x-font-ttf',
 	'ttf'=>'application/x-font-ttf',
@@ -884,7 +824,6 @@ return array(
 	'ulx'=>'application/x-glulx',
 	'umj'=>'application/vnd.umajin',
 	'unityweb'=>'application/vnd.unity',
-	'unv'=>'application/i-deas',
 	'uoml'=>'application/vnd.uoml+xml',
 	'uri'=>'text/uri-list',
 	'uris'=>'text/uri-list',
@@ -926,10 +865,8 @@ return array(
 	'vcg'=>'application/vnd.groove-vcard',
 	'vcs'=>'text/x-vcalendar',
 	'vcx'=>'application/vnd.vcx',
-	'vda'=>'application/vda',
 	'vis'=>'application/vnd.visionary',
 	'viv'=>'video/vnd.vivo',
-	'vivo'=>'video/vnd.vivo',
 	'vob'=>'video/x-ms-vob',
 	'vor'=>'application/vnd.stardivision.writer',
 	'vox'=>'application/x-authorware-bin',
@@ -967,7 +904,7 @@ return array(
 	'wmlsc'=>'application/vnd.wap.wmlscriptc',
 	'wmv'=>'video/x-ms-wmv',
 	'wmx'=>'video/x-ms-wmx',
-	'wmz'=>'application/x-ms-wmz',
+	'wmz'=>'application/x-msmetafile',
 	'woff'=>'application/font-woff',
 	'wpd'=>'application/vnd.wordperfect',
 	'wpl'=>'application/vnd.ms-wpl',
@@ -1009,7 +946,6 @@ return array(
 	'xlam'=>'application/vnd.ms-excel.addin.macroenabled.12',
 	'xlc'=>'application/vnd.ms-excel',
 	'xlf'=>'application/x-xliff+xml',
-	'xll'=>'application/vnd.ms-excel',
 	'xlm'=>'application/vnd.ms-excel',
 	'xls'=>'application/vnd.ms-excel',
 	'xlsb'=>'application/vnd.ms-excel.sheet.binary.macroenabled.12',
@@ -1038,7 +974,6 @@ return array(
 	'xvm'=>'application/xv+xml',
 	'xvml'=>'application/xv+xml',
 	'xwd'=>'image/x-xwindowdump',
-	// 'xyz'=>'chemical/x-pdb', // old
 	'xyz'=>'chemical/x-xyz',
 	'xz'=>'application/x-xz',
 	'yang'=>'application/yang',
@@ -1055,5 +990,6 @@ return array(
 	'zip'=>'application/zip',
 	'zir'=>'application/vnd.zul',
 	'zirz'=>'application/vnd.zul',
-	'zmm'=>'application/vnd.handheld-entertainment+xml'
+	'zmm'=>'application/vnd.handheld-entertainment+xml',
+	123=>'application/vnd.lotus-1-2-3',
 );

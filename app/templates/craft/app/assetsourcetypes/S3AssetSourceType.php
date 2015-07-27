@@ -12,7 +12,7 @@ craft()->requireEdition(Craft::Pro);
  * @see        http://buildwithcraft.com
  * @package    craft.app.assetsourcetypes
  * @since      1.0
- * @deprecated This class will most likely be removed in Craft 3.0.
+ * @deprecated This class will be removed in Craft 3.0.
  */
 class S3AssetSourceType extends BaseAssetSourceType
 {
@@ -49,25 +49,36 @@ class S3AssetSourceType extends BaseAssetSourceType
 	public static function getBucketList($keyId, $secret)
 	{
 		$s3 = new \S3($keyId, $secret);
-		$buckets = @$s3->listBuckets();
+		$s3->setExceptions(true);
 
-		if (empty($buckets))
+		try
 		{
-			throw new Exception(Craft::t("Credentials rejected by target host."));
+			$buckets = $s3->listBuckets();
+		}
+		catch (\Exception $exception)
+		{
+			// Re-throw a proper Craft Exception
+			throw new Exception($exception->getMessage());
 		}
 
 		$bucketList = array();
 
 		foreach ($buckets as $bucket)
 		{
-			$location = $s3->getBucketLocation($bucket);
+			try
+			{
+				$location = $s3->getBucketLocation($bucket);
+				$bucketList[] = array(
+					'bucket' => $bucket,
+					'location' => $location,
+					'urlPrefix' => 'http://'.static::getEndpointByLocation($location).'/'.$bucket.'/'
+				);
 
-			$bucketList[] = array(
-				'bucket' => $bucket,
-				'location' => $location,
-				'url_prefix' => 'http://'.static::getEndpointByLocation($location).'/'.$bucket.'/'
-			);
-
+			}
+			catch (\Exception $exception)
+			{
+				continue;
+			}
 		}
 
 		return $bucketList;
@@ -258,7 +269,11 @@ class S3AssetSourceType extends BaseAssetSourceType
 			{
 				$this->_s3->getObject($settings->bucket, $this->_getPathPrefix().$indexEntryModel->uri, $targetPath);
 				clearstatcache();
-				list ($fileModel->width, $fileModel->height) = getimagesize($targetPath);
+
+				list ($width, $height) = ImageHelper::getImageSize($targetPath);
+
+				$fileModel->width = $width;
+				$fileModel->height = $height;
 
 				// Store the local source or delete - maxCacheCloudImageSize is king.
 				craft()->assetTransforms->storeLocalSource($targetPath, $targetPath);
@@ -441,7 +456,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 		$fileName = AssetsHelper::cleanAssetName($fileName);
 		$extension = IOHelper::getExtension($fileName);
 
-		if (! IOHelper::isExtensionAllowed($extension))
+		if (!IOHelper::isExtensionAllowed($extension))
 		{
 			throw new Exception(Craft::t('This file type is not allowed'));
 		}
@@ -543,16 +558,32 @@ class S3AssetSourceType extends BaseAssetSourceType
 			{
 				$transforms = craft()->assetTransforms->getAllCreatedTransformsForFile($file);
 
+				$destination = clone $file;
+				$destination->filename = $fileName;
+
 				// Move transforms
 				foreach ($transforms as $index)
 				{
-					$this->copyTransform($file, $targetFolder, $index, $index);
-					$this->deleteSourceFile($file->getFolder()->path.craft()->assetTransforms->getTransformSubpath($file, $index));
+					// For each file, we have to have both the source and destination
+					// for both files and transforms, so we can reliably move them
+					$destinationIndex = clone $index;
+
+					if (!empty($index->filename))
+					{
+						$destinationIndex->filename = $fileName;
+						craft()->assetTransforms->storeTransformIndexData($destinationIndex);
+					}
+
+					$from = $file->getFolder()->path.craft()->assetTransforms->getTransformSubpath($file, $index);
+					$to   = $targetFolder->path.craft()->assetTransforms->getTransformSubpath($destination, $destinationIndex);
+
+					$this->copySourceFile($from, $to);
+					$this->deleteSourceFile($from);
 				}
 			}
 			else
 			{
-				craft()->assetTransforms->deleteCreatedTransformsForFile($file);
+				craft()->assetTransforms->deleteAllTransformData($file);
 			}
 		}
 
@@ -688,6 +719,11 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 */
 	protected function copySourceFile($sourceUri, $targetUri)
 	{
+		if ($sourceUri == $targetUri)
+		{
+			return true;
+		}
+
 		$bucket = $this->getSettings()->bucket;
 
 		return (bool) @$this->_s3->copyObject($bucket, $sourceUri, $bucket, $targetUri, \S3::ACL_PUBLIC_READ);
@@ -713,6 +749,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 		if (is_null($this->_s3))
 		{
 			$this->_s3 = new \S3($settings->keyId, $settings->secret);
+			$this->_s3->setExceptions(true);
 		}
 
 		\S3::setAuth($settings->keyId, $settings->secret);

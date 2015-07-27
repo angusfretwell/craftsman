@@ -27,7 +27,14 @@ class Parameter
     {
         if (method_exists($this->rfp, 'getTypehintText')) {
             // Available in HHVM
-            return $this->rfp->getTypehintText();
+            $typehint = $this->rfp->getTypehintText();
+
+            // not exhaustive, but will do for now
+            if (in_array($typehint, array('int', 'integer', 'float', 'string', 'bool', 'boolean'))) {
+                return '';
+            }
+
+            return $typehint;
         }
 
         if ($this->rfp->isArray()) {
@@ -68,5 +75,17 @@ class Parameter
         }
 
         return $name;
+    }
+
+
+    /**
+     * Variadics only introduced in 5.6
+     */
+    public function isVariadic()
+    {
+        if (version_compare(PHP_VERSION, '5.6.0') < 0) {
+            return false;
+        }
+        return $this->rfp->isVariadic();
     }
 }

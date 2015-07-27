@@ -80,6 +80,21 @@ class ErrorHandler extends \CErrorHandler
 	 */
 	protected function handleException($exception)
 	{
+		// Do some logging.
+		if ($exception instanceof \HttpException)
+		{
+			$status = $exception->status ? $exception->$status : '';
+			Craft::log(($status ? $status.' - ' : '').$exception->getMessage(), LogLevel::Warning);
+		}
+		else if ($exception instanceof \Twig_Error)
+		{
+			Craft::log($exception->getRawMessage(), LogLevel::Error);
+		}
+		else
+		{
+			Craft::log($exception->getMessage(), LogLevel::Error);
+		}
+
 		// Log MySQL deadlocks
 		if ($exception instanceof \CDbException && strpos($exception->getMessage(), 'Deadlock') !== false)
 		{
@@ -229,6 +244,24 @@ class ErrorHandler extends \CErrorHandler
 		}
 
 		$this->render('error', $data);
+	}
+
+	/**
+	 * Renders the exception information. This method will display information from current {@link error} value.
+	 */
+	protected function renderError()
+	{
+		// This could be an exception because handleException can call renderError.
+		$exception = $this->getException();
+
+		// If the exception exists, and it's an instance of HttpException or devMode isn't enabled
+		// set the errorAction to our TemplatesController->renderError().
+		if (!YII_DEBUG || $exception instanceof HttpException)
+		{
+			$this->errorAction = 'templates/renderError';
+		}
+
+		parent::renderError();
 	}
 
 	/**

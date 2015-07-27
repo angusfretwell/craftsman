@@ -35,6 +35,18 @@ class FieldModel extends BaseComponentModel
 	}
 
 	/**
+	 * Returns whether this field has a column in the content table.
+	 *
+	 * @return bool
+	 */
+	public function hasContentColumn()
+	{
+		$fieldType = $this->getFieldType();
+
+		return ($fieldType && $fieldType->defineContentAttribute());
+	}
+
+	/**
 	 * Returns the field type this field is using.
 	 *
 	 * @return BaseFieldType|null
@@ -62,7 +74,7 @@ class FieldModel extends BaseComponentModel
 	/**
 	 * Returns the field's group.
 	 *
-	 * @return EntryUserModel
+	 * @return UserGroupModel
 	 */
 	public function getGroup()
 	{
@@ -89,6 +101,7 @@ class FieldModel extends BaseComponentModel
 			'translatable' => AttributeType::Bool,
 
 			'oldHandle'    => AttributeType::String,
+			'columnPrefix' => AttributeType::String,
 		));
 	}
 }

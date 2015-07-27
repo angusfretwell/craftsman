@@ -127,7 +127,7 @@ class ExpectationDirector
     }
 
     /**
-     * Attempt to locate an expecatation matching the provided args
+     * Attempt to locate an expectation matching the provided args
      *
      * @param array $args
      * @return mixed
@@ -200,5 +200,4 @@ class ExpectationDirector
     {
         return count($this->getExpectations());
     }
-
 }

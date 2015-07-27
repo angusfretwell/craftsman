@@ -182,6 +182,32 @@ interface IAction
 	public function getController();
 }
 
+
+/**
+ * IWebServiceProvider interface may be implemented by Web service provider classes.
+ *
+ * If this interface is implemented, the provider instance will be able
+ * to intercept the remote method invocation (e.g. for logging or authentication purpose).
+ * @author Qiang Xue <qiang.xue@gmail.com>
+ * @package system.base
+ * @since 1.0
+ */
+interface IWebServiceProvider
+{
+	/**
+	 * This method is invoked before the requested remote method is invoked.
+	 * @param CWebService $service the currently requested Web service.
+	 * @return boolean whether the remote method should be executed.
+	 */
+	public function beforeWebMethod($service);
+	/**
+	 * This method is invoked after the requested remote method is invoked.
+	 * @param CWebService $service the currently requested Web service.
+	 */
+	public function afterWebMethod($service);
+}
+
+
 /**
  * IViewRenderer interface is implemented by a view renderer class.
  *
@@ -324,7 +350,7 @@ interface IAuthManager
 	 * Creates an authorization item.
 	 * An authorization item represents an action permission (e.g. creating a post).
 	 * It has three types: operation, task and role.
-	 * Authorization items form a hierarchy. Higher level items inheirt permissions representing
+	 * Authorization items form a hierarchy. Higher level items inherit permissions representing
 	 * by lower level items.
 	 * @param string $name the item name. This must be a unique identifier.
 	 * @param integer $type the item type (0: operation, 1: task, 2: role).

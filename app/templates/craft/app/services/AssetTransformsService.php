@@ -4,12 +4,13 @@ namespace Craft;
 /**
  * Class AssetTransformsService
  *
- * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
- * @package   craft.app.services
- * @since     1.0
+ * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @copyright  Copyright (c) 2014, Pixel & Tonic, Inc.
+ * @license    http://buildwithcraft.com/license Craft License Agreement
+ * @see        http://buildwithcraft.com
+ * @package    craft.app.services
+ * @since      1.0
+ * @deprecated This class will have several breaking changes in Craft 3.0.
  */
 class AssetTransformsService extends BaseApplicationComponent
 {
@@ -132,7 +133,7 @@ class AssetTransformsService extends BaseApplicationComponent
 
 			if (!$transformRecord)
 			{
-				throw new Exception(Craft::t('Can’t find the transform with ID “{id}”', array('id' => $transform->id)));
+				throw new Exception(Craft::t('Can’t find the transform with ID “{id}”.', array('id' => $transform->id)));
 			}
 		}
 		else
@@ -382,6 +383,7 @@ class AssetTransformsService extends BaseApplicationComponent
 				->where('fileId = :fileId', array(':fileId' => $file->id))
 				->andWhere(array('in', 'location', $possibleLocations))
 				->andWhere('id <> :indexId', array(':indexId' => $index->id))
+				->andWhere('fileExists = 1')
 				->queryAll();
 
 			foreach ($results as $result)
@@ -391,7 +393,7 @@ class AssetTransformsService extends BaseApplicationComponent
 				if ($transform->isNamedTransform() && $result['dateIndexed'] < $transform->dimensionChangeTime)
 				{
 					$source->deleteTransform($file, new AssetTransformIndexModel($result));
-					$this->deleteTransform($result['id']);
+					$this->deleteTransformIndex($result['id']);
 				}
 				// Any other should do.
 				else
@@ -465,6 +467,10 @@ class AssetTransformsService extends BaseApplicationComponent
 		// These do not really belong here.
 		unset($values['detectedFormat']);
 		unset($values['transform']);
+
+		// Let DbCommand take care of the audit columns.
+		unset($values['dateCreated']);
+		unset($values['dateUpdated']);
 
 		if (!empty($index->id))
 		{
@@ -597,6 +603,7 @@ class AssetTransformsService extends BaseApplicationComponent
 	{
 		craft()->db->createCommand()->delete('assettransformindex', 'id = :id', array(':id' => $indexId));
 	}
+
 	/**
 	 * Get a thumb server path by file model and size.
 	 *
@@ -618,7 +625,7 @@ class AssetTransformsService extends BaseApplicationComponent
 		{
 			$imageSource = $this->getLocalImageSource($fileModel);
 
-			craft()->images->loadImage($imageSource)
+			craft()->images->loadImage($imageSource, $size, $size)
 				->scaleAndCrop($size, $size)
 				->saveAs($thumbPath);
 
@@ -663,6 +670,7 @@ class AssetTransformsService extends BaseApplicationComponent
 
 			$this->storeLocalSource($localCopy, $imageSourcePath);
 			$this->queueSourceForDeletingIfNecessary($imageSourcePath);
+			IOHelper::deleteFile($localCopy, true);
 		}
 
 		$file->setTransformSource($imageSourcePath);
@@ -701,6 +709,19 @@ class AssetTransformsService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Delete all image sources queued up for deletion.
+	 *
+	 * @return null
+	 */
+	public function deleteQueuedSourceFiles()
+	{
+		foreach ($this->_sourcesToBeDeleted as $source)
+		{
+			IOHelper::deleteFile($source, true);
+		}
+	}
+
+	/**
 	 * Store a local image copy to a destination path.
 	 *
 	 * @param $localCopy
@@ -713,9 +734,13 @@ class AssetTransformsService extends BaseApplicationComponent
 		$maxCachedImageSize = $this->getCachedCloudImageSize();
 
 		// Resize if constrained by maxCachedImageSizes setting
-		if ($maxCachedImageSize > 0)
+		if ($maxCachedImageSize > 0 && ImageHelper::isImageManipulatable($localCopy))
 		{
-			craft()->images->loadImage($localCopy)->scaleToFit($maxCachedImageSize, $maxCachedImageSize)->setQuality(100)->saveAs($destination);
+
+			craft()->images->loadImage($localCopy, $maxCachedImageSize, $maxCachedImageSize)
+				->scaleToFit($maxCachedImageSize, $maxCachedImageSize)
+				->setQuality(100)
+				->saveAs($destination);
 
 			if ($localCopy != $destination)
 			{
@@ -741,15 +766,15 @@ class AssetTransformsService extends BaseApplicationComponent
 	 */
 	public function detectAutoTransformFormat(AssetFileModel $file)
 	{
-		if (in_array($file->getExtension(), ImageHelper::getWebSafeFormats()))
+		if (in_array(mb_strtolower($file->getExtension()), ImageHelper::getWebSafeFormats()))
 		{
 			return $file->getExtension();
 		}
 		else if ($file->kind == "image")
 		{
 
-			// The only reasonable way to check for transparency is with Imagick
-			// If Imagick is not present, then we fallback to jpg
+			// The only reasonable way to check for transparency is with Imagick. If Imagick is not present, then
+			// we fallback to jpg
 			if (craft()->images->isGd() || !method_exists("Imagick", "getImageAlphaChannel"))
 			{
 				return 'jpg';
@@ -1012,7 +1037,7 @@ class AssetTransformsService extends BaseApplicationComponent
 		$imageSource = $file->getTransformSource();
 		$quality = $transform->quality ? $transform->quality : craft()->config->get('defaultImageQuality');
 
-		$image = craft()->images->loadImage($imageSource);
+		$image = craft()->images->loadImage($imageSource, $transform->width, $transform->height);
 		$image->setQuality($quality);
 
 		switch ($transform->mode)
@@ -1063,6 +1088,11 @@ class AssetTransformsService extends BaseApplicationComponent
 		// For non-web-safe formats we go with jpg.
 		if (!in_array(mb_strtolower(IOHelper::getExtension($file->filename)), ImageHelper::getWebSafeFormats()))
 		{
+			if ($file->getExtension() == 'svg' && craft()->images->isImagick())
+			{
+				return 'png';
+			}
+
 			return 'jpg';
 		}
 		else

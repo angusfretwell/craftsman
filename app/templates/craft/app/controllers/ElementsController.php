@@ -14,7 +14,7 @@ namespace Craft;
  * @package   craft.app.controllers
  * @since     1.0
  */
-class ElementsController extends BaseController
+class ElementsController extends BaseElementsController
 {
 	// Public Methods
 	// =========================================================================
@@ -26,11 +26,9 @@ class ElementsController extends BaseController
 	 */
 	public function actionGetModalBody()
 	{
-		$this->requireAjaxRequest();
-
 		$sourceKeys = craft()->request->getParam('sources');
-		$context = craft()->request->getParam('context');
-		$elementType = $this->_getElementType();
+		$elementType = $this->getElementType();
+		$context = $this->getContext();
 
 		if (is_array($sourceKeys))
 		{
@@ -60,82 +58,6 @@ class ElementsController extends BaseController
 	}
 
 	/**
-	 * Renders and returns the list of elements in an ElementIndex.
-	 *
-	 * @return bool
-	 */
-	public function actionGetElements()
-	{
-		$context = craft()->request->getParam('context');
-		$elementType = $this->_getElementType();
-		$sourceKey = craft()->request->getParam('source');
-		$viewState = craft()->request->getParam('viewState');
-		$disabledElementIds = craft()->request->getParam('disabledElementIds', array());
-
-		if (empty($viewState['mode']))
-		{
-			$viewState['mode'] = 'table';
-		}
-
-		$baseCriteria = craft()->request->getPost('criteria');
-		$criteria = craft()->elements->getCriteria($elementType->getClassHandle(), $baseCriteria);
-		$criteria->limit = 50;
-
-		if ($sourceKey)
-		{
-			$source = $elementType->getSource($sourceKey, $context);
-
-			if (!$source)
-			{
-				return false;
-			}
-
-			if (!empty($source['criteria']))
-			{
-				$criteria->setAttributes($source['criteria']);
-			}
-		}
-		else
-		{
-			$source = null;
-		}
-
-		if ($search = craft()->request->getParam('search'))
-		{
-			$criteria->search = $search;
-		}
-
-		if ($offset = craft()->request->getParam('offset'))
-		{
-			$criteria->offset = $offset;
-		}
-
-		$html = $elementType->getIndexHtml($criteria, $disabledElementIds, $viewState, $sourceKey, $context);
-
-		$totalElementsInBatch = count($criteria);
-		$totalVisible = $criteria->offset + $totalElementsInBatch;
-
-		if ($criteria->limit)
-		{
-			// We'll risk a pointless additional Ajax request in the unlikely event that there are exactly a factor of
-			// 50 elements, rather than running two separate element queries
-			$more = ($totalElementsInBatch == $criteria->limit);
-		}
-		else
-		{
-			$more = false;
-		}
-
-		$this->returnJson(array(
-			'html'         => $html,
-			'headHtml'     => craft()->templates->getHeadHtml(),
-			'footHtml'     => craft()->templates->getFootHtml(),
-			'totalVisible' => $totalVisible,
-			'more'         => $more,
-		));
-	}
-
-	/**
 	 * Returns the HTML for an element editor HUD.
 	 *
 	 * @throws HttpException
@@ -143,8 +65,6 @@ class ElementsController extends BaseController
 	 */
 	public function actionGetEditorHtml()
 	{
-		$this->requireAjaxRequest();
-
 		$elementId = craft()->request->getRequiredPost('elementId');
 		$localeId = craft()->request->getPost('locale');
 		$elementTypeClass = craft()->elements->getElementTypeById($elementId);
@@ -168,8 +88,6 @@ class ElementsController extends BaseController
 	 */
 	public function actionSaveElement()
 	{
-		$this->requireAjaxRequest();
-
 		$elementId = craft()->request->getRequiredPost('elementId');
 		$localeId = craft()->request->getRequiredPost('locale');
 		$elementTypeClass = craft()->elements->getElementTypeById($elementId);
@@ -205,8 +123,9 @@ class ElementsController extends BaseController
 		if ($elementType->saveElement($element, $params))
 		{
 			$this->returnJson(array(
-				'success'  => true,
-				'newTitle' => (string) $element
+				'success'   => true,
+				'newTitle'  => (string) $element,
+				'cpEditUrl' => $element->getCpEditUrl(),
 			));
 		}
 		else
@@ -215,27 +134,47 @@ class ElementsController extends BaseController
 		}
 	}
 
-	// Private Methods
-	// =========================================================================
-
 	/**
-	 * Returns the element type based on the posted element type class.
+	 * Returns the HTML for a Categories field input, based on a given list of selected category IDs.
 	 *
-	 * @throws Exception
-	 * @return BaseElementType
+	 * @return null
 	 */
-	private function _getElementType()
+	public function actionGetCategoriesInputHtml()
 	{
-		$class = craft()->request->getRequiredParam('elementType');
-		$elementType = craft()->elements->getElementType($class);
+		$categoryIds = craft()->request->getParam('categoryIds', array());
 
-		if (!$elementType)
+		// Fill in the gaps
+		$categoryIds = craft()->categories->fillGapsInCategoryIds($categoryIds);
+
+		if ($categoryIds)
 		{
-			throw new Exception(Craft::t('No element type exists with the class “{class}”', array('class' => $class)));
+			$criteria = craft()->elements->getCriteria(ElementType::Category);
+			$criteria->id = $categoryIds;
+			$criteria->locale = craft()->request->getParam('locale');
+			$criteria->status = null;
+			$criteria->localeEnabled = null;
+			$criteria->limit = craft()->request->getParam('limit');
+			$categories = $criteria->find();
+		}
+		else
+		{
+			$categories = array();
 		}
 
-		return $elementType;
+		$html = craft()->templates->render('_components/fieldtypes/Categories/input', array(
+			'elements'       => $categories,
+			'id'             => craft()->request->getParam('id'),
+			'name'           => craft()->request->getParam('name'),
+			'selectionLabel' => craft()->request->getParam('selectionLabel'),
+		));
+
+		$this->returnJson(array(
+			'html' => $html,
+		));
 	}
+
+	// Private Methods
+	// =========================================================================
 
 	/**
 	 * Returns the editor HTML for a given element.
@@ -289,9 +228,10 @@ class ElementsController extends BaseController
 			'<input type="hidden" name="locale" value="'.$element->locale.'">' .
 			'<div>' .
 			craft()->templates->namespaceInputs($elementType->getEditorHtml($element)) .
-			'</div>' .
-			craft()->templates->getHeadHtml() .
-			craft()->templates->getFootHtml();
+			'</div>';
+
+		$response['headHtml'] = craft()->templates->getHeadHtml();
+		$response['footHtml'] = craft()->templates->getFootHtml();
 
 		$this->returnJson($response);
 	}

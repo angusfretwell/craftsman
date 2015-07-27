@@ -51,22 +51,9 @@ class PlainTextFieldType extends BaseFieldType
 		{
 			$columnType = ColumnType::Text;
 		}
-		// TODO: MySQL specific
-		else if ($maxLength <= 255)
-		{
-			$columnType = ColumnType::Varchar;
-		}
-		else if ($maxLength <= 65535)
-		{
-			$columnType = ColumnType::Text;
-		}
-		else if ($maxLength <= 16777215)
-		{
-			$columnType = ColumnType::MediumText;
-		}
 		else
 		{
-			$columnType = ColumnType::LongText;
+			$columnType = DbHelper::getTextualColumnTypeByContentLength($maxLength);
 		}
 
 		return array(AttributeType::String, 'column' => $columnType, 'maxLength' => $maxLength);

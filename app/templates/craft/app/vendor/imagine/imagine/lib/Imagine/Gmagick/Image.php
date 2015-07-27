@@ -70,7 +70,7 @@ final class Image extends AbstractImage
      */
     public function __destruct()
     {
-        if (null !== $this->gmagick && $this->gmagick instanceof \Gmagick) {
+        if ($this->gmagick instanceof \Gmagick) {
             $this->gmagick->clear();
             $this->gmagick->destroy();
         }
@@ -88,6 +88,8 @@ final class Image extends AbstractImage
 
     /**
      * {@inheritdoc}
+     *
+     * @return ImageInterface
      */
     public function copy()
     {
@@ -96,6 +98,8 @@ final class Image extends AbstractImage
 
     /**
      * {@inheritdoc}
+     *
+     * @return ImageInterface
      */
     public function crop(PointInterface $start, BoxInterface $size)
     {
@@ -114,6 +118,8 @@ final class Image extends AbstractImage
 
     /**
      * {@inheritdoc}
+     *
+     * @return ImageInterface
      */
     public function flipHorizontally()
     {
@@ -128,6 +134,8 @@ final class Image extends AbstractImage
 
     /**
      * {@inheritdoc}
+     *
+     * @return ImageInterface
      */
     public function flipVertically()
     {
@@ -142,11 +150,18 @@ final class Image extends AbstractImage
 
     /**
      * {@inheritdoc}
+     *
+     * @return ImageInterface
      */
     public function strip()
     {
         try {
-            $this->profile($this->palette->profile());
+            try {
+                $this->profile($this->palette->profile());
+            } catch (\Exception $e) {
+                // here we discard setting the profile as the previous incorporated profile
+                // is corrupted, let's now strip the image
+            }
             $this->gmagick->stripimage();
         } catch (\GmagickException $e) {
             throw new RuntimeException('Strip operation failed', $e->getCode(), $e);
@@ -157,6 +172,8 @@ final class Image extends AbstractImage
 
     /**
      * {@inheritdoc}
+     *
+     * @return ImageInterface
      */
     public function paste(ImageInterface $image, PointInterface $start)
     {
@@ -179,6 +196,8 @@ final class Image extends AbstractImage
 
     /**
      * {@inheritdoc}
+     *
+     * @return ImageInterface
      */
     public function resize(BoxInterface $size, $filter = ImageInterface::FILTER_UNDEFINED)
     {
@@ -216,6 +235,8 @@ final class Image extends AbstractImage
 
     /**
      * {@inheritdoc}
+     *
+     * @return ImageInterface
      */
     public function rotate($angle, ColorInterface $background = null)
     {
@@ -301,6 +322,8 @@ final class Image extends AbstractImage
 
     /**
      * {@inheritdoc}
+     *
+     * @return ImageInterface
      */
     public function save($path = null, array $options = array())
     {
@@ -323,6 +346,8 @@ final class Image extends AbstractImage
 
     /**
      * {@inheritdoc}
+     *
+     * @return ImageInterface
      */
     public function show($format, array $options = array())
     {
@@ -406,8 +431,11 @@ final class Image extends AbstractImage
     public function getSize()
     {
         try {
+            $i = $this->gmagick->getimageindex();
+            $this->gmagick->setimageindex(0); //rewind
             $width  = $this->gmagick->getimagewidth();
             $height = $this->gmagick->getimageheight();
+            $this->gmagick->setimageindex($i);
         } catch (\GmagickException $e) {
             throw new RuntimeException('Get size operation failed', $e->getCode(), $e);
         }
@@ -417,6 +445,8 @@ final class Image extends AbstractImage
 
     /**
      * {@inheritdoc}
+     *
+     * @return ImageInterface
      */
     public function applyMask(ImageInterface $mask)
     {
@@ -459,6 +489,8 @@ final class Image extends AbstractImage
 
     /**
      * {@inheritdoc}
+     *
+     * @return ImageInterface
      */
     public function fill(FillInterface $fill)
     {

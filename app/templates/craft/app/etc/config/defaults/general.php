@@ -17,17 +17,8 @@ return array(
 	'actionTrigger' => 'actions',
 
 	/**
-	 * The URI Craft should redirect to when user account activation fails.  Note that this only affects front-end site
+	 * The URI Craft should use upon successfully activating a user. Note that this only affects front-end site
 	 * requests.
-	 *
-	 * This can be set to a string or an array with locale IDs used as the keys, if you want to set it on a per-locale
-	 * basis.
-	 */
-	'activateAccountFailurePath' => '',
-
-	/**
-	 * The URI Craft should redirect to when account activation is successful. Note that this only affects front-end
-	 * site requests.
 	 *
 	 * This can be set to a string or an array with locale IDs used as the keys, if you want to set it on a per-locale
 	 * basis.
@@ -41,13 +32,20 @@ return array(
 
 	/**
 	 * Whether or not to allow auto-updating in Craft. Does not affect manual updates.
+	 *
+	 * Possible values are:
+	 *
+	 * - `true` (all updates are allowed)
+	 * - `'minor-only'` (only minor and build updates are allowed)
+	 * - `'build-only'` (only build updates are allowed)
+	 * - `false` (no updates are allowed)
 	 */
 	'allowAutoUpdates' => true,
 
 	/**
 	 * A list of file extensions that Craft will allow when a user is uploading files.
 	 */
-	'allowedFileExtensions' => '7z,aiff,asf,avi,bmp,csv,doc,docx,fla,flv,gif,gz,gzip,htm,html,jpeg,jpg,js,mid,mov,mp3,mp4,m4a,m4v,mpc,mpeg,mpg,ods,odt,ogg,ogv,pdf,png,ppt,pptx,pxd,qt,ram,rar,rm,rmi,rmvb,rtf,sdc,sitd,svg,swf,sxc,sxw,tar,tgz,tif,tiff,txt,vsd,wav,webm,wma,wmv,xls,xlsx,zip',
+	'allowedFileExtensions' => '7z,aiff,asf,avi,bmp,csv,doc,docx,fla,flv,gif,gz,gzip,htm,html,jpeg,jpg,js,mid,mov,mp3,mp4,m4a,m4v,mpc,mpeg,mpg,ods,odt,ogg,ogv,pdf,png,potx,pps,ppsm,ppsx,ppt,pptm,pptx,ppz,pxd,qt,ram,rar,rm,rmi,rmvb,rtf,sdc,sitd,svg,swf,sxc,sxw,tar,tgz,tif,tiff,txt,vsd,wav,webm,wma,wmv,xls,xlsx,zip',
 
 	/**
 	 * Whether or not to allow uppercase letters in the slug. Defaults to false.
@@ -55,9 +53,9 @@ return array(
 	'allowUppercaseInSlug' => false,
 
 	/**
-	 * If this is set, Craft will call Yii’s CApplication->setId method (http://www.yiiframework.com/doc/api/1.1/CApplication#setId-detail) to explicitly
+	 * If this is set, Craft will call Yii’s CApplication::setId() method (http://www.yiiframework.com/doc/api/1.1/CApplication#setId-detail) to explicitly
 	 * set an application ID for Craft instead of using it’s own method of generating an ID based on a hash of
-	 * CApplication->getBasePath(). Yii’s default method causes issues with deployment services like Capistrano
+	 * CApplication::getBasePath(). Yii’s default method causes issues with deployment services like Capistrano
 	 * where deploying will destroy any active user sessions.
 	 *
 	 * The value is itself is not important as long as it is very hard to guess and is NOT based on the the absolute path
@@ -119,6 +117,12 @@ return array(
 	'cacheMethod' => 'file',
 
 	/**
+	 * If set to true, any uploaded file names will have multi-byte characters (Chinese, Japanese, etc.) stripped
+	 * and any high-ASCII characters converted to their low ASCII counterparts (i.e. ñ → n).
+	 */
+	'convertFilenamesToAscii' => false,
+
+	/**
 	 * The amount of time a user must wait before re-attempting to log in after their account is locked due to too many
 	 * failed login attempts.
 	 *
@@ -152,6 +156,12 @@ return array(
 	 * for all subdomains, for example, you could set this to '.domain.com'.
 	 */
 	'defaultCookieDomain' => '',
+
+	/**
+	 * Defines the default language the control panel should get set to if the logged-in user doesn't have a
+	 * preferred language set.
+	 */
+	'defaultCpLanguage' => '',
 
 	/**
 	 * The default permissions Craft will use when creating a file on the file system.
@@ -195,15 +205,16 @@ return array(
 	'enableCsrfProtection' => false,
 
 	/**
+	 * Whether to enable Craft's template `{% cache %}` tag on a global basis.
+	 *
+	 * @see http://buildwithcraft.com/docs/templating/cache
+	 */
+	'enableTemplateCaching' => true,
+
+	/**
 	 * Any environment-specific variables that should be swapped out in URL and Path settings.
-	 *
-	 * For example if you set it to:
-	 *
-	 *     array(
-	 *         'siteUrl' => 'http://example.com/'
-	 *     )
-	 *
-	 * ...then you would be able to use "{siteUrl}" in your Site URL setting or the URL settings for your Asset sources.
+	 * See http://buildwithcraft.com/docs/multi-environment-configs#environment-specific-variables for a full explanation
+	 * of this setting.
 	 */
 	'environmentVariables' => array(),
 
@@ -250,18 +261,34 @@ return array(
 	'invalidLoginWindowDuration' => 'PT1H',
 
 	/**
-	 * Whether the site is currently online or not. If set to false or true, will take precedence over what is set in
-	 * Settings->General->System Status in the CP.
+	 * The URI Craft should redirect to when user token validation fails. A token is used on things like setting and
+	 * resetting user account passwords.  Note that this only affects front-end site requests.
+	 *
+	 * This can be set to a string or an array with locale IDs used as the keys, if you want to set it on a per-locale
+	 * basis.
 	 */
-	'isSystemOn' => '',
+	'invalidUserTokenPath' => '',
+
+	/**
+	 * Whether the site is currently online or not. If set to `true` or `false`, it will take precedence over the
+	 * System Status setting in Settings → General.
+	 */
+	'isSystemOn' => null,
 
 	/**
 	 * If set to true, the auto-generated slugs for an entry will strip any multi-byte characters (Chinese, Japanese, etc.)
-	 * and attempt to convert any high-ASCII to their low ASCII counterparts (i.e. ñ => n).
+	 * and attempt to convert any high-ASCII to their low ASCII counterparts (i.e. ñ → n).
 	 *
 	 * Note that this only affects the JavaScript auto-generated slugs and they still can be manually entered in the slug.
 	 */
 	'limitAutoSlugsToAscii' => false,
+
+	/**
+	 * The method that is used to dump logging context information. Defaults to `var_export`. If you experience circular
+	 * reference errors, you can change it to `print_r`. Any kind of callable method (static, user defined lambda, etc.)
+	 * could also be used.
+	 */
+	'logDumpMethod' => 'var_export',
 
 	/**
 	 * The URI Craft should use for user login.  Note that this only affects front-end site requests.
@@ -328,7 +355,7 @@ return array(
 	 * might be stored with memcache or the like. If it does, Craft will leave it alone; otherwise Craft will override
 	 * it.
 	 */
-	'overridePhpSessionLocation' => 'auto',
+	'overridePhpSessionLocation' => false,
 
 	/**
 	 * The string preceding a number which Craft will look for when determining if the current request is for a
@@ -341,6 +368,13 @@ return array(
 	 * unzipping and updating.
 	 */
 	'phpMaxMemoryLimit' => '256M',
+
+	/**
+	 * The name of the PHP session cookie.
+	 *
+	 * @see https://php.net/manual/en/function.session-name.php
+	 */
+	'phpSessionName' => 'CraftSessionId',
 
 	/**
 	 * The path that users should be redirected to after logging in from the Control Panel.
@@ -357,6 +391,11 @@ return array(
 	 * setting) when they are already logged in.
 	 */
 	'postLoginRedirect' => '',
+
+	/**
+	 * Whether the X-Powered-By header should be sent on each request, helping clients identify that the site is powered by Craft.
+	 */
+	'sendPoweredByHeader' => true,
 
 	/**
 	 * The template path segment prefix that should be used to identify "private" templates -- templates that aren't
@@ -414,6 +453,22 @@ return array(
 	'restoreDbOnUpdateFailure' => true,
 
 	/**
+	 * Whether Craft should rotate images according to their EXIF data on upload.
+	 */
+	'rotateImagesOnUploadByExifData' => true,
+
+	/**
+	 * Whether Craft should run pending background tasks automatically over HTTP requests, or leave it up to something
+	 * like a Cron job to call index.php/actions/tasks/runPendingTasks at a regular interval.
+	 *
+	 * This setting should be disabled for servers running Win32, or with Apache’s mod_deflate/mod_gzip installed,
+	 * where PHP’s [flush()](http://php.net/manual/en/function.flush.php) method won’t work.
+	 *
+	 * If disabled, an alternate task running trigger *must* be set up separately.
+	 */
+	'runTasksAutomatically' => true,
+
+	/**
 	 * Words that should be ignored when indexing search keywords and preparing search terms to be matched against the
 	 * keyword index.
 	 */
@@ -437,7 +492,15 @@ return array(
 	'setPasswordSuccessPath' => '',
 
 	/**
-	 * The base URL to the site. If this is set, Craft will use it instead of the site URL defined in Settings->General.
+	 * The name of the site. If set, it will take precedence over the Site Name setting in Settings → General.
+	 *
+	 * This can be set to a string or an array with locale IDs used as the keys, if you want to set it on a per-locale
+	 * basis.
+	 */
+	'siteName' => null,
+
+	/**
+	 * The base URL to the site. If set, it will take precedence over the Site URL setting in Settings → General.
 	 *
 	 * This can be set to a string or an array with locale IDs used as the keys, if you want to set it on a per-locale
 	 * basis.
@@ -450,9 +513,17 @@ return array(
 	'slugWordSeparator' => '-',
 
 	/**
-	 * Configures Craft to send all system emails to a single email address, for testing purposes.
+	 * Configures Craft to send all system emails to a single email address, or an array of email addresses for testing
+	 * purposes.
 	 */
 	'testToEmailAddress' => '',
+
+	/**
+	 * The timezone of the site. If set, it will take precedence over the Timezone setting in Settings → General.
+	 *
+	 * This can be set to one of PHP’s supported timezones (http://php.net/manual/en/timezones.php).
+	 */
+	'timezone' => null,
 
 	/**
 	 * Tells Craft whether to surround all translatable strings with “@” symbols, to help find any strings that are not
@@ -486,6 +557,15 @@ return array(
 	 * and cache the test results for 24 hours.
 	 */
 	'usePathInfo' => 'auto',
+
+	/**
+	 * Determines whether Craft will set the "secure" flag when saving cookies when calling `craft()->userSession->saveCookie()`.
+	 *
+	 * Valid values are `true`, `false`, and `'auto'`. Defaults to `'auto'`, which will set the secure flag if the page
+	 * you're currently accessing is over `https://`. `true` will always set the flag, regardless of protocol and `false`
+	 * will never automatically set the flag.
+	 */
+	'useSecureCookies' => 'auto',
 
 	/**
 	 * The amount of time a user stays logged in.

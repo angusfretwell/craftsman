@@ -35,11 +35,19 @@ interface MockInterface
     /**
      * Set expected method calls
      *
-     * @param mixed
+     * @param mixed ...
      * @return \Mockery\Expectation
      */
     public function shouldReceive();
-    
+
+    /**
+     * Shortcut method for setting an expectation that a method should not be called.
+     *
+     * @param mixed ...
+     * @return \Mockery\Expectation
+     */
+    public function shouldNotReceive();
+
     /**
      * Allows additional methods to be mocked that do not explicitly exist on mocked class
      * @param String $method name of the method to be mocked
@@ -48,17 +56,44 @@ interface MockInterface
 
     /**
      * Set mock to ignore unexpected methods and return Undefined class
-     * @param mixed $returnValue the default return value for calls to missing functions on this mock 
+     * @param mixed $returnValue the default return value for calls to missing functions on this mock
      * @return Mock
      */
     public function shouldIgnoreMissing($returnValue = null);
 
     /**
-     * Set mock to defer unexpected methods to it's parent if possible
+     * @return Mock
+     */
+    public function shouldAllowMockingProtectedMethods();
+
+    /**
+     * Set mock to defer unexpected methods to its parent if possible
      *
      * @return Mock
      */
     public function shouldDeferMissing();
+    
+    /**
+     * Set mock to defer unexpected methods to its parent if possible
+     *
+     * @return Mock
+     */
+    public function makePartial();
+
+    /**
+     * @param $method
+     * @param null $args
+     * @return \Mockery\Expectation
+     */
+    public function shouldHaveReceived($method, $args = null);
+
+    /**
+     * @param $method
+     * @param null $args
+     * @return null
+     */
+    public function shouldNotHaveReceived($method, $args = null);
+
 
     /**
      * In the event shouldReceive() accepting an array of methods/returns
@@ -190,4 +225,18 @@ interface MockInterface
      */
     public function mockery_getName();
 
+    /**
+     * @return array
+     */
+    public function mockery_getMockableProperties();
+
+    /**
+     * @return string[]
+     */
+    public function mockery_getMockableMethods();
+
+    /**
+     * @return bool
+     */
+    public function mockery_isAnonymous();
 }

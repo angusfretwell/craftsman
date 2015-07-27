@@ -76,18 +76,9 @@ class ConfigService extends BaseApplicationComponent
 			$this->_loadConfigFile($file);
 		}
 
-		// If we're looking for devMode and we it looks like we're on the installer and it's a CP request, pretend like
-		// devMode is turned on.
-		if (!craft()->isConsole() && $item == 'devMode' && craft()->request->getSegment(1) == 'install' && craft()->request->isCpRequest())
+		if ($this->exists($item, $file))
 		{
-			return true;
-		}
-		else
-		{
-			if ($this->exists($item, $file))
-			{
-				return $this->_loadedConfigFiles[$file][$item];
-			}
+			return $this->_loadedConfigFiles[$file][$item];
 		}
 	}
 
@@ -135,8 +126,7 @@ class ConfigService extends BaseApplicationComponent
 	 * This function is used for Craft’s “localizable” config settings:
 	 *
 	 * - [siteUrl](http://buildwithcraft.com/docs/config-settings#siteUrl)
-	 * - [activateAccountFailurePath](http://buildwithcraft.com/docs/config-settings#activateAccountFailurePath)
-	 * - [activateAccountSuccessPath](http://buildwithcraft.com/docs/config-settings#activateAccountSuccessPath)
+	 * - [invalidUserTokenPath](http://buildwithcraft.com/docs/config-settings#invalidUserTokenPath)
 	 * - [loginPath](http://buildwithcraft.com/docs/config-settings#loginPath)
 	 * - [logoutPath](http://buildwithcraft.com/docs/config-settings#logoutPath)
 	 * - [setPasswordPath](http://buildwithcraft.com/docs/config-settings#setPasswordPath)
@@ -189,7 +179,7 @@ class ConfigService extends BaseApplicationComponent
 	{
 		craft()->deprecator->log('ConfigService::getDbItem()', 'ConfigService::getDbItem() is deprecated. Use get(\'key\', ConfigFile::Db) instead.');
 
-		if ($value = craft()->config->get($item, Config::Db))
+		if ($value = craft()->config->get($item, ConfigFile::Db))
 		{
 			return $value;
 		}
@@ -556,7 +546,7 @@ class ConfigService extends BaseApplicationComponent
 	 */
 	public function getActivateAccountPath($code, $uid, $full = true)
 	{
-		$url = $this->get('actionTrigger').'/users/validate';
+		$url = $this->get('actionTrigger').'/users/setPassword';
 
 		if (!$full)
 		{
@@ -654,16 +644,6 @@ class ConfigService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns the path to the CP’s Activate Account page
-	 *
-	 * @return string The Activate Account path.
-	 */
-	public function getCpActivateAccountPath()
-	{
-		return 'activate';
-	}
-
-	/**
 	 * Returns the path to the CP’s Login page.
 	 *
 	 * @return string The Login path.
@@ -722,6 +702,44 @@ class ConfigService extends BaseApplicationComponent
 		{
 			return $this->get('resourceTrigger');
 		}
+	}
+
+	/**
+	 * Returns whether the system is allowed to be auto-updated to the latest release.
+	 *
+	 * @return bool
+	 */
+	public function allowAutoUpdates()
+	{
+		$updateInfo = craft()->updates->getUpdates();
+
+		if (!$updateInfo)
+		{
+			return false;
+		}
+
+		$configVal = $this->get('allowAutoUpdates');
+
+		if (is_bool($configVal))
+		{
+			return $configVal;
+		}
+
+		if ($configVal === 'build-only')
+		{
+			// Return whether the version number has changed at all
+			return ($updateInfo->app->latestVersion === craft()->getVersion());
+		}
+
+		if ($configVal === 'minor-only')
+		{
+			// Return whether the major version number has changed
+			$localMajorVersion = array_shift(explode('.', craft()->getVersion()));
+			$updateMajorVersion = array_shift(explode('.', $updateInfo->app->latestVersion));
+			return ($localMajorVersion === $updateMajorVersion);
+		}
+
+		return false;
 	}
 
 	// Private Methods

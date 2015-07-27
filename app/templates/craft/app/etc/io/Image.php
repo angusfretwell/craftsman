@@ -17,6 +17,16 @@ class Image
 	// =========================================================================
 
 	/**
+	 * @var int The minimum width that the image should be loaded with if it’s an SVG.
+	 */
+	public $minSvgWidth;
+
+	/**
+	 * @var int The minimum height that the image should be loaded with if it’s an SVG.
+	 */
+	public $minSvgHeight;
+
+	/**
 	 * @var string
 	 */
 	private $_imageSourcePath;
@@ -45,6 +55,16 @@ class Image
 	 * @var \Imagine\Image\ImagineInterface
 	 */
 	private $_instance;
+
+	/**
+	 * @var \Imagine\Image\Palette\RGB
+	 */
+	private $_palette;
+
+	/**
+	 * @var \Imagine\Image\FontInterface
+	 */
+	private $_font;
 
 	// Public Methods
 	// =========================================================================
@@ -126,15 +146,75 @@ class Image
 			throw new Exception(Craft::t("Not enough memory available to perform this image operation."));
 		}
 
-		$imageInfo = @getimagesize($path);
+		$extension = IOHelper::getExtension($path);
 
-		if (!is_array($imageInfo))
+		if ($extension === 'svg')
 		{
-			throw new Exception(Craft::t('The file “{path}” does not appear to be an image.', array('path' => $path)));
+			if (!craft()->images->isImagick())
+			{
+				throw new Exception(Craft::t('The file “{path}” does not appear to be an image.', array('path' => $path)));
+			}
+
+			$svg = IOHelper::getFileContents($path);
+
+			if ($this->minSvgWidth !== null && $this->minSvgHeight !== null)
+			{
+				// Does the <svg> node contain valid `width` and `height` attributes?
+				list($width, $height) = ImageHelper::parseSvgSize($svg);
+
+				if ($width !== null && $height !== null)
+				{
+					$scale = 1;
+
+					if ($width < $this->minSvgWidth)
+					{
+						$scale = $this->minSvgWidth / $width;
+					}
+
+					if ($height < $this->minSvgHeight)
+					{
+						$scale = max($scale, ($this->minSvgHeight / $height));
+					}
+
+					$width = round($width * $scale);
+					$height = round($height * $scale);
+
+                    if (preg_match(ImageHelper::SVG_WIDTH_RE, $svg) && preg_match(ImageHelper::SVG_HEIGHT_RE, $svg))
+                    {
+                        $svg = preg_replace(ImageHelper::SVG_WIDTH_RE, "\${1}{$width}px\"", $svg);
+                        $svg = preg_replace(ImageHelper::SVG_HEIGHT_RE, "\${1}{$height}px\"", $svg);
+                    }
+                    else
+                    {
+                        $svg = preg_replace(ImageHelper::SVG_TAG_RE, "\${1} width=\"{$width}px\" height=\"{$height}px\" \${2}", $svg);
+                    }
+				}
+			}
+
+			try
+			{
+				$this->_image = $this->_instance->load($svg);
+			}
+			catch (\Imagine\Exception\RuntimeException $e)
+			{
+				// Invalid SVG. Maybe it's missing its DTD?
+				$svg = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>'.$svg;
+				$this->_image = $this->_instance->load($svg);
+			}
+		}
+		else
+		{
+			$imageInfo = @getimagesize($path);
+
+			if (!is_array($imageInfo))
+			{
+				throw new Exception(Craft::t('The file “{path}” does not appear to be an image.', array('path' => $path)));
+			}
+
+			$this->_image = $this->_instance->open($path);
 		}
 
-		$this->_image = $this->_instance->open($path);
-		$this->_extension = IOHelper::getExtension($path);
+		$this->_extension = $extension;
 		$this->_imageSourcePath = $path;
 
 		if ($this->_extension == 'gif')
@@ -341,6 +421,20 @@ class Image
 	}
 
 	/**
+	 * Rotate an image by degrees.
+	 *
+	 * @param int $degrees
+	 *
+	 * @return Image
+	 */
+	public function rotate($degrees)
+	{
+		$this->_image->rotate($degrees);
+
+		return $this;
+	}
+
+	/**
 	 * Set image quality.
 	 *
 	 * @param int $quality
@@ -364,15 +458,16 @@ class Image
 	 */
 	public function saveAs($targetPath, $sanitizeAndAutoQuality = false)
 	{
-		$extension = IOHelper::getExtension($targetPath);
+		$extension = StringHelper::toLowerCase(IOHelper::getExtension($targetPath));
 		$options = $this->_getSaveOptions(false, $extension);
-		$targetPath = IOHelper::getFolderName($targetPath).IOHelper::getFileName($targetPath, false).'.'.$extension;
+		$targetPath = IOHelper::getFolderName($targetPath).IOHelper::getFileName($targetPath, false).'.'.IOHelper::getExtension($targetPath);
 
 		if (($extension == 'jpeg' || $extension == 'jpg' || $extension == 'png') && $sanitizeAndAutoQuality)
 		{
 			clearstatcache();
 			$originalSize = IOHelper::getFileSize($this->_imageSourcePath);
-			$this->_autoGuessImageQuality($targetPath, $originalSize, $extension, 0, 200);
+			$tempFile = $this->_autoGuessImageQuality($targetPath, $originalSize, $extension, 0, 200);
+			IOHelper::move($tempFile, $targetPath, true);
 		}
 		else
 		{
@@ -383,18 +478,105 @@ class Image
 	}
 
 	/**
-	 * Returns true if Imagick is installed and says that the iamge is transparent.
+	 * Returns true if Imagick is installed and says that the image is transparent.
 	 *
 	 * @return bool
 	 */
 	public function isTransparent()
 	{
-		if(craft()->images->isImagick() && method_exists("Imagick", "getImageAlphaChannel"))
+		if (craft()->images->isImagick() && method_exists("Imagick", "getImageAlphaChannel"))
 		{
-			return $this->_image->getImagineImageInterface()->getImagick()->getImageAlphaChannel();
+			return $this->_image->getImagick()->getImageAlphaChannel();
 		}
 
 		return false;
+	}
+
+	/**
+	 * Return EXIF metadata for a file by it's path
+	 *
+	 * @param $filePath
+	 *
+	 * @return array
+	 */
+	public function getExifMetadata($filePath)
+	{
+		try
+		{
+			$exifReader = new \Imagine\Image\Metadata\ExifMetadataReader();
+			$this->_instance->setMetadataReader($exifReader);
+			$exif = $this->_instance->open($filePath)->metadata();
+
+			return $exif->toArray();
+		}
+		catch (\Imagine\Exception\NotSupportedException $exception)
+		{
+			Craft::log($exception->getMessage(), LogLevel::Error);
+
+			return array();
+		}
+	}
+
+	/**
+	 * Set properties for text drawing on the image.
+	 *
+	 * @param $fontFile string path to the font file on server
+	 * @param $size     int    font size to use
+	 * @param $color    string font color to use in hex format
+	 *
+	 * @return null
+	 */
+	public function setFontProperties($fontFile, $size, $color)
+	{
+		if (empty($this->_palette))
+		{
+			$this->_palette = new \Imagine\Image\Palette\RGB();
+		}
+
+		$this->_font = $this->_instance->font($fontFile, $size, $this->_palette->color($color));
+	}
+
+	/**
+	 * Get the bounding text box for a text string and an angle
+	 *
+	 * @param $text
+	 * @param int $angle
+	 *
+	 * @throws Exception
+	 * @return \Imagine\Image\BoxInterface
+	 */
+	public function getTextBox($text, $angle = 0)
+	{
+		if (empty($this->_font))
+		{
+			throw new Exception(Craft::t("No font properties have been set. Call Image::setFontProperties() first."));
+		}
+
+		return $this->_font->box($text, $angle);
+	}
+
+	/**
+	 * Write text on an image
+	 *
+	 * @param     $text
+	 * @param     $x
+	 * @param     $y
+	 * @param int $angle
+	 *
+	 * @return null
+	 * @throws Exception
+	 */
+	public function writeText($text, $x, $y, $angle = 0)
+	{
+
+		if (empty($this->_font))
+		{
+			throw new Exception(Craft::t("No font properties have been set. Call Image::setFontProperties() first."));
+		}
+
+		$point = new \Imagine\Image\Point($x, $y);
+
+		$this->_image->draw()->text($text, $this->_font, $point, $angle);
 	}
 
 	// Private Methods
@@ -430,7 +612,7 @@ class Image
 	 * @param     $maxQuality
 	 * @param int $step
 	 *
-	 * @return bool
+	 * @return string $path the resulting file path
 	 */
 	private function _autoGuessImageQuality($tempFileName, $originalSize, $extension, $minQuality, $maxQuality, $step = 0)
 	{
@@ -462,7 +644,7 @@ class Image
 
 			// Generate one last time.
 			$this->_image->save($tempFileName, $this->_getSaveOptions($midQuality));
-			return true;
+			return $tempFileName;
 		}
 
 		$step++;
@@ -538,7 +720,25 @@ class Image
 					$normalizedQuality = 9;
 				}
 
-				return array('png_compression_level' => $normalizedQuality, 'flatten' => false);
+				$options = array('png_compression_level' => $normalizedQuality, 'flatten' => false);
+				$pngInfo = ImageHelper::getPngImageInfo($this->_imageSourcePath);
+
+				// Even though a 2 channel PNG is valid (Grayscale with alpha channel), Imagick doesn't recognize it as
+				// a valid format: http://www.imagemagick.org/script/formats.php
+				// So 2 channel PNGs get converted to 4 channel.
+
+				if (is_array($pngInfo) && isset($pngInfo['channels']) && $pngInfo['channels'] !== 2)
+				{
+					$format = 'png'.(8 * $pngInfo['channels']);
+				}
+				else
+				{
+					$format = 'png32';
+				}
+
+				$options['png_format'] = $format;
+
+				return $options;
 			}
 
 			default:

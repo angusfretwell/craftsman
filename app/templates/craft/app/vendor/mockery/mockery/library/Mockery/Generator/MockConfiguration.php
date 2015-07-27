@@ -110,7 +110,7 @@ class MockConfiguration
         }
 
         /**
-         * Whitelist trumps blacklist
+         * Whitelist trumps everything else
          */
         if (count($this->getWhiteListedMethods())) {
             $whitelist = array_map('strtolower', $this->getWhiteListedMethods());
@@ -128,6 +128,20 @@ class MockConfiguration
             $blacklist = array_map('strtolower', $this->getBlackListedMethods());
             $methods = array_filter($methods, function ($method) use ($blacklist) {
                 return !in_array(strtolower($method->getName()), $blacklist);
+            });
+        }
+
+        /**
+         * Internal objects can not be instantiated with newInstanceArgs and if
+         * they implement Serializable, unserialize will have to be called. As
+         * such, we can't mock it and will need a pass to add a dummy
+         * implementation
+         */
+        if ($this->getTargetClass()
+            && $this->getTargetClass()->implementsInterface("Serializable")
+            && $this->getTargetClass()->hasInternalAncestor()) {
+            $methods = array_filter($methods, function ($method) {
+                return $method->getName() !== "unserialize";
             });
         }
 
@@ -253,7 +267,7 @@ class MockConfiguration
         if (class_exists($this->targetClassName)) {
             $dtc = DefinedTargetClass::factory($this->targetClassName);
 
-            if (!$this->getTargetObject() && $dtc->isFinal()) {
+            if ($this->getTargetObject() == false && $dtc->isFinal()) {
                 throw new \Mockery\Exception(
                     'The class ' . $this->targetClassName . ' is marked final and its methods'
                     . ' cannot be replaced. Classes marked final can be passed in'
@@ -264,7 +278,6 @@ class MockConfiguration
             }
 
             $this->targetClass = $dtc;
-
         } else {
             $this->targetClass = new UndefinedTargetClass($this->targetClassName);
         }
@@ -291,7 +304,6 @@ class MockConfiguration
             $traversableFound = false;
             $iteratorShiftedToFront = false;
             foreach ($extendedInterfaces as $interface) {
-
                 if (!$traversableFound && preg_match("/^\\?Iterator(|Aggregate)$/i", $interface)) {
                     break;
                 }
@@ -317,7 +329,6 @@ class MockConfiguration
             if (!preg_match("/^\\\\?Traversable$/i", $targetInterface)) {
                 $this->targetInterfaces[] = $dtc;
             }
-
         }
         $this->targetInterfaces = array_unique($this->targetInterfaces); // just in case
         return $this->targetInterfaces;
@@ -446,5 +457,4 @@ class MockConfiguration
     {
         $this->targetObject = $object;
     }
-
 }

@@ -1,7 +1,7 @@
 {% extends "_layouts/basecp" %}
 
 {% includeCssResource "css/cp.css" first %}
-{%- includeTranslations
+{% includeTranslations
 	"week",
 	"weeks",
 	"day",
@@ -42,6 +42,7 @@
 	"Done",
 	"Delete",
 	"Handle",
+	"Instructions",
 	"Name",
 	"Move",
 	"New Child",
@@ -51,6 +52,7 @@
 	"Settings",
 	"Select",
 	"New order saved.",
+	"New position saved.",
 	"Couldn’t save new order.",
 	"Are you sure you want to delete “{name}”?",
 	"“{name}” deleted.",
@@ -58,13 +60,8 @@
 	"Show/hide children",
 	"New child",
 	"Upload failed for {filename}",
-	"View file",
-	"Edit properties",
-	"Rename file",
-	"Copy reference tag",
-	"Delete file",
 	"{ctrl}C to copy.",
-	"Are you sure you want to delete these {number} files?",
+	"Search in subfolders",
 	"New subfolder",
 	"Rename folder",
 	"Delete folder",
@@ -72,10 +69,21 @@
 	"Really delete folder “{folder}”?",
 	"Upload files",
 	"Select Transform",
+	"Actions",
 	"Continue",
 	"Cancel",
-	"Any changes will be lost if you leave this page."
--%}
+	"Any changes will be lost if you leave this page.",
+	"What do you want to do with their content?",
+	"Transfer it to:",
+	"Choose a user",
+	"Delete it",
+	"Delete user",
+	"Delete users",
+	"(blank)",
+	"Are you sure you want to delete the selected blocks?"
+%}
+
+{% set forceConfirmUnload = craft.session.hasFlash('error') %}
 
 
 {% block body %}
@@ -169,7 +177,7 @@
 					{% for handle, item in craft.cp.nav() %}
 						<li id="nav-{{ handle }}">
 							<a{% if item.sel %} class="sel"{% endif %} href="{{ item.url }}">
-								{{- item.name -}}
+								{{- item.label -}}
 								{%- if item.badge is defined and item.badge -%}
 									<span class="badge">{{ item.badge }}</span>
 								{%- endif -%}
@@ -206,7 +214,7 @@
 				{% endif %}
 
 				{% if title is defined and title %}
-					<h1>{{ title|raw }}</h1>
+					<h1>{{ title }}</h1>
 				{% endif %}
 
 				{% if extraPageHeaderHtml is defined %}
@@ -266,7 +274,7 @@
 			</ul>
 
 			{% if (CraftEdition == CraftPersonal or craft.request.getPath == 'settings') and craft.app.canUpgradeEdition() %}
-				<p id="upgradepromo"><a>{{ "Upgrade Craft to take your site to the next level."|t }} <span class="go">{{ "Show me"|t }}</span></a></p>
+				<p id="upgradepromo"><a>{{ "Upgrade Craft to take your site to the next level."|t }} <span class="go nowrap">{{ "Show me"|t }}</span></a></p>
 			{% endif %}
 		</div>
 	</div>

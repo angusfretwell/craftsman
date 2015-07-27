@@ -36,6 +36,12 @@ function craft_createFolder($path)
 
 		if (!mkdir($path, 0755, true))
 		{
+			// Set a 503 response header so things like Varnish won't cache a bad page.
+			if (function_exists('http_response_code'))
+			{
+				http_response_code(503);
+			}
+
 			exit('Tried to create a folder at '.$path.', but could not.');
 		}
 
@@ -52,20 +58,39 @@ function craft_ensureFolderIsReadable($path, $writableToo = false)
 	// !@file_exists('/.') is a workaround for the terrible is_executable()
 	if ($realPath === false || !is_dir($realPath) || !@file_exists($realPath.'/.'))
 	{
-		exit (($realPath !== false ? $realPath : $path).' doesn\'t exist or isn\'t writable by PHP. Please fix that.');
+		// Set a 503 response header so things like Varnish won't cache a bad page.
+		if (function_exists('http_response_code'))
+		{
+			http_response_code(503);
+		}
+
+		exit(($realPath !== false ? $realPath : $path).' doesn\'t exist or isn\'t writable by PHP. Please fix that.');
 	}
 
 	if ($writableToo)
 	{
 		if (!is_writable($realPath))
 		{
-			exit ($realPath.' isn\'t writable by PHP. Please fix that.');
+			// Set a 503 response header so things like Varnish won't cache a bad page.
+			if (function_exists('http_response_code'))
+			{
+				http_response_code(503);
+			}
+
+			exit($realPath.' isn\'t writable by PHP. Please fix that.');
 		}
 	}
 }
 
 // Validate permissions on craft/config/ and craft/storage/
 craft_ensureFolderIsReadable(CRAFT_CONFIG_PATH);
+
+// If license.key doesn't exist yet, make sure the config folder is writable.
+if (!file_exists(CRAFT_CONFIG_PATH.'license.key'))
+{
+	craft_ensureFolderIsReadable(CRAFT_CONFIG_PATH, true);
+}
+
 craft_ensureFolderIsReadable(CRAFT_STORAGE_PATH, true);
 
 // Create the craft/storage/runtime/ folder if it doesn't already exist
@@ -108,6 +133,9 @@ if (file_exists($generalConfigPath))
 		}
 	}
 }
+
+ini_set('log_errors', 1);
+ini_set('error_log', CRAFT_STORAGE_PATH.'runtime/logs/phperrors.log');
 
 if ($devMode)
 {

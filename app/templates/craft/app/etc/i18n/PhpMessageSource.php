@@ -106,6 +106,12 @@ class PhpMessageSource extends \CPhpMessageSource
 			$parts = explode('_', $language);
 			$totalParts = count($parts);
 
+			// If it's Norwegian Bokmål/Nynorsk, add plain ol' Norwegian as a fallback
+			if ($parts[0] === 'nb' || $parts[0] === 'nn')
+			{
+				$translationFiles[] = 'no';
+			}
+
 			for ($i = 1; $i <= $totalParts; $i++)
 			{
 				$translationFiles[] = implode('_', array_slice($parts, 0, $i));

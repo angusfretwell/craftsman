@@ -1,6 +1,16 @@
 # CHANGELOG
 
-### 0.6.0 (2014-06-16)
+### 0.6.2 (2014-11-11)
+  * Stripping image containing an invalid ICC profile fails
+  * MetadataBag now implements \Countable
+  * Fix wrong array_merge in MetadataBag giving invalid results with HTTP resources (@javaguirre)
+  * Fix Imagick merge strategy (@GrahamCampbell)
+  * Fixed various alpha issues (@RadekDvorak)
+  * Fix Image cloning on HHVM (@RdeWilde)
+  * Fix exception on invalid file using GD driver (@vlakoff).
+  * Fix ImageInterface::getSize on animated GIFs (@sokac)
+
+### 0.6.1 (2014-06-16)
   * Fix invalid namespace usage (#336 @csanquer).
 
 ### 0.6.0 (2014-06-13)

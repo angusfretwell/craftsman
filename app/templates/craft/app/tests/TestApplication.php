@@ -26,15 +26,6 @@ class TestApplication extends WebApp
 		Craft::setApplication(null);
 		clearstatcache();
 
-		// SHOW EVERYTHING
-		error_reporting(E_ALL & ~E_STRICT);
-		ini_set('display_errors', 1);
-
-		mb_internal_encoding('UTF-8');
-		mb_http_input('UTF-8');
-		mb_http_output('UTF-8');
-		mb_detect_order('auto');
-
 		// No matter how much you want to delete this line... DO NOT DO IT.
 		Craft::$enableIncludePath = false;
 

@@ -1,12 +1,5 @@
 <?php
 
-// Initially set it here.  WebApp->init() will check devMode and override appropriately.
-error_reporting(E_ALL & ~E_STRICT);
-ini_set('display_errors', 1);
-
-ini_set('log_errors', 1);
-ini_set('error_log', CRAFT_STORAGE_PATH.'runtime/logs/phperrors.log');
-
 $configArray = array(
 
 	// autoloading model and component classes
@@ -31,9 +24,11 @@ $configArray = array(
 		'app.controllers.AssetTransformsController',
 		'app.controllers.AssetsController',
 		'app.controllers.BaseController',
+		'app.controllers.BaseElementsController',
 		'app.controllers.BaseEntriesController',
 		'app.controllers.CategoriesController',
 		'app.controllers.DashboardController',
+		'app.controllers.ElementIndexController',
 		'app.controllers.ElementsController',
 		'app.controllers.EmailMessagesController',
 		'app.controllers.EntriesController',
@@ -56,6 +51,20 @@ $configArray = array(
 		'app.controllers.UserSettingsController',
 		'app.controllers.UsersController',
 		'app.controllers.UtilsController',
+		'app.elementactions.BaseElementAction',
+		'app.elementactions.CopyReferenceTagElementAction',
+		'app.elementactions.DeleteAssetsElementAction',
+		'app.elementactions.DeleteElementAction',
+		'app.elementactions.DeleteUsersElementAction',
+		'app.elementactions.EditElementAction',
+		'app.elementactions.IElementAction',
+		'app.elementactions.NewChildElementAction',
+		'app.elementactions.RenameFileElementAction',
+		'app.elementactions.ReplaceFileElementAction',
+		'app.elementactions.SetStatusElementAction',
+		'app.elementactions.SuspendUsersElementAction',
+		'app.elementactions.UnsuspendUsersElementAction',
+		'app.elementactions.ViewElementAction',
 		'app.elementtypes.AssetElementType',
 		'app.elementtypes.BaseElementType',
 		'app.elementtypes.CategoryElementType',
@@ -135,6 +144,7 @@ $configArray = array(
 		'app.etc.io.Zip',
 		'app.etc.io.ZipArchive',
 		'app.etc.logging.FileLogRoute',
+		'app.etc.logging.LogFilter',
 		'app.etc.logging.LogRouter',
 		'app.etc.logging.Logger',
 		'app.etc.logging.ProfileLogRoute',
@@ -149,6 +159,7 @@ $configArray = array(
 		'app.etc.state.StatePersister',
 		'app.etc.templating.BaseTemplate',
 		'app.etc.templating.StringTemplate',
+		'app.etc.templating.TwigParser',
 		'app.etc.templating.twigextensions.Cache_Node',
 		'app.etc.templating.twigextensions.Cache_TokenParser',
 		'app.etc.templating.twigextensions.CraftTwigExtension',
@@ -171,6 +182,8 @@ $configArray = array(
 		'app.etc.templating.twigextensions.Paginate_TokenParser',
 		'app.etc.templating.twigextensions.Redirect_Node',
 		'app.etc.templating.twigextensions.Redirect_TokenParser',
+		'app.etc.templating.twigextensions.RequireAdmin_Node',
+		'app.etc.templating.twigextensions.RequireAdmin_TokenParser',
 		'app.etc.templating.twigextensions.RequireEdition_Node',
 		'app.etc.templating.twigextensions.RequireEdition_TokenParser',
 		'app.etc.templating.twigextensions.RequireLogin_Node',
@@ -291,6 +304,7 @@ $configArray = array(
 		'app.models.TaskModel',
 		'app.models.UpdateModel',
 		'app.models.UpgradePurchaseModel',
+		'app.models.UrlModel',
 		'app.models.UserGroupModel',
 		'app.models.UserModel',
 		'app.models.UsernameModel',
@@ -392,8 +406,10 @@ $configArray = array(
 		'app.tasks.FindAndReplaceTask',
 		'app.tasks.GeneratePendingTransformsTask',
 		'app.tasks.ITask',
+		'app.tasks.LocalizeRelationsTask',
 		'app.tasks.ResaveAllElementsTask',
 		'app.tasks.ResaveElementsTask',
+		'app.tasks.UpdateElementSlugsAndUrisTask',
 		'app.tests.BaseTest',
 		'app.tests.TestApplication',
 		'app.tests.helpers.StubHelper',
@@ -402,6 +418,7 @@ $configArray = array(
 		'app.tests.unit.EntriesServiceTest',
 		'app.tests.unit.EntryModelTest',
 		'app.tests.unit.HttpRequestsServiceTest',
+		'app.tests.unit.ModelTest',
 		'app.tests.unit.PluginsTest',
 		'app.tests.unit.RecentEntriesWidgetTest',
 		'app.tests.unit.ResourceProcessorTest',
@@ -425,6 +442,7 @@ $configArray = array(
 		'app.variables.AppVariable',
 		'app.variables.AssetSourceTypeVariable',
 		'app.variables.BaseComponentTypeVariable',
+		'app.variables.CategoryGroupsVariable',
 		'app.variables.ConfigVariable',
 		'app.variables.CpVariable',
 		'app.variables.CraftVariable',
@@ -492,7 +510,10 @@ $configArray = array(
 // CP routes
 // ----------------------------------------------------------------------------
 
-$cpRoutes['categories/(?P<groupHandle>{handle})']                                 = 'categories';
+$cpRoutes['categories']                                                           = array('action' => 'categories/categoryIndex');
+$cpRoutes['categories/(?P<groupHandle>{handle})']                                 = array('action' => 'categories/categoryIndex');
+$cpRoutes['categories/(?P<groupHandle>{handle})/new']                             = array('action' => 'categories/editCategory');
+$cpRoutes['categories/(?P<groupHandle>{handle})/(?P<categoryId>\d+)(?:-{slug})?'] = array('action' => 'categories/editCategory');
 
 $cpRoutes['dashboard/settings/new']                                               = 'dashboard/settings/_widgetsettings';
 $cpRoutes['dashboard/settings/(?P<widgetId>\d+)']                                 = 'dashboard/settings/_widgetsettings';
@@ -563,6 +584,8 @@ $cpRoutes['editionRoutes'][1]['entries/(?P<sectionHandle>{handle})/(?P<entryId>\
 
 // Pro routes
 $cpRoutes['editionRoutes'][2]['clientaccount']                                                                                = false;
+$cpRoutes['editionRoutes'][2]['categories/(?P<groupHandle>{handle})/(?P<categoryId>\d+)(?:-{slug})?/(?P<localeId>\w+)']       = array('action' => 'categories/editCategory');
+$cpRoutes['editionRoutes'][2]['categories/(?P<groupHandle>{handle})/new/(?P<localeId>\w+)']                                   = array('action' => 'categories/editCategory');
 $cpRoutes['editionRoutes'][2]['entries/(?P<sectionHandle>{handle})/(?P<entryId>\d+)(?:-{slug})?/(?P<localeId>\w+)']           = array('action' => 'entries/editEntry');
 $cpRoutes['editionRoutes'][2]['entries/(?P<sectionHandle>{handle})/new/(?P<localeId>\w+)']                                    = array('action' => 'entries/editEntry');
 $cpRoutes['editionRoutes'][2]['globals/(?P<localeId>\w+)/(?P<globalSetHandle>{handle})']                                      = array('action' => 'globals/editContent');
@@ -591,7 +614,6 @@ $components['entries']['class']              = 'Craft\EntriesService';
 $components['et']['class']                   = 'Craft\EtService';
 $components['feeds']['class']                = 'Craft\FeedsService';
 $components['fields']['class']               = 'Craft\FieldsService';
-$components['fieldTypes']['class']           = 'Craft\FieldTypesService';
 $components['globals']['class']              = 'Craft\GlobalsService';
 $components['install']['class']              = 'Craft\InstallService';
 $components['images']['class']               = 'Craft\ImagesService';
@@ -648,17 +670,18 @@ $components['updates']['class']              = 'Craft\UpdatesService';
 $components['components'] = array(
 	'class' => 'Craft\ComponentsService',
 	'types' => array(
-		'assetSource' => array('subfolder' => 'assetsourcetypes', 'suffix' => 'AssetSourceType', 'instanceof' => 'BaseAssetSourceType', 'enableForPlugins' => false),
-		'element'     => array('subfolder' => 'elementtypes',     'suffix' => 'ElementType',     'instanceof' => 'IElementType',        'enableForPlugins' => true),
-		'field'       => array('subfolder' => 'fieldtypes',       'suffix' => 'FieldType',       'instanceof' => 'IFieldType',          'enableForPlugins' => true),
-		'tool'        => array('subfolder' => 'tools',            'suffix' => 'Tool',            'instanceof' => 'ITool',               'enableForPlugins' => false),
-		'task'        => array('subfolder' => 'tasks',            'suffix' => 'Task',            'instanceof' => 'ITask',               'enableForPlugins' => true),
-		'widget'      => array('subfolder' => 'widgets',          'suffix' => 'Widget',          'instanceof' => 'IWidget',             'enableForPlugins' => true),
+		'assetSource'   => array('subfolder' => 'assetsourcetypes', 'suffix' => 'AssetSourceType', 'instanceof' => 'BaseAssetSourceType', 'enableForPlugins' => false),
+		'element'       => array('subfolder' => 'elementtypes',     'suffix' => 'ElementType',     'instanceof' => 'IElementType',        'enableForPlugins' => true),
+		'elementAction' => array('subfolder' => 'elementactions',   'suffix' => 'ElementAction',   'instanceof' => 'IElementAction',      'enableForPlugins' => true),
+		'field'         => array('subfolder' => 'fieldtypes',       'suffix' => 'FieldType',       'instanceof' => 'IFieldType',          'enableForPlugins' => true),
+		'tool'          => array('subfolder' => 'tools',            'suffix' => 'Tool',            'instanceof' => 'ITool',               'enableForPlugins' => false),
+		'task'          => array('subfolder' => 'tasks',            'suffix' => 'Task',            'instanceof' => 'ITask',               'enableForPlugins' => true),
+		'widget'        => array('subfolder' => 'widgets',          'suffix' => 'Widget',          'instanceof' => 'IWidget',             'enableForPlugins' => true),
 	)
 );
 $components['plugins'] = array(
 	'class' => 'Craft\PluginsService',
-	'autoloadClasses' => array('Controller','Helper','Model','Record','Service','Variable','Validator'),
+	'autoloadClasses' => array('Controller','Enum','Helper','Model','Record','Service','Variable','Validator'),
 );
 
 // Craft Client components
@@ -669,12 +692,10 @@ $components['editionComponents'][1]['entryRevisions']['class']  = 'Craft\EntryRe
 $components['editionComponents'][2]['userGroups']['class']      = 'Craft\UserGroupsService';
 $components['editionComponents'][2]['userPermissions']['class'] = 'Craft\UserPermissionsService';
 
-$components['file']['class'] = 'Craft\File';
 $components['messages']['class'] = 'Craft\PhpMessageSource';
 $components['coreMessages']['class'] = 'Craft\PhpMessageSource';
 $components['request']['class'] = 'Craft\HttpRequestService';
 $components['request']['enableCookieValidation'] = true;
-$components['viewRenderer']['class'] = 'Craft\TemplateProcessor';
 $components['statePersister']['class'] = 'Craft\StatePersister';
 
 $components['urlManager']['class'] = 'Craft\UrlManager';
@@ -683,7 +704,6 @@ $components['urlManager']['pathParam'] = 'p';
 
 $components['errorHandler'] = array(
 	'class' => 'Craft\ErrorHandler',
-	'errorAction' => 'templates/renderError'
 );
 
 $components['fileCache']['class'] = 'Craft\FileCache';
@@ -707,7 +727,6 @@ $components['log']['routes'] = array(
 $components['httpSession']['autoStart']   = true;
 $components['httpSession']['cookieMode']  = 'only';
 $components['httpSession']['class']       = 'Craft\HttpSessionService';
-$components['httpSession']['sessionName'] = 'CraftSessionId';
 
 $components['userSession']['class'] = 'Craft\UserSessionService';
 $components['userSession']['allowAutoLogin']  = true;

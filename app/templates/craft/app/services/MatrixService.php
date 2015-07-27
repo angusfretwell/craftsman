@@ -174,6 +174,12 @@ class MatrixService extends BaseApplicationComponent
 
 		foreach ($blockType->getFields() as $field)
 		{
+			// Hack to allow blank field names
+			if (!$field->name)
+			{
+				$field->name = '__blank__';
+			}
+
 			craft()->fields->validateField($field);
 
 			// Make sure the block type handle + field handle combo is unique for the whole field. This prevents us from
@@ -293,6 +299,8 @@ class MatrixService extends BaseApplicationComponent
 				}
 
 				// Save the fields and field layout
+				// -------------------------------------------------------------
+
 				$fieldLayoutFields = array();
 				$sortOrder = 0;
 
@@ -302,27 +310,40 @@ class MatrixService extends BaseApplicationComponent
 
 				foreach ($blockType->getFields() as $field)
 				{
+					// Hack to allow blank field names
+					if (!$field->name)
+					{
+						$field->name = '__blank__';
+					}
+
 					if (!$fieldsService->saveField($field, false))
 					{
 						throw new Exception(Craft::t('An error occurred while saving this Matrix block type.'));
 					}
 
-					$sortOrder++;
-					$fieldLayoutFields[] = array(
-						'fieldId'   => $field->id,
-						'required'  => $field->required,
-						'sortOrder' => $sortOrder
-					);
+					$fieldLayoutField = new FieldLayoutFieldModel();
+					$fieldLayoutField->fieldId = $field->id;
+					$fieldLayoutField->required = $field->required;
+					$fieldLayoutField->sortOrder = ++$sortOrder;
+
+					$fieldLayoutFields[] = $fieldLayoutField;
 				}
 
 				$contentService->fieldContext        = $originalFieldContext;
 				$contentService->fieldColumnPrefix   = $originalFieldColumnPrefix;
 				$fieldsService->oldFieldColumnPrefix = $originalOldFieldColumnPrefix;
 
+				$fieldLayoutTab = new FieldLayoutTabModel();
+				$fieldLayoutTab->name = 'Content';
+				$fieldLayoutTab->sortOrder = 1;
+				$fieldLayoutTab->setFields($fieldLayoutFields);
+
 				$fieldLayout = new FieldLayoutModel();
 				$fieldLayout->type = ElementType::MatrixBlock;
+				$fieldLayout->setTabs(array($fieldLayoutTab));
 				$fieldLayout->setFields($fieldLayoutFields);
-				$fieldsService->saveLayout($fieldLayout, false);
+
+				$fieldsService->saveLayout($fieldLayout);
 
 				// Update the block type model & record with our new field layout ID
 				$blockType->setFieldLayout($fieldLayout);
@@ -964,7 +985,7 @@ class MatrixService extends BaseApplicationComponent
 
 				if (!$this->_blockTypeRecordsById[$blockTypeId])
 				{
-					throw new Exception(Craft::t('No block type exists with the ID “{id}”', array('id' => $blockTypeId)));
+					throw new Exception(Craft::t('No block type exists with the ID “{id}”.', array('id' => $blockTypeId)));
 				}
 			}
 
@@ -996,7 +1017,7 @@ class MatrixService extends BaseApplicationComponent
 
 				if (!$this->_blockRecordsById[$blockId])
 				{
-					throw new Exception(Craft::t('No block exists with the ID “{id}”', array('id' => $blockId)));
+					throw new Exception(Craft::t('No block exists with the ID “{id}”.', array('id' => $blockId)));
 				}
 			}
 

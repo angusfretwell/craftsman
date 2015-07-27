@@ -27,10 +27,10 @@ class Requirements
 			new PhpVersionRequirement(),
 			new Requirement(
 				Craft::t('$_SERVER Variable'),
-				($message = static::_checkServerVar()) === '',
+				($serverMessage = static::_checkServerVar()) === '',
 				true,
 				'<a href="http://buildwithcraft.com">Craft</a>',
-				$message
+				$serverMessage
 			),
 			new Requirement(
 				Craft::t('Reflection extension'),
@@ -75,11 +75,18 @@ class Requirements
 				Craft::t('<a href="http://php.net/manual/en/book.mcrypt.php">Mcrypt</a> is required.')
 			),
 			new Requirement(
-				Craft::t('GD extension with FreeType support or Imagick extension'),
-				extension_loaded('gd') || extension_loaded('imagick'),
-				true,
+				Craft::t('GD extension with FreeType support'),
+				extension_loaded('gd'),
+				(!extension_loaded('imagick')), // Only required if ImageMagick isn't installed
 				'<a href="http://buildwithcraft.com">Craft</a>',
-				'<a href="http://php.net/manual/en/book.image.php">GD</a> or <a href="http://php.net/manual/en/class.imagick.php">Imagick</a> is required.'
+				'<a href="http://php.net/manual/en/book.image.php">GD</a> or <a href="http://php.net/manual/en/book.imagick.php">ImageMagick</a> is required, however ImageMagick is recommended as it adds animated GIF support, and preserves 8-bit and 24-bit PNGs during image transforms.'
+			),
+			new Requirement(
+				Craft::t('ImageMagick extension'),
+				extension_loaded('imagick'),
+				(!extension_loaded('gd')), // Only required if GD isn't installed
+				'<a href="http://buildwithcraft.com">Craft</a>',
+				'<a href="http://php.net/manual/en/book.image.php">GD</a> or <a href="http://php.net/manual/en/book.imagick.php">ImageMagick</a> is required, however ImageMagick is recommended as it adds animated GIF support, and preserves 8-bit and 24-bit PNGs during image transforms.'
 			),
 			new Requirement(
 				Craft::t('MySQL version'),
@@ -111,10 +118,10 @@ class Requirements
 			),
 			new Requirement(
 				Craft::t('crypt() with CRYPT_BLOWFISH enabled'),
+				($cryptMessage = static::_checkCryptBlowfish()) === '',
 				true,
-				function_exists('crypt') && defined('CRYPT_BLOWFISH') && CRYPT_BLOWFISH,
 				'<a href="http://www.yiiframework.com/doc/api/1.1/CPasswordHelper">CPasswordHelper</a>',
-				Craft::t('Craft requires the <a href="http://php.net/manual/en/function.crypt.php">crypt()</a> function with CRYPT_BLOWFISH enabled for secure password storage.')
+				$cryptMessage
 			),
 			new Requirement(
 				Craft::t('PCRE UTF-8 support'),
@@ -130,13 +137,7 @@ class Requirements
 				'<a href="http://buildwithcraft.com">Craft</a>',
 				Craft::t('Craft requires the <a href="http://www.php.net/manual/en/book.mbstring.php">Multibyte String extension</a> with <a href="http://php.net/manual/en/mbstring.overload.php">Function Overloading</a> disabled in order to run.')
 			),
-			new Requirement(
-				Craft::t('iconv support'),
-				function_exists('iconv'),
-				false,
-				'<a href="http://buildwithcraft.com">Craft</a>',
-				Craft::t('Craft requires <a href="http://php.net/manual/en/book.iconv.php">iconv</a> in order to run.')
-			),
+			new IconvRequirement(),
 		);
 	}
 
@@ -172,6 +173,33 @@ class Requirements
 		if (!isset($_SERVER["PATH_INFO"]) && strpos($_SERVER["PHP_SELF"], $_SERVER["SCRIPT_NAME"]) !== 0)
 		{
 			return Craft::t('Unable to determine URL path info. Please make sure $_SERVER["PATH_INFO"] (or $_SERVER["PHP_SELF"] and $_SERVER["SCRIPT_NAME"]) contains proper value.');
+		}
+
+		return '';
+	}
+
+	/**
+	 * Checks if crypt with blowfish is installed.  If it is, also checks to make sure the version installed isn't insecure.
+	 *
+	 * @see https://secure.php.net/security/crypt_blowfish.php
+	 *
+	 * @return string
+	 */
+	private static function _checkCryptBlowfish()
+	{
+		if (function_exists('crypt') && defined('CRYPT_BLOWFISH') && CRYPT_BLOWFISH)
+		{
+			$hash = '$2y$04$usesomesillystringfore7hnbRJHxXVLeakoG8K30oukPsA.ztMG';
+			$test = crypt('password', $hash);
+
+			if ($test !== $hash)
+			{
+				return Craft::t('You have an insecure version of crypt installed. Please update PHP to 5.3.7 or later. (<a href="https://secure.php.net/security/crypt_blowfish.php">Find out more</a>)');
+			}
+		}
+		else
+		{
+			return Craft::t('Craft requires the <a href="http://php.net/manual/en/function.crypt.php">crypt()</a> function with CRYPT_BLOWFISH enabled for secure password storage.');
 		}
 
 		return '';
@@ -432,5 +460,77 @@ class PhpVersionRequirement extends Requirement
 			(version_compare(PHP_VERSION, '5.3', '>=') && version_compare(PHP_VERSION, '5.3.12', '<')) ||
 			(version_compare(PHP_VERSION, '5.4', '>=') && version_compare(PHP_VERSION, '5.4.2', '<'))
 		);
+	}
+}
+
+/**
+ * Iconv requirement class.
+ *
+ * @package craft.app.etc.requirements
+ */
+class IconvRequirement extends Requirement
+{
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * @return PhpVersionRequirement
+	 */
+	public function __construct()
+	{
+		parent::__construct(
+			Craft::t('iconv support'),
+			null,
+			false,
+			'<a href="http://buildwithcraft.com">Craft</a>'
+		);
+	}
+
+	/**
+	 * @return null
+	 */
+	public function getNotes()
+	{
+		if ($this->getResult() == RequirementResult::Warning)
+		{
+			return Craft::t('You have a buggy version of iconv installed. (See {url1} and {url2}.)', array(
+				'url1' => '<a href="https://bugs.php.net/bug.php?id=48147">PHP bug #48147</a>',
+				'url2' => '<a href="http://sourceware.org/bugzilla/show_bug.cgi?id=13541">iconv bug #13541</a>',
+			));
+		}
+		else
+		{
+			return Craft::t('{url} is recommended.', array(
+				'url' => '<a href="http://php.net/manual/en/book.iconv.php">iconv</a>',
+			));
+		}
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	/**
+	 * Calculates the result of this requirement.
+	 *
+	 * @return string
+	 */
+	protected function calculateResult()
+	{
+		if (function_exists('iconv'))
+		{
+			// See if it's the buggy version
+			if (\HTMLPurifier_Encoder::testIconvTruncateBug() != \HTMLPurifier_Encoder::ICONV_OK)
+			{
+				return RequirementResult::Warning;
+			}
+			else
+			{
+				return RequirementResult::Success;
+			}
+		}
+		else
+		{
+			return RequirementResult::Warning;
+		}
 	}
 }

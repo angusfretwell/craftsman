@@ -257,7 +257,7 @@ class CategoriesService extends BaseApplicationComponent
 
 			if (!$groupRecord)
 			{
-				throw new Exception(Craft::t('No category group exists with the ID “{id}”', array('id' => $group->id)));
+				throw new Exception(Craft::t('No category group exists with the ID “{id}”.', array('id' => $group->id)));
 			}
 
 			$oldCategoryGroup = CategoryGroupModel::populateModel($groupRecord);
@@ -350,7 +350,7 @@ class CategoriesService extends BaseApplicationComponent
 				}
 
 				$fieldLayout = $group->getFieldLayout();
-				craft()->fields->saveLayout($fieldLayout, false);
+				craft()->fields->saveLayout($fieldLayout);
 				$groupRecord->fieldLayoutId = $fieldLayout->id;
 				$group->fieldLayoutId = $fieldLayout->id;
 
@@ -519,48 +519,94 @@ class CategoriesService extends BaseApplicationComponent
 			return false;
 		}
 
-		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
-		try
+		// Fire an 'onBeforeDeleteGroup' event
+		$event = new Event($this, array(
+			'groupId' => $groupId
+		));
+
+		$this->onBeforeDeleteGroup($event);
+
+		if ($event->performAction)
 		{
-			// Delete the field layout
-			$fieldLayoutId = craft()->db->createCommand()
-				->select('fieldLayoutId')
-				->from('categorygroups')
-				->where(array('id' => $groupId))
-				->queryScalar();
+			$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
 
-			if ($fieldLayoutId)
+			try
 			{
-				craft()->fields->deleteLayoutById($fieldLayoutId);
+				// Delete the field layout
+				$fieldLayoutId = craft()->db->createCommand()
+					->select('fieldLayoutId')
+					->from('categorygroups')
+					->where(array('id' => $groupId))
+					->queryScalar();
+
+				if ($fieldLayoutId)
+				{
+					craft()->fields->deleteLayoutById($fieldLayoutId);
+				}
+
+				// Grab the category ids so we can clean the elements table.
+				$categoryIds = craft()->db->createCommand()
+					->select('id')
+					->from('categories')
+					->where(array('groupId' => $groupId))
+					->queryColumn();
+
+				craft()->elements->deleteElementById($categoryIds);
+
+				$affectedRows = craft()->db->createCommand()->delete('categorygroups', array('id' => $groupId));
+
+				if ($transaction !== null)
+				{
+					$transaction->commit();
+				}
+
+				// Fire an 'onDeleteGroup' event
+				$this->onDeleteGroup(new Event($this, array(
+					'groupId' => $groupId
+				)));
+
+				return (bool)$affectedRows;
 			}
-
-			// Grab the category ids so we can clean the elements table.
-			$categoryIds = craft()->db->createCommand()
-				->select('id')
-				->from('categories')
-				->where(array('groupId' => $groupId))
-				->queryColumn();
-
-			craft()->elements->deleteElementById($categoryIds);
-
-			$affectedRows = craft()->db->createCommand()->delete('categorygroups', array('id' => $groupId));
-
-			if ($transaction !== null)
+			catch (\Exception $e)
 			{
-				$transaction->commit();
-			}
+				if ($transaction !== null)
+				{
+					$transaction->rollback();
+				}
 
-			return (bool) $affectedRows;
+				throw $e;
+			}
 		}
-		catch (\Exception $e)
+	}
+
+	/**
+	 * Returns whether a group’s categories have URLs, and if the group’s template path is valid.
+	 *
+	 * @param CategoryGroupModel $group
+	 *
+	 * @return bool
+	 */
+	public function isGroupTemplateValid(CategoryGroupModel $group)
+	{
+		if ($group->hasUrls)
 		{
-			if ($transaction !== null)
-			{
-				$transaction->rollback();
-			}
+			// Set Craft to the site template path
+			$oldTemplatesPath = craft()->path->getTemplatesPath();
+			craft()->path->setTemplatesPath(craft()->path->getSiteTemplatesPath());
 
-			throw $e;
+			// Does the template exist?
+			$templateExists = craft()->templates->doesTemplateExist($group->template);
+
+			// Restore the original template path
+			craft()->path->setTemplatesPath($oldTemplatesPath);
+
+			if ($templateExists)
+			{
+				return true;
+			}
 		}
+
+		return false;
 	}
 
 	// Categories
@@ -591,6 +637,27 @@ class CategoriesService extends BaseApplicationComponent
 	{
 		$isNewCategory = !$category->id;
 
+		$hasNewParent = $this->_checkForNewParent($category);
+
+		if ($hasNewParent)
+		{
+			if ($category->newParentId)
+			{
+				$parentCategory = $this->getCategoryById($category->newParentId, $category->locale);
+
+				if (!$parentCategory)
+				{
+					throw new Exception(Craft::t('No category exists with the ID “{id}”.', array('id' => $category->newParentId)));
+				}
+			}
+			else
+			{
+				$parentCategory = null;
+			}
+
+			$category->setParent($parentCategory);
+		}
+
 		// Category data
 		if (!$isNewCategory)
 		{
@@ -598,7 +665,7 @@ class CategoriesService extends BaseApplicationComponent
 
 			if (!$categoryRecord)
 			{
-				throw new Exception(Craft::t('No category exists with the ID “{id}”', array('id' => $category->id)));
+				throw new Exception(Craft::t('No category exists with the ID “{id}”.', array('id' => $category->id)));
 			}
 		}
 		else
@@ -617,16 +684,33 @@ class CategoriesService extends BaseApplicationComponent
 		}
 
 		$transaction = craft()->db->getCurrentTransaction() === null ? craft()->db->beginTransaction() : null;
+
 		try
 		{
 			// Fire an 'onBeforeSaveCategory' event
-			$this->onBeforeSaveCategory(new Event($this, array(
+			$event = new Event($this, array(
 				'category'      => $category,
 				'isNewCategory' => $isNewCategory
-			)));
+			));
 
-			if (craft()->elements->saveElement($category, false))
+			$this->onBeforeSaveCategory($event);
+
+			// Is the event giving us the go-ahead?
+			if ($event->performAction)
 			{
+				$success = craft()->elements->saveElement($category);
+
+				// If it didn't work, rollback the transaction in case something changed in onBeforeSaveCategory
+				if (!$success)
+				{
+					if ($transaction !== null)
+					{
+						$transaction->rollback();
+					}
+
+					return false;
+				}
+
 				// Now that we have an element ID, save it on the other stuff
 				if ($isNewCategory)
 				{
@@ -635,20 +719,32 @@ class CategoriesService extends BaseApplicationComponent
 
 				$categoryRecord->save(false);
 
-				if ($isNewCategory)
+				// Has the parent changed?
+				if ($hasNewParent)
 				{
-					// Add it to the group's structure
-					craft()->structures->appendToRoot($category->getGroup()->structureId, $category);
+					if (!$category->newParentId)
+					{
+						craft()->structures->appendToRoot($category->getGroup()->structureId, $category);
+					}
+					else
+					{
+						craft()->structures->append($category->getGroup()->structureId, $category, $parentCategory);
+					}
 				}
 
-				if ($transaction !== null)
-				{
-					$transaction->commit();
-				}
+				// Update the category's descendants, who may be using this category's URI in their own URIs
+				craft()->elements->updateDescendantSlugsAndUris($category, true, true);
 			}
 			else
 			{
-				return false;
+				$success = false;
+			}
+
+			// Commit the transaction regardless of whether we saved the category, in case something changed
+			// in onBeforeSaveCategory
+			if ($transaction !== null)
+			{
+				$transaction->commit();
 			}
 		}
 		catch (\Exception $e)
@@ -661,15 +757,16 @@ class CategoriesService extends BaseApplicationComponent
 			throw $e;
 		}
 
-		// If we've made it here, everything has been successful so far.
+		if ($success)
+		{
+			// Fire an 'onSaveCategory' event
+			$this->onSaveCategory(new Event($this, array(
+				'category'      => $category,
+				'isNewCategory' => $isNewCategory
+			)));
+		}
 
-		// Fire an 'onSaveCategory' event
-		$this->onSaveCategory(new Event($this, array(
-			'category'      => $category,
-			'isNewCategory' => $isNewCategory
-		)));
-
-		return true;
+		return $success;
 	}
 
 	/**
@@ -761,6 +858,50 @@ class CategoriesService extends BaseApplicationComponent
 		}
 	}
 
+	/**
+	 * Updates a list of category IDs, filling in any gaps in the family tree.
+	 *
+	 * @param array $ids The original list of category IDs
+	 *
+	 * @return array The list of category IDs with all the gaps filled in.
+	 */
+	public function fillGapsInCategoryIds($ids)
+	{
+		$completeIds = array();
+
+		if ($ids)
+		{
+			// Make sure that for each selected category, all of its parents are also selected.
+			$criteria = craft()->elements->getCriteria(ElementType::Category);
+			$criteria->id = $ids;
+			$criteria->status = null;
+			$criteria->localeEnabled = false;
+			$criteria->limit = null;
+			$categories = $criteria->find();
+
+			$prevCategory = null;
+
+			foreach ($categories as $i => $category)
+			{
+				// Did we just skip any categories?
+				if ($category->level != 1 && (
+					($i == 0) ||
+					(!$category->isSiblingOf($prevCategory) && !$category->isChildOf($prevCategory))
+				))
+				{
+					// Merge in all of the entry's ancestors
+					$ancestorIds = $category->getAncestors()->ids();
+					$completeIds = array_merge($completeIds, $ancestorIds);
+				}
+
+				$completeIds[] = $category->id;
+				$prevCategory = $category;
+			}
+		}
+
+		return $completeIds;
+	}
+
 	// Events
 	// -------------------------------------------------------------------------
 
@@ -812,6 +953,30 @@ class CategoriesService extends BaseApplicationComponent
 		$this->raiseEvent('onDeleteCategory', $event);
 	}
 
+	/**
+	 * Fires an 'onBeforeDeleteGroup' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onBeforeDeleteGroup(Event $event)
+	{
+		$this->raiseEvent('onBeforeDeleteGroup', $event);
+	}
+
+	/**
+	 * Fires an 'onDeleteGroup' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onDeleteGroup(Event $event)
+	{
+		$this->raiseEvent('onDeleteGroup', $event);
+	}
+
 	// Private Methods
 	// =========================================================================
 
@@ -837,6 +1002,58 @@ class CategoriesService extends BaseApplicationComponent
 		}
 
 		return $group;
+	}
+
+	/**
+	 * Checks if an category was submitted with a new parent category selected.
+	 *
+	 * @param CategoryModel $category
+	 *
+	 * @return bool
+	 */
+	private function _checkForNewParent(CategoryModel $category)
+	{
+		// Is it a brand new category?
+		if (!$category->id)
+		{
+			return true;
+		}
+
+		// Was a new parent ID actually submitted?
+		if ($category->newParentId === null)
+		{
+			return false;
+		}
+
+		// Is it set to the top level now, but it hadn't been before?
+		if ($category->newParentId === '' && $category->level != 1)
+		{
+			return true;
+		}
+
+		// Is it set to be under a parent now, but didn't have one before?
+		if ($category->newParentId !== '' && $category->level == 1)
+		{
+			return true;
+		}
+
+		// Is the newParentId set to a different category ID than its previous parent?
+		$criteria = craft()->elements->getCriteria(ElementType::Category);
+		$criteria->ancestorOf = $category;
+		$criteria->ancestorDist = 1;
+		$criteria->status = null;
+		$criteria->localeEnabled = null;
+
+		$oldParent = $criteria->first();
+		$oldParentId = ($oldParent ? $oldParent->id : '');
+
+		if ($category->newParentId != $oldParentId)
+		{
+			return true;
+		}
+
+		// Must be set to the same one then
+		return false;
 	}
 
 	/**

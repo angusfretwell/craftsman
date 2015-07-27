@@ -22,6 +22,11 @@ abstract class BaseModel extends \CModel
 	protected $classSuffix = 'Model';
 
 	/**
+	 * @var bool Whether this model should be strict about only allowing values to be set on defined attributes
+	 */
+	protected $strictAttributes = true;
+
+	/**
 	 * @var
 	 */
 	private $_classHandle;
@@ -34,12 +39,12 @@ abstract class BaseModel extends \CModel
 	/**
 	 * @var
 	 */
-	private $_attributeNames;
+	private $_attributes;
 
 	/**
 	 * @var
 	 */
-	private $_attributes;
+	private $_extraAttributeNames;
 
 	// Public Methods
 	// =========================================================================
@@ -53,6 +58,11 @@ abstract class BaseModel extends \CModel
 	 */
 	public function __construct($attributes = null)
 	{
+		if (!$this->strictAttributes)
+		{
+			$this->_extraAttributeNames = array();
+		}
+
 		ModelHelper::populateAttributeDefaults($this);
 		$this->setAttributes($attributes);
 
@@ -104,24 +114,30 @@ abstract class BaseModel extends \CModel
 	 */
 	public function __call($name, $arguments)
 	{
-		if (in_array($name, $this->attributeNames()))
-		{
-			$copy = $this->copy();
-
-			if (count($arguments) == 1)
-			{
-				$copy->setAttribute($name, $arguments[0]);
-			}
-			else
-			{
-				$copy->setAttribute($name, $arguments);
-			}
-
-			return $copy;
-		}
-		else
+		try
 		{
 			return parent::__call($name, $arguments);
+		}
+		catch (\CException $e)
+		{
+			// Is this one of our attributes?
+			if (!$this->strictAttributes || in_array($name, $this->attributeNames()))
+			{
+				$copy = $this->copy();
+
+				if (count($arguments) == 1)
+				{
+					$copy->setAttribute($name, $arguments[0]);
+				}
+				else
+				{
+					$copy->setAttribute($name, $arguments);
+				}
+
+				return $copy;
+			}
+
+			throw $e;
 		}
 	}
 
@@ -261,12 +277,24 @@ abstract class BaseModel extends \CModel
 	 */
 	public function attributeNames()
 	{
-		if (!isset($this->_attributeNames))
+		$attributeNames = array_keys($this->getAttributeConfigs());
+
+		if (!$this->strictAttributes)
 		{
-			$this->_attributeNames = array_keys($this->getAttributeConfigs());
+			$attributeNames = array_merge($attributeNames, $this->_extraAttributeNames);
 		}
 
-		return $this->_attributeNames;
+		return $attributeNames;
+	}
+
+	/**
+	 * Returns a list of the names of the extra attributes that have been saved on this model, if it's not strict.
+	 *
+	 * @return array
+	 */
+	public function getExtraAttributeNames()
+	{
+		return $this->_extraAttributeNames;
 	}
 
 	/**
@@ -326,61 +354,70 @@ abstract class BaseModel extends \CModel
 	 */
 	public function setAttribute($name, $value)
 	{
-		if (in_array($name, $this->attributeNames()))
+		if (!$this->strictAttributes || in_array($name, $this->attributeNames()))
 		{
-			$attributes = $this->getAttributeConfigs();
-			$config = $attributes[$name];
-
-			// Handle special case attribute types
-			switch ($config['type'])
+			// Is this a normal attribute?
+			if (array_key_exists($name, $this->_attributeConfigs))
 			{
-				case AttributeType::DateTime:
-				{
-					if ($value)
-					{
-						if (!($value instanceof \DateTime))
-						{
-							if (DateTimeHelper::isValidTimeStamp($value))
-							{
-								$value = new DateTime('@'.$value);
-							}
-							else
-							{
-								$value = DateTime::createFromString($value);
-							}
-						}
-					}
-					else
-					{
-						// No empty strings allowed!
-						$value = null;
-					}
+				$attributes = $this->getAttributeConfigs();
+				$config = $attributes[$name];
 
-					break;
-				}
-				case AttributeType::Mixed:
+				// Handle special case attribute types
+				switch ($config['type'])
 				{
-					if ($value && is_string($value) && mb_strpos('{[', $value[0]) !== false)
+					case AttributeType::DateTime:
 					{
-						// Presumably this is JSON.
-						$value = JsonHelper::decode($value);
-					}
-
-					if (is_array($value))
-					{
-						if ($config['model'])
+						if ($value)
 						{
-							$class = __NAMESPACE__.'\\'.$config['model'];
-							$value = $class::populateModel($value);
+							if (!($value instanceof \DateTime))
+							{
+								if (DateTimeHelper::isValidTimeStamp($value))
+								{
+									$value = new DateTime('@'.$value);
+								}
+								else
+								{
+									$value = DateTime::createFromString($value);
+								}
+							}
 						}
 						else
 						{
-							$value = ModelHelper::expandModelsInArray($value);
+							// No empty strings allowed!
+							$value = null;
 						}
-					}
 
-					break;
+						break;
+					}
+					case AttributeType::Mixed:
+					{
+						if ($value && is_string($value) && mb_strpos('{[', $value[0]) !== false)
+						{
+							// Presumably this is JSON.
+							$value = JsonHelper::decode($value);
+						}
+
+						if (is_array($value))
+						{
+							if ($config['model'])
+							{
+								$class = __NAMESPACE__.'\\'.$config['model'];
+								$value = $class::populateModel($value);
+							}
+							else
+							{
+								$value = ModelHelper::expandModelsInArray($value);
+							}
+						}
+
+						break;
+					}
 				}
+			}
+			// Is this the first time this extra attribute has been set?
+			else if (!array_key_exists($name, $this->_extraAttributeNames))
+			{
+				$this->_extraAttributeNames[] = $name;
 			}
 
 			$this->_attributes[$name] = $value;
@@ -401,15 +438,31 @@ abstract class BaseModel extends \CModel
 	 */
 	public function setAttributes($values)
 	{
-		if (is_array($values) || is_object($values))
+		// If this is a model, get the actual attributes on it
+		if ($values instanceof \CModel)
 		{
-			foreach ($this->attributeNames() as $name)
+			$model = $values;
+			$values = $model->getAttributes();
+
+			// Is this a record?
+			if ($model instanceof \CActiveRecord)
 			{
-				// Make sure they're actually setting this attribute
-				if (isset($values[$name]) || (is_array($values) && array_key_exists($name, $values)))
+				// Set any eager-loaded relations' values
+				foreach (array_keys($model->getMetaData()->relations) as $name)
 				{
-					$this->setAttribute($name, $values[$name]);
+					if ($model->hasRelated($name))
+					{
+						$this->setAttribute($name, $model->$name);
+					}
 				}
+			}
+		}
+
+		if (is_array($values) || $values instanceof \Traversable)
+		{
+			foreach ($values as $name => $value)
+			{
+				$this->setAttribute($name, $value);
 			}
 		}
 	}

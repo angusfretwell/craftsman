@@ -23,6 +23,7 @@ class UserIdentity extends \CUserIdentity
 	const ERROR_ACCOUNT_SUSPENDED       = 53;
 	const ERROR_NO_CP_ACCESS            = 54;
 	const ERROR_NO_CP_OFFLINE_ACCESS    = 55;
+	const ERROR_PENDING_VERIFICATION    = 56;
 
 	// Properties
 	// =========================================================================
@@ -32,8 +33,28 @@ class UserIdentity extends \CUserIdentity
 	 */
 	private $_id;
 
+	/**
+	 * @var UserModel
+	 */
+	private $_userModel;
+
 	// Public Methods
 	// =========================================================================
+
+
+	/**
+	 * UserIdentity constructor.
+	 *
+	 * @param string $username username
+	 * @param string $password password
+	 */
+	public function __construct($username,$password)
+	{
+		$this->username = $username;
+		$this->password = $password;
+
+		$this->_userModel = craft()->users->getUserByUsernameOrEmail($username);
+	}
 
 	/**
 	 * Authenticates a user against the database.
@@ -46,8 +67,7 @@ class UserIdentity extends \CUserIdentity
 
 		if ($user)
 		{
-			$this->_processUserStatus($user);
-			return true;
+			return $this->_processUserStatus($user);
 		}
 		else
 		{
@@ -65,6 +85,14 @@ class UserIdentity extends \CUserIdentity
 	}
 
 	/**
+	 * @return UserModel
+	 */
+	public function getUserModel()
+	{
+		return $this->_userModel;
+	}
+
+	/**
 	 * @param $user
 	 *
 	 * @return null
@@ -74,6 +102,7 @@ class UserIdentity extends \CUserIdentity
 		$this->_id = $user->id;
 		$this->username = $user->username;
 		$this->errorCode = static::ERROR_NONE;
+		$this->_userModel = $user;
 	}
 
 	// Private Methods
@@ -90,7 +119,6 @@ class UserIdentity extends \CUserIdentity
 		switch ($user->status)
 		{
 			// If the account is pending, they don't exist yet.
-			case UserStatus::Pending:
 			case UserStatus::Archived:
 			{
 				$this->errorCode = static::ERROR_USERNAME_INVALID;
@@ -109,6 +137,12 @@ class UserIdentity extends \CUserIdentity
 				break;
 			}
 
+			case UserStatus::Pending:
+			{
+				$this->errorCode = static::ERROR_PENDING_VERIFICATION;
+				break;
+			}
+
 			case UserStatus::Active:
 			{
 				// Validate the password
@@ -118,7 +152,7 @@ class UserIdentity extends \CUserIdentity
 					{
 						$this->_id = $user->id;
 						$this->errorCode = static::ERROR_PASSWORD_RESET_REQUIRED;
-						craft()->users->sendForgotPasswordEmail($user);
+						craft()->users->sendPasswordResetEmail($user);
 					}
 					else if (craft()->request->isCpRequest() && !$user->can('accessCp'))
 					{
@@ -130,8 +164,8 @@ class UserIdentity extends \CUserIdentity
 					}
 					else
 					{
-						// Finally, everything is well with the world. Let's log in.
-						$this->logUserIn($user);
+						// Everything is good.
+						$this->errorCode = static::ERROR_NONE;
 					}
 				}
 				else
@@ -156,6 +190,8 @@ class UserIdentity extends \CUserIdentity
 				throw new Exception(Craft::t('User has unknown status “{status}”', array($user->status)));
 			}
 		}
+
+		return $this->errorCode === static::ERROR_NONE;
 	}
 
 	/**

@@ -1,46 +1,11 @@
 <?php
-/**
- * PHPUnit
+/*
+ * This file is part of PHPUnit.
  *
- * Copyright (c) 2001-2014, Sebastian Bergmann <sebastian@phpunit.de>.
- * All rights reserved.
+ * (c) Sebastian Bergmann <sebastian@phpunit.de>
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- *   * Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- *
- *   * Redistributions in binary form must reproduce the above copyright
- *     notice, this list of conditions and the following disclaimer in
- *     the documentation and/or other materials provided with the
- *     distribution.
- *
- *   * Neither the name of Sebastian Bergmann nor the names of his
- *     contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
- *
- * @package    PHPUnit
- * @subpackage Framework
- * @author     Sebastian Bergmann <sebastian@phpunit.de>
- * @copyright  2001-2014 Sebastian Bergmann <sebastian@phpunit.de>
- * @license    http://www.opensource.org/licenses/BSD-3-Clause  The BSD 3-Clause License
- * @link       http://www.phpunit.de/
- * @since      File available since Release 2.0.0
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
 /**
@@ -74,7 +39,7 @@
  * @package    PHPUnit
  * @subpackage Framework
  * @author     Sebastian Bergmann <sebastian@phpunit.de>
- * @copyright  2001-2014 Sebastian Bergmann <sebastian@phpunit.de>
+ * @copyright  Sebastian Bergmann <sebastian@phpunit.de>
  * @license    http://www.opensource.org/licenses/BSD-3-Clause  The BSD 3-Clause License
  * @link       http://www.phpunit.de/
  * @since      Class available since Release 2.0.0
@@ -94,6 +59,11 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
      * @var boolean
      */
     protected $backupStaticAttributes = null;
+
+    /**
+     * @var boolean
+     */
+    private $disallowChangesToGlobalState = null;
 
     /**
      * @var boolean
@@ -499,19 +469,49 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
                         $name
                     );
                 } catch (Exception $e) {
-                    $message = sprintf(
-                        'The data provider specified for %s::%s is invalid.',
-                        $className,
-                        $name
-                    );
+                    if (!($e instanceof PHPUnit_Framework_SkippedTestError || $e instanceof PHPUnit_Framework_IncompleteTestError)) {
+                        $message = sprintf(
+                            'The data provider specified for %s::%s is invalid.',
+                            $className,
+                            $name
+                        );
 
-                    $_message = $e->getMessage();
+                        $_message = $e->getMessage();
 
-                    if (!empty($_message)) {
-                        $message .= "\n" . $_message;
+                        if (!empty($_message)) {
+                            $message .= "\n" . $_message;
+                        }
+
+                        $data = self::warning($message);
+                    } elseif ($e instanceof PHPUnit_Framework_SkippedTestError) {
+                        $message = sprintf(
+                            'Test for %s::%s skipped by data provider',
+                            $className,
+                            $name
+                        );
+
+                        $_message = $e->getMessage();
+
+                        if (!empty($_message)) {
+                            $message .= "\n" . $_message;
+                        }
+
+                        $data = self::skipTest($className, $name, $message);
+                    } elseif ($e instanceof PHPUnit_Framework_IncompleteTestError) {
+                        $message = sprintf(
+                            'Test for %s::%s marked incomplete by data provider',
+                            $className,
+                            $name
+                        );
+
+                        $_message = $e->getMessage();
+
+                        if (!empty($_message)) {
+                            $message .= "\n" . $_message;
+                        }
+
+                        $data = self::incompleteTest($className, $name, $message);
                     }
-
-                    $data = self::warning($message);
                 }
 
                 // Test method with @dataProvider.
@@ -531,7 +531,9 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
 
                     $groups = PHPUnit_Util_Test::getGroups($className, $name);
 
-                    if ($data instanceof PHPUnit_Framework_Warning) {
+                    if ($data instanceof PHPUnit_Framework_Warning ||
+                        $data instanceof PHPUnit_Framework_SkippedTestCase ||
+                        $data instanceof PHPUnit_Framework_IncompleteTestCase) {
                         $test->addTest($data, $groups);
                     } else {
                         foreach ($data as $_dataName => $_data) {
@@ -666,7 +668,13 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
             $this->setUp();
 
             foreach ($hookMethods['beforeClass'] as $beforeClassMethod) {
-                if ($this->testCase === true && class_exists($this->name, false) && method_exists($this->name, $beforeClassMethod)) {
+                if ($this->testCase === true &&
+                    class_exists($this->name, false) &&
+                    method_exists($this->name, $beforeClassMethod)) {
+                    if ($missingRequirements = PHPUnit_Util_Test::getMissingRequirements($this->name, $beforeClassMethod)) {
+                        $this->markTestSuiteSkipped(implode(PHP_EOL, $missingRequirements));
+                    }
+
                     call_user_func(array($this->name, $beforeClassMethod));
                 }
             }
@@ -674,16 +682,26 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
             $numTests = count($this);
 
             for ($i = 0; $i < $numTests; $i++) {
+                $result->startTest($this);
                 $result->addFailure($this, $e, 0);
+                $result->endTest($this, 0);
             }
+
+            $this->tearDown();
+            $result->endTestSuite($this);
 
             return $result;
         } catch (Exception $e) {
             $numTests = count($this);
 
             for ($i = 0; $i < $numTests; $i++) {
+                $result->startTest($this);
                 $result->addError($this, $e, 0);
+                $result->endTest($this, 0);
             }
+
+            $this->tearDown();
+            $result->endTestSuite($this);
 
             return $result;
         }
@@ -695,6 +713,7 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
 
             if ($test instanceof PHPUnit_Framework_TestCase ||
                 $test instanceof PHPUnit_Framework_TestSuite) {
+                $test->setDisallowChangesToGlobalState($this->disallowChangesToGlobalState);
                 $test->setBackupGlobals($this->backupGlobals);
                 $test->setBackupStaticAttributes($this->backupStaticAttributes);
                 $test->setRunTestInSeparateProcess($this->runTestInSeparateProcess);
@@ -866,6 +885,41 @@ class PHPUnit_Framework_TestSuite implements PHPUnit_Framework_Test, PHPUnit_Fra
     protected static function warning($message)
     {
         return new PHPUnit_Framework_Warning($message);
+    }
+
+    /**
+     * @param  string $class
+     * @param  string $methodName
+     * @param  string $message
+     * @return PHPUnit_Framework_SkippedTestCase
+     * @since  Method available since Release 4.3.0
+     */
+    protected static function skipTest($class, $methodName, $message)
+    {
+        return new PHPUnit_Framework_SkippedTestCase($class, $methodName, $message);
+    }
+
+    /**
+     * @param  string $class
+     * @param  string $methodName
+     * @param  string $message
+     * @return PHPUnit_Framework_IncompleteTestCase
+     * @since  Method available since Release 4.3.0
+     */
+    protected static function incompleteTest($class, $methodName, $message)
+    {
+        return new PHPUnit_Framework_IncompleteTestCase($class, $methodName, $message);
+    }
+
+    /**
+     * @param boolean $disallowChangesToGlobalState
+     * @since  Method available since Release 4.6.0
+     */
+    public function setDisallowChangesToGlobalState($disallowChangesToGlobalState)
+    {
+        if (is_null($this->disallowChangesToGlobalState) && is_bool($disallowChangesToGlobalState)) {
+            $this->disallowChangesToGlobalState = $disallowChangesToGlobalState;
+        }
     }
 
     /**

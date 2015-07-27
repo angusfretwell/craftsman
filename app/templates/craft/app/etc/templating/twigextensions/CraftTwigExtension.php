@@ -28,18 +28,26 @@ class CraftTwigExtension extends \Twig_Extension
 			new Exit_TokenParser(),
 			new Header_TokenParser(),
 			new Hook_TokenParser(),
-			new IncludeResource_TokenParser('includeCss'),
+			new IncludeResource_TokenParser('includeCss', true),
+			new IncludeResource_TokenParser('includecss', true),
 			new IncludeResource_TokenParser('includeCssFile'),
+			new IncludeResource_TokenParser('includecssfile'),
 			new IncludeResource_TokenParser('includeCssResource'),
-			new IncludeResource_TokenParser('includeHiResCss'),
-			new IncludeResource_TokenParser('includeJs'),
+			new IncludeResource_TokenParser('includecssresource'),
+			new IncludeResource_TokenParser('includeHiResCss', true),
+			new IncludeResource_TokenParser('includehirescss', true),
+			new IncludeResource_TokenParser('includeJs', true),
+			new IncludeResource_TokenParser('includejs', true),
 			new IncludeResource_TokenParser('includeJsFile'),
+			new IncludeResource_TokenParser('includejsfile'),
 			new IncludeResource_TokenParser('includeJsResource'),
+			new IncludeResource_TokenParser('includejsresource'),
 			new IncludeTranslations_TokenParser(),
 			new Namespace_TokenParser(),
 			new Nav_TokenParser(),
 			new Paginate_TokenParser(),
 			new Redirect_TokenParser(),
+			new RequireAdmin_TokenParser(),
 			new RequireEdition_TokenParser(),
 			new RequireLogin_TokenParser(),
 			new RequirePermission_TokenParser(),
@@ -67,7 +75,9 @@ class CraftTwigExtension extends \Twig_Extension
 			'group'              => new \Twig_Filter_Method($this, 'groupFilter'),
 			'indexOf'            => new \Twig_Filter_Method($this, 'indexOfFilter'),
 			'intersect'          => new \Twig_Filter_Function('array_intersect'),
-			'lcfirst'            => new \Twig_Filter_Function('lcfirst'),
+			'json_encode'        => new \Twig_Filter_Method($this, 'jsonEncodeFilter'),
+			'lcfirst'            => new \Twig_Filter_Method($this, 'lcfirstFilter'),
+			'literal'            => new \Twig_Filter_Method($this, 'literalFilter'),
 			'markdown'           => $markdownFilter,
 			'md'                 => $markdownFilter,
 			'namespace'          => $namespaceFilter,
@@ -80,10 +90,71 @@ class CraftTwigExtension extends \Twig_Extension
 			'replace'            => new \Twig_Filter_Method($this, 'replaceFilter'),
 			'translate'          => $translateFilter,
 			't'                  => $translateFilter,
-			'ucfirst'            => new \Twig_Filter_Function('ucfirst'),
+			'ucfirst'            => new \Twig_Filter_Method($this, 'ucfirstFilter'),
 			'ucwords'            => new \Twig_Filter_Function('ucwords'),
+			'kebab'              => new \Twig_Filter_Method($this, 'kebabFilter'),
 			'without'            => new \Twig_Filter_Method($this, 'withoutFilter'),
 		);
+	}
+
+	/**
+	 * Uppercases the first character of a multibyte string.
+	 *
+	 * @param string $string The multibyte string.
+	 *
+	 * @return string The string with the first character converted to upercase.
+	 */
+	public function ucfirstFilter($string)
+	{
+		return StringHelper::uppercaseFirst($string);
+	}
+
+	/**
+	 * Lowercases the first character of a multibyte string.
+	 *
+	 * @param string $string The multibyte string.
+	 *
+	 * @return string The string with the first character converted to lowercase.
+	 */
+	public function lcfirstFilter($string)
+	{
+		return StringHelper::lowercaseFirst($string);
+	}
+
+	/**
+	 * Kebab-cases a string.
+	 *
+	 * @param string $string The string
+	 * @param string $glue The string used to glue the words together (default is a hyphen)
+	 * @param boolean $lower Whether the string should be lowercased (default is true)
+	 * @param boolean $removePunctuation Whether punctuation marks should be removed (default is true)
+	 *
+	 * @return string
+	 */
+	public function kebabFilter($string, $glue = '-', $lower = true, $removePunctuation = true)
+	{
+		return StringHelper::toKebabCase($string, $glue, $lower, $removePunctuation);
+	}
+
+	/**
+	 * This method will JSON encode a variable. We're overriding Twig's default implementation to set some stricter
+	 * encoding options on text/html/xml requests.
+	 *
+	 * @param mixed    $value   The value to JSON encode.
+	 * @param null|int $options Either null or a bitmask consisting of JSON_HEX_QUOT, JSON_HEX_TAG, JSON_HEX_AMP,
+	 *                          JSON_HEX_APOS, JSON_NUMERIC_CHECK, JSON_PRETTY_PRINT, JSON_UNESCAPED_SLASHES,
+	 *                          JSON_FORCE_OBJECT
+	 *
+	 * @return mixed The JSON encoded value.
+	 */
+	public function jsonEncodeFilter($value, $options = null)
+	{
+		if ($options === null && (in_array(HeaderHelper::getMimeType(), array('text/html', 'application/xhtml+xml'))))
+		{
+			$options = JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_QUOT;
+		}
+
+		return twig_jsonencode_filter($value, $options);
 	}
 
 	/**
@@ -255,6 +326,19 @@ class CraftTwigExtension extends \Twig_Extension
 	}
 
 	/**
+	 * Escapes commas and asterisks in a string so they are not treated as special characters in
+	 * {@link DbHelper::parseParam()}.
+	 *
+	 * @param string $value The param value.
+	 *
+	 * @return string The escaped param value.
+	 */
+	public function literalFilter($value)
+	{
+		return DbHelper::escapeParam($value);
+	}
+
+	/**
 	 * Parses text through Markdown.
 	 *
 	 * @param string $str
@@ -362,7 +446,7 @@ class CraftTwigExtension extends \Twig_Extension
 		$globals['craft'] = $craftVariable;
 		$globals['blx']   = $craftVariable;
 
-		$globals['now'] = DateTimeHelper::currentUTCDateTime();
+		$globals['now'] = new DateTime(null, new \DateTimeZone(craft()->getTimeZone()));
 		$globals['loginUrl'] = UrlHelper::getUrl(craft()->config->getLoginPath());
 		$globals['logoutUrl'] = UrlHelper::getUrl(craft()->config->getLogoutPath());
 

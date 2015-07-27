@@ -2,7 +2,7 @@
 	<input type="hidden" name="{{ name }}" value="">
 {% endif -%}
 
-{% set elements = (elements is defined ? elements : []) -%}
+{% set elements = (elements is defined and elements ? elements : []) -%}
 {% set jsClass = (jsClass is defined and jsClass ? jsClass : 'Craft.BaseElementSelectInput') -%}
 {% set sources = (sources is defined and sources ? sources : null) -%}
 {% set criteria = (criteria is defined and criteria ? criteria : null) -%}
@@ -16,7 +16,7 @@
 		{% endfor %}
 	</div>
 
-	<div class="btn add icon dashed">{{ addButtonLabel }}</div>
+	<div class="btn add icon dashed">{{ selectionLabel is defined ? selectionLabel : (addButtonLabel is defined ? addButtonLabel : "Choose"|t) }}</div>
 </div>
 
 {% set js %}

@@ -30,8 +30,27 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	 */
 	protected $componentType = 'FieldType';
 
+	/**
+	 * @var bool Whether the field is fresh.
+	 * @see isFresh()
+	 * @see setIsFresh()
+	 */
+	private $_isFresh;
+
 	// Public Methods
 	// =========================================================================
+
+	/**
+	 * @inheritDoc IFieldType::setElement()
+	 *
+	 * @param $element
+	 *
+	 * @return null
+	 */
+	public function setElement(BaseElementModel $element)
+	{
+		$this->element = $element;
+	}
 
 	/**
 	 * @inheritDoc IFieldType::defineContentAttribute()
@@ -89,7 +108,7 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	 */
 	public function getInputHtml($name, $value)
 	{
-		return '<textarea name="'.$name.'">'.$value.'</textarea>';
+		return HtmlHelper::encodeParams('<textarea name="{name}">{value}</textarea>', array('name' => $name, 'value' => $value));
 	}
 
 	/**
@@ -199,6 +218,18 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 		}
 	}
 
+	/**
+	 * Sets whether the field is fresh.
+	 *
+	 * @param bool|null $isFresh
+	 *
+	 * @return null
+	 */
+	public function setIsFresh($isFresh)
+	{
+		$this->_isFresh = $isFresh;
+	}
+
 	// Protected Methods
 	// =========================================================================
 
@@ -227,16 +258,21 @@ abstract class BaseFieldType extends BaseSavableComponentType implements IFieldT
 	 */
 	protected function isFresh()
 	{
-		// If this is for a Matrix block, we're more interested in its owner
-		if (isset($this->element) && $this->element->getElementType() == ElementType::MatrixBlock)
+		if (!isset($this->_isFresh))
 		{
-			$element = $this->element->getOwner();
-		}
-		else
-		{
-			$element = $this->element;
+			// If this is for a Matrix block, we're more interested in its owner
+			if (isset($this->element) && $this->element->getElementType() == ElementType::MatrixBlock)
+			{
+				$element = $this->element->getOwner();
+			}
+			else
+			{
+				$element = $this->element;
+			}
+
+			$this->_isFresh = (!$element || (empty($element->getContent()->id) && !$element->hasErrors()));
 		}
 
-		return (!$element || (empty($element->getContent()->id) && !$element->hasErrors()));
+		return $this->_isFresh;
 	}
 }
