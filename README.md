@@ -17,7 +17,7 @@ generator-craftsman
 ## Initialization
 
 * Install: `npm install -g generator-craftsman`
-* Run: `yo craft`
+* Run: `yo craftsman`
 * Run `gulp build` for building and `gulp watch` for preview
 * Use `gulp deploy-init` to initalise a deployment environment
 * Run `gulp deploy` after committing changes to deploy them
