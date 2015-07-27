@@ -3,6 +3,8 @@
   "version": "0.0.0",
   "devDependencies": {
     "babel-core": "^5.8.9",
+    "babel-eslint": "^4.0.5",
+    "eslint": "^0.24.1",
     "browser-sync": "^2.8.0",
     "del": "^1.2.0",
     "gulp": "^3.9.0",

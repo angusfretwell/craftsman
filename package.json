@@ -1,27 +1,31 @@
 {
   "name": "generator-craft",
-  "version": "0.7.3",
+  "version": "0.8.0",
   "description": "Scaffold out a Craft website",
   "license": "MIT",
-  "main": "app/index.js",
+  "main": "lib/index.js",
   "repository": "francisbond/generator-craft",
   "author": {
     "name": "Angus Fretwell",
     "email": "angusfretwell@me.com",
     "url": "https://github.com/angusfretwell"
   },
-  "engines": {
-    "node": ">=0.10.0"
-  },
-  "files": [
-    "app"
-  ],
   "keywords": [
     "yeoman-generator"
   ],
+  "scripts": {
+    "compile": "babel -d lib/ app/",
+    "prepublish": "npm run compile"
+  },
   "dependencies": {
-    "yeoman-generator": "^0.16.0",
+    "core-js": "^1.0.0",
+    "yeoman-generator": "^0.18.10",
     "yosay": "^0.2.0"
+  },
+  "devDependencies": {
+    "babel": "^5.8.9",
+    "babel-eslint": "^4.0.5",
+    "eslint": "^0.24.1"
   },
   "peerDependencies": {
     "yo": ">=1.0.0"
