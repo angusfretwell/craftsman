@@ -30,7 +30,7 @@ export default class CraftsmanGenerator extends Base {
           {
             type: 'input',
             name: 'slug',
-            message: 'Enter a unique slug for this project',
+            messag: 'Enter example unique slug for this project',
           },
         ];
 
@@ -48,7 +48,7 @@ export default class CraftsmanGenerator extends Base {
             type: 'input',
             name: 'dev',
             message: 'Enter the hostname of the dokku development server',
-            defaults: 'dev.mydokkuhost.com',
+            default: 'dev.example.com',
           },
         ];
 
@@ -66,7 +66,7 @@ export default class CraftsmanGenerator extends Base {
             type: 'input',
             name: 'staging',
             message: 'Enter the hostname of the dokku staging server',
-            defaults: 'staging.mydokkuhost.com',
+            default: 'staging.example.com',
           },
         ];
 

@@ -4,7 +4,7 @@
   "description": "Scaffold out a Craft website",
   "license": "MIT",
   "main": "app/index.js",
-  "repository": "francisbond/generator-craftsman",
+  "repository": "angusfretwell/generator-craftsman",
   "author": {
     "name": "Angus Fretwell",
     "email": "angusfretwell@me.com",
