@@ -17,13 +17,17 @@
 @import "inuit-functions/tools.functions";
 @import "inuit-mixins/tools.mixins";
 @import "inuit-tools-widths/tools.widths";
+@import "inuit-tools-pull/tools.pull";
+@import "inuit-tools-push/tools.push";
 @import "inuit-responsive-tools/tools.responsive";
 
-@import "tools/*.*";
+@import "tools/aliases";
+@import "tools/stacked-elements";
 
 
 
-/*------------------------------------*\    #GENERIC
+/*------------------------------------*\
+  #GENERIC
 \*------------------------------------*/
 @import "inuit-box-sizing/generic.box-sizing";
 @import "inuit-normalize/generic.normalize";
@@ -41,7 +45,7 @@
 @import "inuit-page/base.page";
 @import "inuit-paragraphs/base.paragraphs";
 
-@import "base/*.*";
+@import "base/page";
 
 
 
@@ -65,20 +69,19 @@
 @import "inuit-tabs/objects.tabs";
 @import "inuit-text-input/objects.text-input";
 
-@import "objects/*.*";
-
 
 
 /*------------------------------------*\
   #COMPONENTS
 \*------------------------------------*/
-@import "components/*.*";
 
 
 
 /*------------------------------------*\
   #TRUMPS
 \*------------------------------------*/
+@import "inuit-widths/trumps.widths";
+@import "inuit-widths-responsive/trumps.widths-responsive";
 @import "inuit-clearfix/trumps.clearfix";
 @import "inuit-float/trumps.helper.float";
 @import "inuit-font-weight/trumps.helper.font-weight";
@@ -96,9 +99,6 @@
 @import "inuit-spacing-responsive/trumps.spacing-responsive";
 @import "inuit-spacing/trumps.spacing";
 @import "inuit-text-align/trumps.helper.text-align";
-@import "inuit-widths-responsive/trumps.widths-responsive";
-@import "inuit-widths/trumps.widths";
-
-@import "trumps/*.*";
 
 @import "shame";
+

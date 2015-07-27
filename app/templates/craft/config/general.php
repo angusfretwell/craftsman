@@ -28,6 +28,6 @@ return array(
 
   '<%= _.slugify(slug) %>.craft.dev' => array(
     'devMode' => true,
-    'cacheDuration' => 'PT30S'
+    'cacheDuration' => 'PT1S'
   ),
 );

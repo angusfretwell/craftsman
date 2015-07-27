@@ -1,283 +1,209 @@
 // Generated on <%= (new Date).toISOString().split('T')[0] %> using <%= pkg.name %> <%= pkg.version %>
 'use strict';
 
-var gulp = require('gulp'),
-    $ = require('gulp-load-plugins')(),
-    minimist = require('minimist'),
-    browserify = require('browserify'),
-    transform = require('vinyl-transform');
+import gulp from 'gulp';
+import gulpLoadPlugins from 'gulp-load-plugins';
+import browserSync from 'browser-sync';
+import del from 'del';
+import {stream as wiredep} from 'wiredep';
 
-var paths = {
-  styles: 'app/styles/**/*.scss',
-  scripts: 'app/scripts/**/*.js',
-  images: 'app/images/**/*.{gif,jpg,png,svg,webp}',
-  extras: 'app/*.*',
-  html: ['app/**/*.{html,json,csv}'],
-  index: 'app/**/_layout.html',
-  clean: [
-    '.tmp/*',
-    'public/**/*',
-    '!public/assets',
-    '!public/assets/**/*',
-    '!public/index.php',
-    '!public/.htaccess'
-  ]
-};
-
-var knownOptions = {
+const knownOptions = {
   string: 'env',
   default: { env: process.env.NODE_ENV || 'dev' }
 };
 
-var options = minimist(process.argv.slice(2), knownOptions),
-    remotes = require('./env.json').remotes;
+const options = minimist(process.argv.slice(2), knownOptions);
+const remotes = require('./env.json').remotes;
 
-var env = {
+const env = {
   slug: '<%= _.slugify(slug) %>',
-  branch: 'dokku-' + options.env,
-  sqlFile: 'remote--' + options.env + '.sql'
+  branch: `dokku-${options.env}`,
+  sqlFile: `remote--${options.env}.sql`
 }
 
 if (remotes[options.env]) {
   env.server = remotes[options.env]
 } else {
-  var remoteName = $.util.colors.cyan('\'' + options.env + '\'');
+  const remoteName = $.util.colors.cyan(`'${options.env}'`);
 
-  $.util
-    .log('Uh oh, ' + remoteName + ' is not a valid remote.')
-    .beep();
+  $.util.log(`Uh oh, ${remoteName} is not a valid remote.`).beep();
 
   process.exit(1);
 }
 
-/**
- * gulp deploy-init
- */
-gulp.task('deploy-init', function() {
-
+gulp.task('deploy-init', () => {
   return gulp.src('')
     .pipe($.shell([
-      'git remote add <%%= branch %> dokku@<%%= server %>:<%%= slug %>',
-      'git push <%%= branch %> master',
-      'ssh dokku@<%%= server %> mariadb:create <%%= slug %>',
-      'ssh dokku@<%%= server %> mariadb:link <%%= slug %> <%%= slug %>'
+      'git remote add <%= branch %> dokku@<%= server %>:<%= slug %>',
+      'git push <%= branch %> master',
+      'ssh dokku@<%= server %> mariadb:create <%= slug %>',
+      'ssh dokku@<%= server %> mariadb:link <%= slug %> <%= slug %>'
     ], {
       templateData: env
     }));
 });
 
-/**
- * gulp deploy
- */
-gulp.task('deploy', function() {
+gulp.task('deploy', () => {
   return gulp.src('')
    .pipe($.shell([
       'git push origin master',
-      'git push <%%= branch %> master'
+      'git push <%= branch %> master'
     ], {
       templateData: env
     }));
 });
 
-/**
- * gulp db-dump-local
- */
-gulp.task('db-dump-local', ['build'], function() {
+gulp.task('db-dump-local', ['clean:tmp'], () => {
   return gulp.src('')
     .pipe($.shell([
       '[ -d ".tmp" ] || mkdir .tmp',
-      'vagrant ssh --command "mysqldump -uroot -proot <%%= slug %> > /vagrant/.tmp/local.sql"'
+      'vagrant ssh --command "mysqldump -uroot -proot <%= slug %> > /vagrant/.tmp/local.sql"'
     ], {
       templateData: env
     }));
 });
 
-/**
- * gulp db-dump-remote
- */
-gulp.task('db-dump-remote', ['build'], function() {
+gulp.task('db-dump-remote', ['clean:tmp'], () => {
   return gulp.src('')
     .pipe($.shell([
       '[ -d ".tmp" ] || mkdir .tmp',
-      'ssh dokku@<%%= server %> mariadb:dumpraw <%%= slug %> | tee .tmp/<%%= sqlFile %> > /dev/null'
+      'ssh dokku@<%= server %> mariadb:dumpraw <%= slug %> | tee .tmp/<%= sqlFile %> > /dev/null'
     ], {
       templateData: env
     }));
 });
 
-/**
- * gulp db-push
- */
-gulp.task('db-push', ['db-dump-local'], function() {
+gulp.task('db-push', ['db-dump-local'], () => {
   return gulp.src('')
     .pipe($.shell([
-      'ssh dokku@<%%= server %> mariadb:console <%%= slug %> < .tmp/local.sql'
+      'ssh dokku@<%= server %> mariadb:console <%= slug %> < .tmp/local.sql'
     ], {
       templateData: env
     }));
 });
 
-/**
- * gulp db-pull
- */
-gulp.task('db-pull', ['db-dump-remote'], function(){
+gulp.task('db-pull', ['db-dump-remote'], () => {
   return gulp.src('')
     .pipe($.shell([
-      'vagrant ssh --command "mysql -uroot -proot <%%= slug %> < /vagrant/.tmp/<%%= sqlFile %>"'
+      'vagrant ssh --command "mysql -uroot -proot <%= slug %> < /vagrant/.tmp/<%= sqlFile %>"'
     ], {
       templateData: env
     }));
 });
 
-/**
- * gulp db-dump
- */
 gulp.task('db-backup', [
     'clean',
     'db-dump-local',
     'db-dump-remote'
-  ], function() {
-    var d = new Date().toLocaleString()
-
+  ], () => {
     return gulp.src([
       '.tmp/local.sql',
-      '.tmp/' + env.sqlFile
+      `.tmp/${env.sqlFile}`
     ])
-    .pipe($.rename({
-      prefix: d + ' '
-    }))
+    .pipe($.rename({ prefix: `${new Date().toLocaleString()} ` }))
     .pipe(gulp.dest('databases'))
 });
 
-/**
- * gulp styles
- */
-gulp.task('styles', function() {
-  return gulp.src(paths.styles)
+gulp.task('styles', () => {
+  return gulp.src('app/styles/**/*.scss')
     .pipe($.plumber())
-    .pipe($.rubySass({
-      bundleExec: true,
-      require: 'sass-globbing',
-      loadPath: 'bower_components',
-      style: 'expanded',
-      precision: 10
-    }))
-    .pipe($.autoprefixer('last 1 version'))
-    .pipe($.if(options.env === 'production', $.csso()))
-    .pipe(gulp.dest('public/styles'))
+    .pipe($.sourcemaps.init())
+    .pipe($.sass.sync({
+      outputStyle: 'expanded',
+      precision: 10,
+      includePaths: ['.', 'bower_components']
+    }).on('error', $.sass.logError))
+    .pipe($.autoprefixer({browsers: ['last 1 version']}))
+    .pipe($.sourcemaps.write())
+    .pipe(gulp.dest('.tmp/styles'));
 });
 
+function lint(files, options) {
+  return () => {
+    return gulp.src(files)
+      .pipe($.eslint(options))
+      .pipe($.eslint.format())
+      .pipe($.if(!browserSync.active, $.eslint.failAfterError()));
+  };
+}
 
-/**
- * gulp scripts
- */
-gulp.task('scripts', function() {
-  var browserified = transform(function(filename) {
-    var b = browserify(filename);
-    return b.bundle();
-  });
+gulp.task('lint', lint('app/scripts/**/*.js'));
 
-  return gulp.src(paths.scripts)
-    .pipe($.jshint())
-    .pipe($.jshint.reporter('jshint-stylish'))
-    .pipe(browserified)
-    .pipe($.if(options.env === 'production', $.uglify()))
-    .pipe(gulp.dest('public/scripts'));
-});
-
-/**
- * gulp images
- */
-gulp.task('images', function () {
-  return gulp.src(paths.images)
-    .pipe($.changed('public/images'))
-    .pipe($.cache($.imagemin({
+gulp.task('images', () => {
+  return gulp.src('app/images/**/*.{gif,jpg,png,svg,webp}')
+    .pipe($.if($.if.isFile, $.cache($.imagemin({
       progressive: true,
-      interlaced: true
+      interlaced: true,
+      svgoPlugins: [{ cleanupIDs: false }]
+    }))
+    .on('error', (err) => {
+      console.log(err);
+      this.end();
     })))
     .pipe(gulp.dest('public/images'));
 });
 
-/**
- * gulp extras
- */
-gulp.task('extras', function() {
-  return gulp.src(paths.extras, { dot: true })
-    .pipe($.changed('public'))
-    .pipe(gulp.dest('public'));
+gulp.task('fonts', () => {
+  return gulp.src(require('main-bower-files')({
+    filter: '**/*.{eot,svg,ttf,woff,woff2}'
+  }).concat('app/fonts/**/*'))
+    .pipe(gulp.dest('.tmp/fonts'))
+    .pipe(gulp.dest('public/fonts'));
 });
 
-/**
- * gulp clean
- */
-gulp.task('clean', function(cb) {
-  require('del')(paths.clean, cb);
+gulp.task('extras', () => {
+  return gulp.src('app/*.*', {
+    dot: true
+  }).pipe(gulp.dest('public'));
 });
 
-/**
- * gulp html
- */
-gulp.task('html', function() {
-  return gulp.src(paths.html)
-    .pipe($.changed('public'))
-    .pipe($.if(options.env === 'production',
-      $.if('*.html', $.htmlmin({collapseWhitespace: true}))
-    ))
-    .pipe(gulp.dest('public'));
-})
+gulp.task('clean', del.bind(null, [
+  '.tmp/*',
+  'public/**/*',
+  '!public/assets',
+  '!public/assets/**/*',
+  '!public/index.php',
+  '!public/.htaccess'
+]));
 
-/**
- * gulp build
- */
-gulp.task('build', ['clean'], function() {
-  gulp.start('build-useref');
-});
+gulp.task('clean:tmp', del.bind(null, [
+  '.tmp/*'
+]));
 
-/**
- * gulp build-useref
- */
-gulp.task('build-useref', [
-    'html',
-    'images',
-    'scripts',
-    'styles',
-    'extras'
-  ], function() {
-  var assets = $.useref.assets({searchPath: '{public,app}'});
+gulp.task('html', ['styles'], () => {
+  const assets = $.useref.assets({searchPath: ['.tmp', 'app', '.']});
 
-  return gulp.src(paths.index)
-    .pipe($.if(options.env !== 'production',
-      $.multinject(['http://localhost:35729/livereload.js?snipver=1'], 'livereload')
-    ))
+  return gulp.src('app/templates/**/*.html')
     .pipe(assets)
-    .pipe($.if(options.env === 'production', $.if('*.js', $.uglify())))
-    .pipe($.if(options.env === 'production', $.if('*.css', $.csso())))
+    .pipe($.if('*.js', $.uglify()))
+    .pipe($.if('*.css', $.minifyCss({compatibility: '*'})))
     .pipe(assets.restore())
     .pipe($.useref())
-    .pipe($.if(options.env === 'production',
-      $.if('*.html', $.htmlmin({collapseWhitespace: true}))
-    ))
-    .pipe(gulp.dest('public'));
+    .pipe($.if('*.html', $.minifyHtml({conditionals: true, loose: true})))
+    .pipe(gulp.dest('public/templates'))
+    .pipe(reload({stream: true}));
 });
 
-/**
- * gulp watch
- */
-gulp.task('watch', function() {
-  gulp.start('build-useref');
-
-  $.livereload.listen();
-  gulp.watch('public/**/*', $.livereload.changed);
-
-  gulp.watch(paths.extras,  ['extras']);
-  gulp.watch(paths.html,    ['html']);
-  gulp.watch(paths.index,   ['build-useref']);
-  gulp.watch(paths.scripts, ['scripts']);
-  gulp.watch(paths.styles,  ['styles']);
-  gulp.watch(paths.images,  ['images']);
+gulp.task('build', ['lint', 'html', 'images', 'fonts', 'extras'], () => {
+  return gulp.src('public/**/*').pipe($.size({title: 'build', gzip: true}));
 });
 
-/**
- * gulp
- */
-gulp.task('default', ['build']);
+gulp.task('serve', ['styles', 'fonts'], () => {
+  browserSync({
+    proxy: `${env.slug}.craft.dev`,
+    port: 8080,
+    open: true,
+    notify: false
+  });
+
+  gulp.watch('app/*.*', ['extras']);
+  gulp.watch('app/fonts/**/*', ['fonts']);
+  gulp.watch('app/images/**/*', ['images']);
+  gulp.watch('app/scripts/**/*.js', ['html']);
+  gulp.watch('app/styles/**/*.scss', ['styles', 'html']);
+  gulp.watch('app/templates/**/*.html', ['html']);
+});
+
+gulp.task('default', ['clean'], () => {
+  gulp.start('build');
+});

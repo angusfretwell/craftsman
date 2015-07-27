@@ -19,16 +19,16 @@
 
     <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
 
-    <!-- build:css /styles/vendor.css -->
+    <!-- build:css ../styles/vendor.css -->
     <!-- bower:css -->
     <!-- endbower -->
     <!-- endbuild -->
 
-    <!-- build:css /styles/styles.css -->
+    <!-- build:css ../styles/styles.css -->
     <link rel="stylesheet" href="styles/styles.css">
     <!-- endbuild -->
 
-    <!-- build:js /scripts/vendor/modernizr.js -->
+    <!-- build:js ../scripts/vendor/modernizr.js -->
     <script src="../bower_components/modernizr/modernizr.js"></script>
     <!-- endbuild -->
   </head>
@@ -43,7 +43,7 @@
 
       <nav>
         <ul>
-          <li><a href="{{ url('news') }}" {% if craft.request.firstSegment == 'news' %}class="active"{% endif %}>News</a></li>
+          <li><a href="{{ url('news') }}" class="{% if craft.request.firstSegment == 'news' %}active{% endif %}">News</a></li>
         </ul>
       </nav>
     </header>
@@ -57,18 +57,15 @@
       Copyright {{ now.year }} {{ craft.request.serverName | ucfirst }}. All rights reserved &bull; Built with <a href="http://buildwithcraft.com">Craft</a>
     </footer>
 
-    <!-- build:js /scripts/vendor.js -->
+    <!-- build:js ../scripts/vendor.js -->
     <!-- bower:js --><% if (includejQuery) { %>
     <script src="../bower_components/jquery/dist/jquery.js"></script>
     <% } %><!-- endbower -->
     <!-- endbuild -->
 
-    <!-- build:js /scripts/main.js -->
+    <!-- build:js ../scripts/main.js -->
     <script src="scripts/main.js"></script>
     <!-- endbuild -->
-
-    <!--inject:livereload-->
-    <!--end inject-->
 
     <!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
     <script>
