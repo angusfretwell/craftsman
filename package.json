@@ -1,10 +1,10 @@
 {
-  "name": "generator-craft",
+  "name": "generator-craftsman",
   "version": "0.8.0",
   "description": "Scaffold out a Craft website",
   "license": "MIT",
   "main": "app/index.js",
-  "repository": "francisbond/generator-craft",
+  "repository": "francisbond/generator-craftsman",
   "author": {
     "name": "Angus Fretwell",
     "email": "angusfretwell@me.com",

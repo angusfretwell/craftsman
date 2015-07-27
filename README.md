@@ -1,5 +1,5 @@
-generator-craft
-===============
+generator-craftsman
+===================
 
 [Yeoman](http://yeoman.io) generator for scaffolding a [Craft](http://buildwithcraft.com) website with [Gulp](http://gulpjs.com/), Bower, Sass, inuit.css, Modernizr, and jQuery.
 
@@ -16,7 +16,7 @@ generator-craft
 
 ## Initialization
 
-* Install: `npm install -g francisbond/generator-craft`
+* Install: `npm install -g generator-craftsman`
 * Run: `yo craft`
 * Run `gulp build` for building and `gulp watch` for preview
 * Use `gulp deploy-init` to initalise a deployment environment

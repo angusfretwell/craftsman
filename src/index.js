@@ -4,7 +4,7 @@ import mkdirp from 'mkdirp';
 
 import { Base } from 'yeoman-generator';
 
-export default class CraftGenerator extends Base {
+export default class CraftsmanGenerator extends Base {
   constructor(...args) {
     super(...args);
 
@@ -214,5 +214,3 @@ export default class CraftGenerator extends Base {
     this.installDependencies();
   }
 }
-
-module.exports = CraftGenerator;
