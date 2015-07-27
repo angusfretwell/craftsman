@@ -189,7 +189,7 @@ gulp.task('build', ['lint', 'html', 'images', 'fonts', 'extras'], () => {
   return gulp.src('public/**/*').pipe($.size({title: 'build', gzip: true}));
 });
 
-gulp.task('serve', ['styles', 'fonts'], () => {
+gulp.task('watch', ['styles', 'fonts'], () => {
   browserSync({
     proxy: `${env.slug}.craft.dev`,
     port: 8080,
