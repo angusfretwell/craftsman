@@ -18,7 +18,7 @@ Features
 Installation
 ------------
 
-* Install: `npm install -g generator-craftsman`
+`npm install -g generator-craftsman`
 
 ### Requirements
 
@@ -31,7 +31,7 @@ Project Setup
 
 * Create a new directory with `mkdir my-craft-project`
 * Change to the project directory with `cd my-craft-project`
-* Run `yo craft` and follow the prompts
+* Run `yo craftsman` and follow the prompts
 
 ### Development
 
