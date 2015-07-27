@@ -24,9 +24,7 @@ const env = {
 if (remotes[options.env]) {
   env.server = remotes[options.env]
 } else {
-  const remoteName = $.util.colors.cyan(`'${options.env}'`);
-
-  $.util.log(`Uh oh, ${remoteName} is not a valid remote.`).beep();
+  $.util.log(`You must provide a valid remote name.`).beep();
 
   process.exit(1);
 }
@@ -34,10 +32,10 @@ if (remotes[options.env]) {
 gulp.task('deploy-init', () => {
   return gulp.src('')
     .pipe($.shell([
-      'git remote add <%= branch %> dokku@<%= server %>:<%= slug %>',
-      'git push <%= branch %> master',
-      'ssh dokku@<%= server %> mariadb:create <%= slug %>',
-      'ssh dokku@<%= server %> mariadb:link <%= slug %> <%= slug %>'
+      'git remote add <%%= branch %> dokku@<%%= server %>:<%%= slug %>',
+      'git push <%%= branch %> master',
+      'ssh dokku@<%%= server %> mariadb:create <%%= slug %>',
+      'ssh dokku@<%%= server %> mariadb:link <%%= slug %> <%%= slug %>'
     ], {
       templateData: env
     }));
@@ -47,7 +45,7 @@ gulp.task('deploy', () => {
   return gulp.src('')
    .pipe($.shell([
       'git push origin master',
-      'git push <%= branch %> master'
+      'git push <%%= branch %> master'
     ], {
       templateData: env
     }));
@@ -57,7 +55,7 @@ gulp.task('db-dump-local', ['clean:tmp'], () => {
   return gulp.src('')
     .pipe($.shell([
       '[ -d ".tmp" ] || mkdir .tmp',
-      'vagrant ssh --command "mysqldump -uroot -proot <%= slug %> > /vagrant/.tmp/local.sql"'
+      'vagrant ssh --command "mysqldump -uroot -proot <%%= slug %> > /vagrant/.tmp/local.sql"'
     ], {
       templateData: env
     }));
@@ -67,7 +65,7 @@ gulp.task('db-dump-remote', ['clean:tmp'], () => {
   return gulp.src('')
     .pipe($.shell([
       '[ -d ".tmp" ] || mkdir .tmp',
-      'ssh dokku@<%= server %> mariadb:dumpraw <%= slug %> | tee .tmp/<%= sqlFile %> > /dev/null'
+      'ssh dokku@<%%= server %> mariadb:dumpraw <%%= slug %> | tee .tmp/<%%= sqlFile %> > /dev/null'
     ], {
       templateData: env
     }));
@@ -76,7 +74,7 @@ gulp.task('db-dump-remote', ['clean:tmp'], () => {
 gulp.task('db-push', ['db-dump-local'], () => {
   return gulp.src('')
     .pipe($.shell([
-      'ssh dokku@<%= server %> mariadb:console <%= slug %> < .tmp/local.sql'
+      'ssh dokku@<%%= server %> mariadb:console <%%= slug %> < .tmp/local.sql'
     ], {
       templateData: env
     }));
@@ -85,7 +83,7 @@ gulp.task('db-push', ['db-dump-local'], () => {
 gulp.task('db-pull', ['db-dump-remote'], () => {
   return gulp.src('')
     .pipe($.shell([
-      'vagrant ssh --command "mysql -uroot -proot <%= slug %> < /vagrant/.tmp/<%= sqlFile %>"'
+      'vagrant ssh --command "mysql -uroot -proot <%%= slug %> < /vagrant/.tmp/<%%= sqlFile %>"'
     ], {
       templateData: env
     }));

@@ -84,7 +84,7 @@ var CraftGenerator = yeoman.generators.Base.extend({
   },
 
   gulp: function() {
-    this.template('gulpfile.js', 'gulpfile.js');
+    this.template('gulpfile.babel.js', 'gulpfile.babel.js');
   },
 
   git: function() {
