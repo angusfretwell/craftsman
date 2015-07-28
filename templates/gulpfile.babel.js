@@ -177,7 +177,7 @@ gulp.task('build', ['lint', 'html', 'images', 'fonts', 'extras'], () => {
   return gulp.src('public/**/*').pipe($.size({title: 'build', gzip: true}));
 });
 
-gulp.task('watch', ['styles', 'fonts'], () => {
+gulp.task('watch', ['lint', 'html', 'images', 'fonts', 'extras'], () => {
   browserSync({
     proxy: `${env.slug}.craft.dev`,
     port: 8080,
@@ -186,8 +186,8 @@ gulp.task('watch', ['styles', 'fonts'], () => {
   });
 
   gulp.watch('app/*.*', ['extras']);
-  gulp.watch('app/fonts/**/*', ['fonts']);
-  gulp.watch('app/images/**/*', ['images']);
+  gulp.watch('app/fonts/**/*.{eot,svg,ttf,woff,woff2}', ['fonts']);
+  gulp.watch('app/images/**/*.{gif,jpg,png,svg,webp}', ['images']);
   gulp.watch('app/scripts/**/*.js', ['html']);
   gulp.watch('app/styles/**/*.scss', ['styles', 'html']);
   gulp.watch('app/templates/**/*.html', ['html']);
