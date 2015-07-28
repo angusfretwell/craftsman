@@ -12,7 +12,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'd
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
 
 require('core-js/shim');
 
@@ -27,8 +27,6 @@ var _mkdirp2 = _interopRequireDefault(_mkdirp);
 var _yeomanGenerator = require('yeoman-generator');
 
 var CraftsmanGenerator = (function (_Base) {
-  _inherits(CraftsmanGenerator, _Base);
-
   function CraftsmanGenerator() {
     _classCallCheck(this, CraftsmanGenerator);
 
@@ -50,6 +48,8 @@ var CraftsmanGenerator = (function (_Base) {
 
     this.log((0, _yosay2['default'])('You\'re using the fantastic Craft generator.'));
   }
+
+  _inherits(CraftsmanGenerator, _Base);
 
   _createClass(CraftsmanGenerator, [{
     key: 'app',
@@ -160,7 +160,7 @@ var CraftsmanGenerator = (function (_Base) {
           var prompt = [{
             type: 'input',
             name: 'slug',
-            message: 'Enter a unique slug for this project'
+            messag: 'Enter example unique slug for this project'
           }];
 
           this.prompt(prompt, function (_ref) {
@@ -180,7 +180,7 @@ var CraftsmanGenerator = (function (_Base) {
             type: 'input',
             name: 'dev',
             message: 'Enter the hostname of the dokku development server',
-            defaults: 'dev.mydokkuhost.com'
+            'default': 'dev.example.com'
           }];
 
           this.prompt(prompt, function (_ref2) {
@@ -200,7 +200,7 @@ var CraftsmanGenerator = (function (_Base) {
             type: 'input',
             name: 'staging',
             message: 'Enter the hostname of the dokku staging server',
-            defaults: 'staging.mydokkuhost.com'
+            'default': 'staging.example.com'
           }];
 
           this.prompt(prompt, function (_ref3) {
