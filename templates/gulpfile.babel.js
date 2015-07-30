@@ -35,61 +35,49 @@ if (remotes[options.env]) {
 gulp.task('deploy-init', () => {
   return gulp.src('')
     .pipe($.shell([
-      `git remote add ${branch} dokku@${server}:${slug}`
-      `git push ${branch} master`
-      `ssh dokku@${server} mariadb:create ${slug}`
-      `ssh dokku@${server} mariadb:link ${slug} ${slug}`
-    ], {
-      templateData: env
-    }));
+      `git remote add ${env.branch} dokku@${env.server}:${env.slug}`,
+      `git push ${env.branch} master`,
+      `ssh dokku@${env.server} mariadb:create ${env.slug}`,
+      `ssh dokku@${env.server} mariadb:link ${env.slug} ${env.slug}`
+    ]));
 });
 
 gulp.task('deploy', () => {
   return gulp.src('')
-   .pipe($.shell([
+    .pipe($.shell([
       'git push origin master',
-      `git push ${branch} master`
-    ], {
-      templateData: env
-    }));
+      `git push ${env.branch} master`
+    ]));
 });
 
 gulp.task('db-dump-local', ['clean:tmp'], () => {
   return gulp.src('')
     .pipe($.shell([
       '[ -d ".tmp" ] || mkdir .tmp',
-      `vagrant ssh --command "mysqldump -uroot -proot ${slug} > /vagrant/.tmp/local.sql"`
-    ], {
-      templateData: env
-    }));
+      `vagrant ssh --command "mysqldump -uroot -proot ${env.slug} > /vagrant/.tmp/local.sql"`
+    ]));
 });
 
 gulp.task('db-dump-remote', ['clean:tmp'], () => {
   return gulp.src('')
     .pipe($.shell([
       '[ -d ".tmp" ] || mkdir .tmp',
-      `ssh dokku@${server} mariadb:dumpraw ${slug} | tee .tmp/${sqlFile} > /dev/null`
-    ], {
-      templateData: env
-    }));
+      `ssh dokku@${env.server} mariadb:dumpraw ${env.slug} | tee .tmp/${env.sqlFile} > /dev/null`
+    ]));
 });
 
 gulp.task('db-push', ['db-dump-local'], () => {
   return gulp.src('')
     .pipe($.shell([
-      `ssh dokku@${server} mariadb:console ${slug} < .tmp/local.sql`
-    ], {
-      templateData: env
-    }));
+      `ssh dokku@${env.server} mariadb:console ${env.slug} < .tmp/local.sql`
+    ]));
 });
 
 gulp.task('db-pull', ['db-dump-remote'], () => {
   return gulp.src('')
     .pipe($.shell([
-      `vagrant ssh --command "mysql -uroot -proot ${slug} < /vagrant/.tmp/${sqlFile}"`
-    ], {
-      templateData: env
-    }));
+      `vagrant ssh --command "mysql -uroot -proot ${env.slug} < /vagrant/.tmp/${env.sqlFile}"`
+    ]));
 });
 
 gulp.task('db-backup', [
@@ -189,7 +177,7 @@ gulp.task('build', ['lint', 'html', 'images', 'fonts', 'extras'], () => {
   return gulp.src('public/**/*').pipe($.size({title: 'build', gzip: true}));
 });
 
-gulp.task('watch', ['styles', 'fonts'], () => {
+gulp.task('watch', ['lint', 'html', 'images', 'fonts', 'extras'], () => {
   browserSync({
     proxy: `${env.slug}.craft.dev`,
     port: 8080,
@@ -198,8 +186,8 @@ gulp.task('watch', ['styles', 'fonts'], () => {
   });
 
   gulp.watch('app/*.*', ['extras']);
-  gulp.watch('app/fonts/**/*', ['fonts']);
-  gulp.watch('app/images/**/*', ['images']);
+  gulp.watch('app/fonts/**/*.{eot,svg,ttf,woff,woff2}', ['fonts']);
+  gulp.watch('app/images/**/*.{gif,jpg,png,svg,webp}', ['images']);
   gulp.watch('app/scripts/**/*.js', ['html']);
   gulp.watch('app/styles/**/*.scss', ['styles', 'html']);
   gulp.watch('app/templates/**/*.html', ['html']);

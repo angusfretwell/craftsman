@@ -1,7 +1,7 @@
 {
   "name": "<%= slug %>",
   "version": "0.0.0",
-  "devDependencies": {
+  "dependencies": {
     "babel-core": "^5.8.9",
     "babel-eslint": "^4.0.5",
     "eslint": "^0.24.1",
