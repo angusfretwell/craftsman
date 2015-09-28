@@ -30,7 +30,7 @@ export default class CraftsmanGenerator extends Base {
           {
             type: 'input',
             name: 'slug',
-            messag: 'Enter example unique slug for this project',
+            message: 'Enter example unique slug for this project',
           },
         ];
 
