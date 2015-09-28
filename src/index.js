@@ -84,7 +84,7 @@ export default class CraftsmanGenerator extends Base {
             type: 'input',
             name: 'production',
             message: ' the hostname of the dokku production server',
-            defaults: 'craft.mydokkuhost.com',
+            default: 'production.example.com',
           },
         ];
 
