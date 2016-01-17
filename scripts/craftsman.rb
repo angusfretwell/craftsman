@@ -128,7 +128,8 @@ class Craftsman
 
     # Install Craft CLI
     config.vm.provision 'shell' do |s|
-      s.inline = '/usr/local/bin/composer global require \'craft-cli/cli\''
+      s.privileged = false
+      s.inline = 'sudo /usr/local/bin/composer global require \'craft-cli/cli\''
     end
 
     # Install All The Configured Nginx Sites
