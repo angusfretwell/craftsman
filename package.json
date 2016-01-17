@@ -1,6 +1,6 @@
 {
   "name": "generator-craftsman",
-  "version": "0.8.6",
+  "version": "2.0.0",
   "description": "Scaffold out a Craft website",
   "license": "MIT",
   "main": "app/index.js",

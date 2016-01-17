@@ -1,7 +1,0 @@
-{
-  "remotes": {
-    "dev": "<%= remoteDev %>",
-    "staging": "<%= remoteStaging %>",
-    "production": "<%= remoteProduction %>"
-  }
-}
