@@ -1,10 +1,10 @@
-cd "$1/../";
+cd $1 && cd ../ || exit;
 
 # Install Craft if it's not already installed; otherwise exit
 /home/vagrant/.composer/vendor/bin/craft install --terms --no-interaction || exit
 
 # Remove Craft readme and templates directory
-rm readme.txt && rm -r app/templates
+rm readme.txt && rm -r craft/templates
 
 # Rename htaccess file
 mv public/htaccess public/.htaccess
