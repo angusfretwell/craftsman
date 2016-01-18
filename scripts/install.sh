@@ -27,7 +27,7 @@ return array(
 	'database' => 'craftsman',
 
 	// The database username to connect with.
-	'user' => 'craftsman',
+	'user' => 'journeyman',
 
 	// The database password to connect with.
 	'password' => 'secret',
