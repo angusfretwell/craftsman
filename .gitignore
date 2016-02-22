@@ -34,7 +34,7 @@ node_modules
 .node_repl_history
 
 # Temporary entries
-# /app 
 /craft
-/public/**/*
+/public
 .vagrant
+.env
