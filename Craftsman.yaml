@@ -19,10 +19,3 @@ sites:
 
 databases:
     - craftsman
-
-# ports:
-#     - send: 50000
-#       to: 5000
-#     - send: 7777
-#       to: 777
-#       protocol: udp
