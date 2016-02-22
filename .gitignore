@@ -33,9 +33,13 @@ node_modules
 # Optional REPL history
 .node_repl_history
 
-# Temporary entries
-/craft
-/public
-/vendor
+# Managed by Composer
+vendor
+
+# Managed by Vagrant
 .vagrant
+
+# Managed by Craftsman
+public
+craft
 .env
