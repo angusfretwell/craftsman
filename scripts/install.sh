@@ -21,19 +21,19 @@ echo "<?php
 return array(
 
 	// The database server name or IP address. Usually this is 'localhost' or '127.0.0.1'.
-	'server' => 'localhost',
+	'server' => getenv('DB_SERVER'),
 
 	// The name of the database to select.
-	'database' => 'craftsman',
+	'database' => getenv('DB_DATABASE'),
 
 	// The database username to connect with.
-	'user' => 'journeyman',
+	'user' => getenv('DB_USER'),
 
 	// The database password to connect with.
-	'password' => 'secret',
+	'password' => getenv('DB_PASSWORD'),
 
 	// The prefix to use when naming tables. This can be no more than 5 characters.
-	'tablePrefix' => 'craft',
+	'tablePrefix' => getenv('DB_TABLE_PREFIX'),
 
 );
 " > craft/config/db.php
@@ -47,12 +47,36 @@ echo "<?php
  * You can see a list of the default settings in craft/app/etc/config/defaults/general.php
  */
 
-return array(
+ // Ensure our URLs have the right scheme
+ define('URI_SCHEME', (isset(\$_SERVER['HTTPS'])) ? 'https://' : 'http://');
 
+ // The site URL
+ define('SITE_URL', URI_SCHEME . \$_SERVER['SERVER_NAME'] . '/');
+
+ // The site basepath
+ define('BASEPATH', realpath(CRAFT_BASE_PATH . '/../') . '/');
+
+return array(
+  'omitScriptNameInUrls' => true,
+  'allowAutoUpdates' => false,
+
+  'environmentVariables' => array(
+    'siteUrl'  => SITE_URL,
+    'basePath' => BASEPATH
+  ),
+
+  'devMode' => getenv('DEV_MODE'),
+  'enableTemplateCaching' => getenv('ENABLE_TEMPLATE_CACHING'),
+  'testToEmailAddress' => getenv('TEST_TO_EMAIL_ADDRESS'),
 );
 " > craft/config/general.php
 
 echo "<?php
+
+require_once('../vendor/autoload.php');
+
+\$dotenv = new Dotenv\Dotenv(dirname(dirname(__FILE__)));
+\$dotenv->load();
 
 // Path to your craft/ folder
 \$craftPath = '../craft';
