@@ -1,18 +1,4 @@
 {
-  "name": "craftsman",
-  "version": "0.9.0",
-  "description": "",
-  "main": "gulpfile.js",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/angusfretwell/generator-craftsman.git"
-  },
-  "author": "Angus Fretwell <angusfretwell@me.com> (http://angusfretwell.com)",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/angusfretwell/generator-craftsman/issues"
-  },
-  "homepage": "https://github.com/angusfretwell/generator-craftsman#readme",
   "devDependencies": {
     "babel": "^6.3.26",
     "babel-preset-es2015": "^6.3.13",
