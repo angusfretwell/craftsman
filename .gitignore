@@ -40,6 +40,7 @@ vendor
 .vagrant
 
 # Managed by Craftsman
-public
+public/**/*
+!public/.gitkeep
 craft
 .env
