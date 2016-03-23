@@ -25,5 +25,8 @@
     "vinyl-source-stream": "^1.1.0",
     "babel-polyfill": "^6.3.14",
     "normalize.css": "^3.0.3"
+  },
+  "scripts": {
+    "postinstall": "gulp"
   }
 }
