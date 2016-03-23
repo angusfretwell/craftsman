@@ -188,10 +188,5 @@ class Craftsman
     config.vm.provision 'shell' do |s|
       s.inline = '/usr/local/bin/composer self-update'
     end
-
-    # Install Composer Dependencies
-    config.vm.provision 'shell' do |s|
-      s.inline = 'cd /home/vagrant && /usr/local/bin/composer install'
-    end
   end
 end
