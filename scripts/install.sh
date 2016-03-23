@@ -16,7 +16,7 @@ rm readme.txt && rm -r craft/templates
 mv public/htaccess public/.htaccess
 
 # Generate .env file from .env.example
-echo .env.example > .env
+cat .env.example > .env
 
 echo "<?php
 
