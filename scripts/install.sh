@@ -1,10 +1,10 @@
 cd $1 && cd ../ || exit;
 
 # Install Composer requirements
-composer install
+composer install --prefer-dist --no-interaction --quiet
 
 # Install node modules
-npm install
+npm install --no-progress
 
 # Install Craft if it's not already installed; otherwise exit
 /home/vagrant/.composer/vendor/bin/craft install --terms --no-interaction || exit
