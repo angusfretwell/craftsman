@@ -11,17 +11,17 @@ aliasesPath = "aliases"
 require File.expand_path("scripts/craftsman.rb")
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
-    if File.exists? aliasesPath then
+    if File.exist? aliasesPath then
         config.vm.provision "file", source: aliasesPath, destination: "~/.bash_aliases"
     end
 
-    if File.exists? craftsmanYamlPath then
+    if File.exist? craftsmanYamlPath then
         Craftsman.configure(config, YAML::load(File.read(craftsmanYamlPath)))
-    elsif File.exists? craftsmanJsonPath then
+    elsif File.exist? craftsmanJsonPath then
         Craftsman.configure(config, JSON.parse(File.read(craftsmanJsonPath)))
     end
 
-    if File.exists? afterScriptPath then
+    if File.exist? afterScriptPath then
         config.vm.provision "shell", path: afterScriptPath
     end
 end
