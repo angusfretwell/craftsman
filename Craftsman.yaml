@@ -15,7 +15,7 @@ folders:
       to: /home/vagrant/craftsman
 
 sites:
-    - map: craftsman.dev
+    - map: craftsman.app
       to: /home/vagrant/craftsman/public
 
 databases:

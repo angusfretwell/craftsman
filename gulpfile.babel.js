@@ -21,7 +21,7 @@ import useref from 'gulp-useref';
 
 gulp.task('watch', ['styles', 'scripts', 'images'], () => {
   browserSync({
-    proxy: 'localhost',
+    proxy: 'http://craftsman.app',
     port: 8080,
   });
 
