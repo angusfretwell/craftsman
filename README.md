@@ -26,7 +26,7 @@ You'll need to have Vagrant and the Virtualbox provider installed (refer to Vagr
 1. Download the [latest release](https://github.com/angusfretwell/craftsman/releases) manually, or using curl:
 
   ```shell
-  $ curl -s https://github.com/angusfretwell/craftsman/archive/master.tar.gz | tar xvf - -C craftsman
+  $ mkdir -p craftsman && curl -L https://github.com/angusfretwell/craftsman/archive/master.tar.gz | tar xvf - -C craftsman --strip-components 1
   ```
 
 2. You may wish to modify the default configuration in the Craftsman.yaml in order to change the default hostname, resource usage, directory names, or database name.
