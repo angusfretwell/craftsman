@@ -94,7 +94,7 @@ require_once('../vendor/autoload.php');
 \$path = rtrim(\$craftPath, '/').'/app/index.php';
 
 \$hostname = explode('.', \$_SERVER['SERVER_NAME']);
-\$templatesPath = (end(\$hostname) === 'dev') ? '../app/templates/' : './templates/';
+\$templatesPath = (end(\$hostname) === 'app') ? '../app/templates/' : './templates/';
 
 // Path to the templates folder
 define('CRAFT_TEMPLATES_PATH', \$templatesPath);
