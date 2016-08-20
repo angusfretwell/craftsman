@@ -63,6 +63,90 @@ The `gulp watch` command will continue running in your terminal and watch your a
 $ gulp watch
 ```
 
+#### Sass compilation
+
+The SCSS files in app/styles will be compiled, built to CSS, and minified by the asset pipeline. From the entry-point (app.scss), you can `@import` local SCSS files and CSS or SCSS files from npm packages:
+
+```
+// Importing from a local file (app/styles/components/_button.scss)
+@import 'components/button';
+
+// Importing from a package
+@import 'normalize.css/normalize';
+```
+
+#### ES2015 and module bundling
+
+Craftsman will compile JavaScript in the app/scripts directory with Browserify, and transpile ES2015 syntax to ES5 using Babel (using [Airbnb's preset](https://github.com/airbnb/babel-preset-airbnb). From the entry point (app.js), you can `import` or `require` local JavaScript files or from npm packages:
+
+```
+// Importing from a local file (app/scripts/components/button.js)
+import button from './components/button';
+
+// Importing from a package
+import $ from 'jquery';
+```
+
+##### ESLint
+
+ESLint is configured to run during `gulp watch`, and uses [Airbnb's style guide](https://github.com/airbnb/javascript).
+
+#### Integrating front-end libraries
+
+##### Example: Bootstrap
+
+1. Install [bootstrap-sass](https://github.com/twbs/bootstrap-sass) and jQuery
+
+  ```shell
+  npm install --save bootstrap-sass jquery
+  ```
+
+2. Import Bootstrap styles in app.scss:
+
+  ```
+  @import 'bootstrap-sass';
+  ```
+
+3. Require jQuery and Bootstrap javascript in app.js:
+
+  ```
+  require('jquery');
+  require('bootstrap-sass');
+  ```
+
+### Vagrant machine
+
+When provisioning the Vagrant machine, Craftsman runs a series of provisioning scripts that installs Craft, creates a MySQL database, and configures Nginx to serve the site. Craftsman uses the [Journeyman](https://github.com/angusfretwell/journeyman) base box.
+
+#### Development environment configuration
+
+The hostname, folders, databases, and system resources used by Craftsman's provisioning scripts can be configured in the Craftsman.yaml file.
+
+#### Custom provisioning tasks
+
+If you would like to do some extra provisioning you may add any commands you wish to the scripts/after.sh file and they will be run after the Craftsman machine is provisioned.
+
+#### Environment variables
+
+Environment variables includes MySQL connection details, development mode, template caching  and test email address can be set in the .env file which is loaded during runtime. These environment variables are used in Craft's configuration files in craft/config.
+
+During provisioning, Craftsman copies the .env.example file (which is tracked in version control) to .env, so that a developer can customise configuration without affecting another developer's environment.
+
+If you'd like to control more of Craft's configuration on a per-environment, you can add more variables to the .env file (and .env.example file), and then utilise these variables in Craft's config files:
+
+```shell
+# .env
+DEV_MODE=true
+```
+
+```php
+<?php
+// craft/config/general.php
+return array(
+  'devMode' => getenv('DEV_MODE'),
+);
+```
+
 ## License
 
 The MIT License (MIT)
