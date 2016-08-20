@@ -103,13 +103,13 @@ ESLint is configured to run during `gulp watch`, and uses [Airbnb's style guide]
 
 2. Import Bootstrap styles in app.scss:
 
-  ```
+  ```scss
   @import 'bootstrap-sass';
   ```
 
 3. Require jQuery and Bootstrap javascript in app.js:
 
-  ```
+  ```js
   require('jquery');
   require('bootstrap-sass');
   ```
