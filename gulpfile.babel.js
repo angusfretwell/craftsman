@@ -79,7 +79,7 @@ gulp.task('images', () =>
 
 gulp.task('html', ['styles', 'scripts'], () =>
   gulp.src('app/templates/**/*.twig')
-    .pipe(useref({ searchPath: ['public', 'node_modules'], base: 'public' }))
+    .pipe(useref({ searchPath: ['public'], base: 'public' }))
     .pipe(gulpif('*.js', uglify()))
     .pipe(gulpif('*.css', cssnano()))
     .pipe(gulp.dest('public/templates'))
