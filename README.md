@@ -143,7 +143,7 @@ DEV_MODE=true
 <?php
 // craft/config/general.php
 return array(
-  'devMode' => getenv('DEV_MODE'),
+  'devMode' => env('DEV_MODE'),
 );
 ```
 
