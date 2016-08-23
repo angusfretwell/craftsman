@@ -39,8 +39,8 @@ vendor
 # Managed by Vagrant
 .vagrant
 
+# Managed by Composer
+/vendor
+
 # Managed by Craftsman
-public/**/*
-!public/.gitkeep
-craft
 .env
