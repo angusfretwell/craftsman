@@ -1,10 +1,11 @@
 {
+  "main": "gulpfile.babel.js",
+  "scripts": {
+    "postinstall": "gulp"
+  },
   "dependencies": {
     "babel-polyfill": "^6.9.1",
     "normalize.css": "^3.0.3"
-  },
-  "scripts": {
-    "postinstall": "gulp"
   },
   "devDependencies": {
     "babel-preset-airbnb": "^2.0.0",
@@ -33,19 +34,5 @@
     "gulp-util": "^3.0.7",
     "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "^1.1.0"
-  },
-  "name": "craftsman",
-  "version": "2.0.0",
-  "main": "gulpfile.babel.js",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/angusfretwell/craftsman.git"
-  },
-  "author": "Angus Fretwell <angusfretwell@me.com> (http://angusfretwell.com)",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/angusfretwell/craftsman/issues"
-  },
-  "homepage": "https://github.com/angusfretwell/craftsman#readme",
-  "description": ""
+  }
 }
