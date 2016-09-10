@@ -33,9 +33,6 @@ node_modules
 # Optional REPL history
 .node_repl_history
 
-# Managed by Composer
-vendor
-
 # Managed by Vagrant
 .vagrant
 
